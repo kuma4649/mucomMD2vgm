@@ -572,7 +572,7 @@ namespace Core
         {
             int n =  3;
 
-            if (pw.ch!=6 || pw.Type!=  enmChannelType.FMPCM)
+            if (pw.ch != 6 || pw.Type != enmChannelType.FMPCM)
             {
                 if (pw.ch == 6)
                 {
@@ -1145,7 +1145,7 @@ namespace Core
             {
                 n = FMVDAT[n + 4];
                 pw.volume = Common.CheckRange(n, 0, pw.MaxVolume);
-                //SetFmVolume(pw);
+                SetFmVolume(pw);
             }
         }
 
@@ -1159,6 +1159,7 @@ namespace Core
             {
                 n = FMVDAT[n + 4];
                 pw.volume = Common.CheckRange(n, 0, pw.MaxVolume);
+                SetFmVolume(pw);
             }
         }
 
@@ -1172,6 +1173,7 @@ namespace Core
             {
                 n = FMVDAT[n + 4];
                 pw.volume = Common.CheckRange(n, 0, pw.MaxVolume);
+                SetFmVolume(pw);
             }
         }
 

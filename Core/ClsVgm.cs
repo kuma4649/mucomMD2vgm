@@ -242,10 +242,10 @@ namespace Core
                 if (s[0] == '#' && s.Length > 1)
                 {
                     //マクロか
-                    if ((s[1] == ' ' || s[1] == '\t')&&s.Length>2)
+                    if ((s[1] == ' ' || s[1] == '\t' || s[1] == '*') && s.Length > 2)
                     {
                         // Alies
-                        AddAlies(s.Substring(2), fn, lineNumber);
+                        AddAlies(s.Substring(s.IndexOf('*')), fn, lineNumber);
                         continue;
                     }
                     else
@@ -2003,7 +2003,7 @@ namespace Core
                     continue;
                 }
 
-                pl.waitCounter =GetWaitCounter(pl.param[1]);
+                pl.waitCounter = GetWaitCounter(pl.param[1]);
 
                 if (pl.PeakLevelCounter == 0)
                 {

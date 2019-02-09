@@ -308,9 +308,9 @@ namespace Core
                         pw.bendOctave = n;
 
             //音符の変化量
-            int ed = Const.NOTE.IndexOf(pw.bendNote) + 1 + (pw.bendOctave - 1) * 12;// + pw.keyShift+pw.relKeyShift;// pw.bendShift;
+            int ed = Const.NOTE.IndexOf(pw.bendNote) + 1 + (pw.bendOctave - 1) * 12 + pw.bendShift;// + pw.keyShift+pw.relKeyShift;// pw.bendShift;
             ed = Common.CheckRange(ed, 0, 8 * 12 - 1);
-            int st = Const.NOTE.IndexOf(note.cmd) + 1 + (pw.octaveNow - 1) * 12;// + pw.keyShift + pw.relKeyShift;// note.shift;//
+            int st = Const.NOTE.IndexOf(note.cmd) + 1 + (pw.octaveNow - 1) * 12 + note.shift;// + pw.keyShift + pw.relKeyShift;// note.shift;//
             st = Common.CheckRange(st, 0, 8 * 12 - 1);
 
             int delta = ed - st;
@@ -899,6 +899,7 @@ namespace Core
         {
             int n = (int)mml.args[0];
             pw.volume = Common.CheckRange(n, 0, pw.MaxVolume);
+            SetVolume(pw);
         }
 
         public virtual void CmdVolumeUp(partWork pw, MML mml)
@@ -906,8 +907,9 @@ namespace Core
             int n = (int)mml.args[0];
             n = Common.CheckRange(n, 1, pw.MaxVolume);
             pw.volume += n;
-            n = Common.CheckRange(n, 0, pw.MaxVolume);
-
+            //n = Common.CheckRange(n, 0, pw.MaxVolume);
+            pw.volume = Common.CheckRange(pw.volume, 0, pw.MaxVolume);
+            SetVolume(pw);
         }
 
         public virtual void CmdVolumeDown(partWork pw, MML mml)
@@ -916,7 +918,7 @@ namespace Core
             n = Common.CheckRange(n, 1, pw.MaxVolume);
             pw.volume -= n;
             pw.volume = Common.CheckRange(pw.volume, 0, pw.MaxVolume);
-
+            SetVolume(pw);
         }
 
         public virtual void CmdRelativeVolume(partWork pw,MML mml)

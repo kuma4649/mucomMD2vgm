@@ -11,6 +11,8 @@ namespace Core
             new int[96]
         };
         private int beforePanData = -1;
+        private int[] VolTbl = new int[16];
+        private double[] DetuneTbl = new double[8 * 4];
 
         public SN76489(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary) : base(parent, chipID, initialPartName, stPath, isSecondary)
         {
@@ -26,11 +28,36 @@ namespace Core
             Dictionary<string, List<double>> dic = MakeFNumTbl();
             if (dic != null)
             {
-                int c = 0;
-                foreach (double v in dic["FNUM_00"])
+                int c;
+                if (dic.ContainsKey("FNUM_00"))
                 {
-                    FNumTbl[0][c++] = (int)v;
-                    if (c == FNumTbl[0].Length) break;
+                    c = 0;
+                    foreach (double v in dic["FNUM_00"])
+                    {
+                        FNumTbl[0][c++] = (int)v;
+                        if (c == FNumTbl[0].Length) break;
+                    }
+                }
+
+                for (c = 0; c < 16; c++) VolTbl[c] = c;
+                if (dic.ContainsKey("VOL"))
+                {
+                    c = 0;
+                    foreach (double v in dic["VOL"])
+                    {
+                        VolTbl[c++] = (int)v;
+                        if (c == VolTbl.Length) break;
+                    }
+                }
+
+                if (dic.ContainsKey("DETUNE"))
+                {
+                    c = 0;
+                    foreach (double v in dic["DETUNE"])
+                    {
+                        DetuneTbl[c++] = v;
+                        if (c == DetuneTbl.Length) break;
+                    }
                 }
             }
 
@@ -136,13 +163,20 @@ namespace Core
 
         }
 
-
         public override void SetFNum(partWork pw)
         {
             if (pw.Type != enmChannelType.DCSGNOISE)
             {
-                int f = -pw.detune;
+                double f = -pw.detune;
+                //f >>= pw.octaveNow - 1;
+                int n = Const.NOTE.IndexOf(pw.noteCmd) + pw.shift;
+                n = Common.CheckRange((pw.octaveNow - 1), 0, 7) * 4 + n / 4;
+                f /= (DetuneTbl[n] == 0.0 ? 0.1 : DetuneTbl[n]);
 
+                log.Write(string.Format("Detune:n:{0}:f:{1}:DetuneTbl[n]:{2}", n, f, DetuneTbl[n]));
+
+
+                int fl = 0;
                 for (int lfo = 0; lfo < 1; lfo++)
                 {
                     if (!pw.lfo[lfo].sw)
@@ -153,17 +187,10 @@ namespace Core
                     {
                         continue;
                     }
-                    f -= pw.lfo[lfo].value;
+                    fl = pw.lfo[lfo].value;
+                    fl >>= pw.octaveNow - 1;
                 }
-
-                if (pw.octaveNow < 1)
-                {
-                    f <<= -pw.octaveNow;
-                }
-                else
-                {
-                    f >>= pw.octaveNow - 1;
-                }
+                f -= fl;
 
                 if (pw.bendWaitCounter != -1)
                 {
@@ -174,15 +201,19 @@ namespace Core
                     f += GetDcsgFNum(pw.octaveNow, pw.noteCmd, pw.shift);// + pw.keyShift + pw.relKeyShift);//
                 }
 
-                f = Common.CheckRange(f, 0, 0x3ff);
+                if (pw.freq == (int)f) return;
+                pw.freq = (int)f;
 
-                if (pw.freq == f) return;
-                pw.freq = f;
+                //OPN(AY) -> DCSG 変換
+                double DMst = 3579545.0;
+                double OMst = 7987200.0;
+                int fi = (int)(Math.Round(DMst / OMst * 2.0 * f));
+                fi = Common.CheckRange(fi, 0, 0x3ff);
 
-                byte data = (byte)(0x80 + (pw.ch << 5) + (f & 0xf));
+                byte data = (byte)(0x80 + (pw.ch << 5) + (fi & 0xf));
                 OutPsgPort(pw.isSecondary, data);
 
-                data = (byte)((f & 0x3f0) >> 4);
+                data = (byte)((fi & 0x3f0) >> 4);
                 OutPsgPort(pw.isSecondary, data);
             }
             else
@@ -252,7 +283,8 @@ namespace Core
 
             if (pw.beforeVolume != vol)
             {
-                data = (byte)(0x80 + (pw.ch << 5) + 0x10 + (15 - vol));
+                data = (byte)(0x80 + (pw.ch << 5) + 0x10 + (15 - VolTbl[vol]));
+                log.Write(string.Format("vol:{0} volTbl:{1}", vol, VolTbl[vol]));
                 OutPsgPort(pw.isSecondary, data);
                 pw.beforeVolume = vol;
             }

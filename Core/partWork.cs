@@ -440,6 +440,7 @@ namespace Core
         {
             pos = new clsPos();
             stackPos = new Stack<clsPos>();
+            setPos(0);
         }
 
         /// <summary>

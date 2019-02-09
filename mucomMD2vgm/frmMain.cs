@@ -19,7 +19,9 @@ namespace mucomMD2vgm
         public frmMain()
         {
             InitializeComponent();
-            Core.log.debug = false;
+#if DEBUG
+            Core.log.debug = true;
+#endif
         }
 
         private void frmMain_Shown(object sender, EventArgs e)
