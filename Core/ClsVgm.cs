@@ -2321,11 +2321,6 @@ namespace Core
                     pw.chip.CmdMode(pw, mml);
                     pw.mmlPos++;
                     break;
-                case enmMMLType.Noise:
-                    log.Write("Noise");
-                    pw.chip.CmdNoise(pw, mml);
-                    pw.mmlPos++;
-                    break;
                 case enmMMLType.Bend:
                     log.Write("Bend");
                     pw.chip.CmdBend(pw, mml);
@@ -2357,6 +2352,11 @@ namespace Core
                 case enmMMLType.MixerMode:
                     log.Write("NoiseToneMixer");
                     pw.chip.CmdNoiseToneMixer(pw, mml);
+                    pw.mmlPos++;
+                    break;
+                case enmMMLType.Noise:
+                    log.Write("Noise");
+                    pw.chip.CmdNoise(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.KeyShift:

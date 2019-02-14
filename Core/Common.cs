@@ -495,5 +495,30 @@ namespace Core
 
             return null;
         }
+
+        public static long gcd(long a,long b)
+        {
+            if (a == b && a == 0) return 0;
+            if (a == b) return a;
+            if (a > b) return gcd(a - b, b);
+            return gcd(a, b - a);
+        }
+
+        public static long lcm(long a,long b)
+        {
+            return (a * b) / gcd(a, b);
+        }
+
+        public static long aryLcm(long[] a)
+        {
+            Array.Sort(a);
+            long ans = 1;
+            foreach(long i in a)
+            {
+                ans = lcm(ans, i);
+            }
+            return ans;
+        }
+
     }
 }

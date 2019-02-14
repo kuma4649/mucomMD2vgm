@@ -343,12 +343,20 @@ namespace Core
             OutPsgPort(pw.isSecondary, dat);
         }
 
+        public override void CmdNoiseToneMixer(partWork pw, MML mml)
+        {
+            int n = (int)mml.args[0];
+            n = Common.CheckRange(n, 0, 7);
+            pw.noise = n;
+        }
+
         public override void CmdNoise(partWork pw, MML mml)
         {
             int n = (int)mml.args[0];
             n = Common.CheckRange(n, 0, 7);
             pw.noise = n;
         }
+
 
         public override void CmdLoopExtProc(partWork pw, MML mml)
         {
