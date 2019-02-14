@@ -87,7 +87,7 @@ mucomMD2vgm MMLコマンドメモ
     D  DCSG(SN76489) Ch.1
     E  DCSG(SN76489) Ch.2
     F  DCSG(SN76489) Ch.3
-    G  DCSG(SN76489) Ch.4(noise Ch)使用不可
+    G  DCSG(SN76489) Ch.4(noise Ch)
     H  OPN2(YM2612)  Ch.4
     I  OPN2(YM2612)  Ch.5
     J  OPN2(YM2612)  Ch.6(FM向け)
