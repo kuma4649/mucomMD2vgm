@@ -1146,10 +1146,10 @@ namespace Core
                     }
 
                     char c = vals[i];
-                    if (c == ' ')
-                    {
-                        continue;
-                    }
+                    //if (c == ' ')
+                    //{
+                    //    continue;
+                    //}
                     if (c == '$')
                     {
                         h = "";
