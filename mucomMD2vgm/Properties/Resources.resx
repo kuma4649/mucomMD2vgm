@@ -139,6 +139,9 @@
   <data name="icon5" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\icon5.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="icon6" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\icon6.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="mm2v48" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\mm2v48.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>

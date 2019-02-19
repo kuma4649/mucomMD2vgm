@@ -28,15 +28,38 @@ namespace mdvc
                 Environment.Exit(0);
             }
 
-            srcFn = args[0];
+            int pos = 0;
+            bool isLoopEx = false;
+            int rendSecond = 600;
+
+            //オプションを指定しているか
+            if (args[0].IndexOf("-l") > -1)
+            {
+                pos++;
+                isLoopEx = true;
+                if (args[0].Length > 2)
+                {
+                    if (!int.TryParse(args[0].Substring(2), out rendSecond))
+                    {
+                        rendSecond = 0;
+                    }
+                    if (rendSecond == 0)
+                    {
+                        Console.WriteLine(msg.get("I07000"));
+                        Environment.Exit(0);
+                    }
+                }
+            }
+
+            srcFn = args[pos];
             if (Path.GetExtension(srcFn) == "")
             {
                 srcFn += ".muM";
             }
 
-            if (args.Length > 1)
+            if (args.Length > pos + 1)
             {
-                desFn = args[1];
+                desFn = args[pos + 1];
             }
             else
             {
@@ -49,7 +72,8 @@ namespace mdvc
 
             Assembly myAssembly = Assembly.GetEntryAssembly();
             string path = System.IO.Path.GetDirectoryName(myAssembly.Location);
-            MucomMD2vgm mv = new MucomMD2vgm(srcFn, desFn, path, Disp);
+
+            MucomMD2vgm mv = new MucomMD2vgm(srcFn, desFn, path, Disp, isLoopEx, rendSecond);
             int ret = mv.Start();
 
             if (ret == 0)
@@ -68,7 +92,8 @@ namespace mdvc
                             Console.WriteLine(string.Format(msg.get("I0002")
                                 , pw[i].PartName //.Substring(0, 2).Replace(" ", "") + int.Parse(pw[i].PartName.Substring(2, 2)).ToString()
                                 , pw[i].chip.Name.ToUpper()
-                                , pw[i].clockCounter
+                                , isLoopEx ? pw[i].loopInfo.totalCounter : pw[i].clockCounter
+                                , isLoopEx ? pw[i].loopInfo.loopCounter.ToString() : "-"
                             ));
                         }
                     }

@@ -498,15 +498,19 @@ namespace Core
 
         public static long gcd(long a,long b)
         {
-            if (a == b && a == 0) return 0;
             if (a == b) return a;
-            if (a > b) return gcd(a - b, b);
-            return gcd(a, b - a);
+            if (a == 0) return b;
+            if (b == 0) return a;
+
+            if (a > b) return gcd(a % b, b);
+            return gcd(a, b % a);
         }
 
         public static long lcm(long a,long b)
         {
-            return (a * b) / gcd(a, b);
+            long g = gcd(a, b);
+            if (g == 0) return a;
+            return (a * b) / g;
         }
 
         public static long aryLcm(long[] a)

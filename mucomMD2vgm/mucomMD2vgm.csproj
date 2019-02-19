@@ -116,6 +116,7 @@
     <Content Include="Resources\icon3.png" />
     <Content Include="Resources\icon4.png" />
     <Content Include="Resources\icon5.png" />
+    <Content Include="Resources\icon6.png" />
     <Content Include="Resources\mm2v48.ico" />
     <Content Include="Resources\mm2v48.png" />
     <Content Include="ssgdat.xml">

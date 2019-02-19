@@ -48,10 +48,12 @@ namespace Core
         private string stPath;
         private string srcFn;
 
-        public ClsVgm(string stPath,string srcFn)
+        public ClsVgm(string stPath,string srcFn,bool isLoopEx,int rendSecond)
         {
             this.stPath = stPath;
             this.srcFn = srcFn;
+            this.isLoopEx = isLoopEx;
+            this.rendSecond = rendSecond;
 
             chips = new Dictionary<enmChipType, ClsChip[]>();
             info = new Information();
@@ -1467,12 +1469,26 @@ namespace Core
         public long loopClock = -1L;
         public long loopSamples = -1L;
 
+        public int partCount = 0;
+        public int loopUsePartCount = 0;
+        public int loopUnusePartCount
+        {
+            get
+            {
+                return partCount - loopUsePartCount;
+            }
+        }
+        public int unusePartEndCount = 0;
+        public bool isLoopEx = false;
+        public int rendSecond = 600;
+        public enmLoopExStep loopExStep = enmLoopExStep.none;
+        private bool lastRendFinished;
+
         private Random rnd = new Random();
 
-
-
-        public byte[] Vgm_getByteData(Dictionary<string, List<MML>> mmlData)
+        public byte[] Vgm_getByteData(Dictionary<string, List<MML>> mmlData, enmLoopExStep loopExStep)
         {
+            this.loopExStep = loopExStep;
 
             dat = new List<byte>();
 
@@ -1489,6 +1505,21 @@ namespace Core
                     totalChannel += chip.ChMax;
                 }
             }
+
+            //workの初期化
+            useJumpCommand = 0;
+            PCMmode = false;
+            dSample = 0.0;
+            lClock = 0L;
+            sampleB = 0.0;
+            lyric = "";
+            unusePartEndCount = 0;
+            lastRendFinished = false;
+
+            loopOffset = -1L;
+            loopClock = -1L;
+            loopSamples = -1L;
+
 
             log.Write("MML解析開始");
             long waitCounter = 0;
@@ -1578,6 +1609,8 @@ namespace Core
                     }
                 }
 
+                if (isLoopEx && lastRendFinished) waitCounter = 0;
+
                 log.Write("全パートのwaitcounterを減らす");
                 if (waitCounter != long.MaxValue)
                 {
@@ -1618,6 +1651,29 @@ namespace Core
                                 //{
                                 //    pw.envCounter -= (int)waitCounter;
                                 //}
+                                long sample = (long)(waitCounter * (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * 44100.0);
+
+                                if (pw.chip.use && !pw.dataEnd)
+                                {
+                                    pw.clockCounter += waitCounter;
+                                    pw.totalSamples += sample;
+                                    if (pw.loopInfo.use) pw.loopInfo.length += waitCounter;
+                                }
+                            }
+                        }
+                    }
+
+                    foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+                    {
+                        foreach (ClsChip chip in kvp.Value)
+                        {
+                            foreach (partWork pw in chip.lstPartWork)
+                            {
+                                if (!isLoopEx || (isLoopEx && !lastRendFinished))
+                                {
+                                    OutData(pw.GetData());
+                                }
+                                pw.Flash();
                             }
                         }
                     }
@@ -1646,17 +1702,68 @@ namespace Core
                     }
                 }
 
+                if (isLoopEx)
+                {
+                    if (dSample >= rendSecond * 44100)
+                    {
+                        break;
+                    }
+                }
+
                 log.Write("終了パートのカウント");
                 endChannel = 0;
+                unusePartEndCount = 0;
                 foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
                 {
                     foreach (ClsChip chip in kvp.Value)
                     {
                         foreach (partWork pw in chip.lstPartWork)
                         {
-                            if (!pw.chip.use) endChannel++;
-                            else if (pw.dataEnd && pw.waitCounter < 1) endChannel++;
-                            else if (loopOffset != -1 && pw.dataEnd && pw.envIndex == 3) endChannel++;
+                            //未使用のチップの場合は終了したものとしてカウント
+                            if (!pw.chip.use)
+                            {
+                                endChannel++;
+                                continue;
+                            }
+                            //データが終わっていない場合はノーカウント
+                            if (!pw.dataEnd) continue;
+
+                            if (!pw.loopInfo.use && pw.mmlData!=null && pw.mmlData.Count>0)
+                            {
+                                unusePartEndCount++;
+                            }
+
+                            if (loopOffset != -1 && pw.envIndex == 3)
+                            {
+                                endChannel++;
+                                continue;
+                            }
+
+                            if (pw.waitCounter < 1)
+                            {
+                                //Lコマンド後の演奏時間が一番長いパートが終わった場合は強制オールカウント
+                                if (pw.loopInfo.isLongMml) endChannel = totalChannel;
+
+                                endChannel++;
+                                continue;
+                            }
+
+                            //if (!isLoopEx || loopExStep != enmLoopExStep.Playing)
+                            //{
+                            //    if (loopOffset != -1 && pw.envIndex == 3) endChannel++;
+
+                            //    continue;
+                            //}
+
+                            //if (pw.envIndex == 3)
+                            //{
+                            //    endChannel++;
+                            //    continue;
+                            //}
+
+
+                            //endChannel++;
+
                         }
                     }
                 }
@@ -1666,8 +1773,21 @@ namespace Core
             //残カット
             if (loopClock != -1 && waitCounter > 0 && waitCounter != long.MaxValue)
             {
+                long waitSample = (long)(waitCounter * (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * 44100.0);
                 lClock -= waitCounter;
-                dSample -= (long)(waitCounter * (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * 44100.0);
+                dSample -= waitSample;
+
+                //foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+                //{
+                //    foreach (ClsChip chip in kvp.Value)
+                //    {
+                //        foreach (partWork pw in chip.lstPartWork)
+                //        {
+                //            if (pw.LSwitch) pw.LLength -= waitCounter;
+                //            pw.totalSamples -= waitSample;
+                //        }
+                //    }
+                //}
             }
 
             log.Write("フッター情報の作成");
@@ -1732,7 +1852,44 @@ namespace Core
             {
                 if (pw.mmlPos >= pw.mmlData.Count)
                 {
-                    pw.dataEnd = true;
+                    if (!isLoopEx || loopExStep != enmLoopExStep.Playing)
+                    {
+                        pw.dataEnd = true;
+                    }
+                    else
+                    {
+                        if (!pw.loopInfo.use)
+                        {
+                            pw.dataEnd = true;
+                        }
+                        else if (pw.loopInfo.isLongMml)
+                        {
+                            pw.loopInfo.loopCount--;
+                            if (pw.loopInfo.loopCount == 0)
+                            {
+                                if (unusePartEndCount == loopUnusePartCount)
+                                {
+                                    if (pw.loopInfo.lastOne)
+                                    {
+                                        pw.dataEnd = true;
+                                        lastRendFinished = true;
+                                        pw.Flash();
+                                    }
+                                    else
+                                    {
+                                        pw.loopInfo.loopCount = pw.loopInfo.playingTimes;
+                                        pw.loopInfo.lastOne = true;
+                                    }
+                                }
+                                else
+                                {
+                                    pw.loopInfo.loopCount = pw.loopInfo.playingTimes;
+                                }
+                            }
+                        }
+
+                        pw.mmlPos = pw.loopInfo.mmlPos;
+                    }
                 }
                 else
                 {
@@ -1756,6 +1913,7 @@ namespace Core
                 foreach (ClsChip chip in kvp.Value)
                 {
                     chip.SetPCMDataBlock();
+                    chip.isLoopEx = isLoopEx;
                 }
             }
 

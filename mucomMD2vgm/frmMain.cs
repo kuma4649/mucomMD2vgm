@@ -15,6 +15,8 @@ namespace mucomMD2vgm
         private string title = "";
         private FileSystemWatcher watcher = null;
         private long now = 0;
+        private bool isSuccess = true;
+        private bool isLoopEx = false;
 
         public frmMain()
         {
@@ -124,7 +126,13 @@ namespace mucomMD2vgm
                             row.Cells.Add(new DataGridViewTextBoxCell());
                             row.Cells[1].Value = pw[i].chip.Name.ToUpper();
                             row.Cells.Add(new DataGridViewTextBoxCell());
-                            row.Cells[2].Value = pw[i].clockCounter;
+                            row.Cells[2].Value = pw[i].loopInfo.use ? pw[i].loopInfo.totalCounter : pw[i].clockCounter;
+                            row.Cells.Add(new DataGridViewTextBoxCell());
+                            row.Cells[3].Value = pw[i].loopInfo.use ? pw[i].loopInfo.loopCounter.ToString() : "-";
+                            //row.Cells.Add(new DataGridViewTextBoxCell());
+                            //row.Cells[4].Value = pw[i].totalSamples;
+                            //row.Cells.Add(new DataGridViewTextBoxCell());
+                            //row.Cells[5].Value = pw[i].loopInfo.use ? pw[i].loopInfo.length.ToString() : "none";
                             dgvResult.Rows.Add(row);
                         }
                     }
@@ -179,8 +187,6 @@ namespace mucomMD2vgm
             }
         }
 
-        bool isSuccess = true;
-
         private void startCompile()
         {
             //Core.log.debug = true;
@@ -189,6 +195,11 @@ namespace mucomMD2vgm
 
             Action dmy = updateTitle;
             string stPath = System.Windows.Forms.Application.StartupPath;
+            int rendSecond = 600;
+            if(!int.TryParse(tstbMaxRendering.Text,out rendSecond))
+            {
+                rendSecond = 600;
+            }
 
             for (int i = 1; i < args.Length; i++)
             {
@@ -214,7 +225,7 @@ namespace mucomMD2vgm
 
                 Core.log.Write("Call mucomMD2vgm core");
 
-                mv = new MucomMD2vgm(arg, desfn, stPath, Disp);
+                mv = new MucomMD2vgm(arg, desfn, stPath, Disp, isLoopEx, rendSecond);
                 if (mv.Start() != 0)
                 {
                     isSuccess = false;
@@ -306,6 +317,28 @@ namespace mucomMD2vgm
             stopWatch();
         }
 
+        private void tsbLoopEx_Click(object sender, EventArgs e)
+        {
+            isLoopEx = tsbLoopEx.Checked;
+            tslMaxRendering.Enabled = tsbLoopEx.Checked;
+            tslSecond.Enabled = tsbLoopEx.Checked;
+            tstbMaxRendering.Enabled = tsbLoopEx.Checked;
+        }
+
+        private void tstbMaxRendering_TextChanged(object sender, EventArgs e)
+        {
+            string s= tstbMaxRendering.Text;
+            int i;
+            if (!int.TryParse(s,out i))
+            {
+                tstbMaxRendering.Text = "600";
+                return;
+            }
+            if (i < 1)
+            {
+                tstbMaxRendering.Text = "1";
+            }
+        }
     }
 
 }

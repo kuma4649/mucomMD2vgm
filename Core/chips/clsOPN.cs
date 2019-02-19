@@ -30,9 +30,9 @@ namespace Core
             SetSsgVolume(pw);
             if (pw.HardEnvelopeSw)
             {
-                parent.OutData(pw.port0, 0x0d, (byte)(pw.HardEnvelopeType & 0xf));
+                pw.OutData(pw.port0, 0x0d, (byte)(pw.HardEnvelopeType & 0xf));
             }
-            parent.OutData(pw.port0, 0x07, data);
+            pw.OutData(pw.port0, 0x07, data);
         }
 
         public void OutSsgKeyOff(partWork pw)
@@ -45,9 +45,9 @@ namespace Core
             data = (byte)(((ClsOPN)pw.chip).SSGKeyOn | (n << pch));
             ((ClsOPN)pw.chip).SSGKeyOn = data;
 
-            parent.OutData(pw.port0, (byte)(0x08 + pch), 0);
+            pw.OutData(pw.port0, (byte)(0x08 + pch), 0);
             pw.beforeVolume = -1;
-            parent.OutData(pw.port0, 0x07, data);
+            pw.OutData(pw.port0, 0x07, data);
 
         }
 
@@ -69,7 +69,7 @@ namespace Core
             for (int lfo = 0; lfo < 4; lfo++)
             {
                 if (!pw.lfo[lfo].sw) continue;
-                if (pw.lfo[lfo].type != eLfoType.Tremolo) continue;
+                if (pw.lfo[lfo].type != enmLfoType.Tremolo) continue;
 
                 vol += pw.lfo[lfo].value;// + pw.lfo[lfo].param[6];
             }
@@ -78,7 +78,7 @@ namespace Core
 
             if (pw.beforeVolume != vol)
             {
-                parent.OutData(pw.port0, (byte)(0x08 + pch), (byte)vol);
+                pw.OutData(pw.port0, (byte)(0x08 + pch), (byte)vol);
                 //pw.beforeVolume = pw.volume;
                 pw.beforeVolume = vol;
             }
@@ -86,7 +86,7 @@ namespace Core
 
         public void OutSsgNoise(partWork pw, int n)
         {
-            parent.OutData(pw.port0, 0x06, (byte)(n & 0x1f));
+            pw.OutData(pw.port0, 0x06, (byte)(n & 0x1f));
         }
 
         public void SetSsgFNum(partWork pw)
@@ -103,7 +103,7 @@ namespace Core
                 {
                     continue;
                 }
-                if (pw.lfo[lfo].type != eLfoType.Vibrato)
+                if (pw.lfo[lfo].type != enmLfoType.Vibrato)
                 {
                     continue;
                 }
@@ -119,10 +119,10 @@ namespace Core
             int n =  9;
 
             data = (byte)(f & 0xff);
-            parent.OutData(pw.port0, (byte)(0 + (pw.ch - n) * 2), data);
+            pw.OutData(pw.port0, (byte)(0 + (pw.ch - n) * 2), data);
 
             data = (byte)((f & 0xf00) >> 8);
-            parent.OutData(pw.port0, (byte)(1 + (pw.ch - n) * 2), data);
+            pw.OutData(pw.port0, (byte)(1 + (pw.ch - n) * 2), data);
         }
 
         public int GetSsgFNum(partWork pw, int octave, char noteCmd, int shift)
@@ -159,12 +159,12 @@ namespace Core
             ams = ams & 3;
             pms = pms & 7;
 
-            parent.OutData(port, (byte)(0xb4 + vch), (byte)((pan << 6) | (ams << 4) | pms));
+            ppw.OutData(port, (byte)(0xb4 + vch), (byte)((pan << 6) | (ams << 4) | pms));
         }
 
         public void OutOPNSetHardLfo(partWork pw, bool sw, int lfoNum)
         {
-            parent.OutData(
+            pw.OutData(
                 pw.port0
                 , 0x22
                 , (byte)((lfoNum & 7) + (sw ? 8 : 0))
@@ -174,7 +174,7 @@ namespace Core
         public void OutOPNSetCh3SpecialMode(partWork pw, bool sw)
         {
             // ignore Timer ^^;
-            parent.OutData(
+            pw.OutData(
                 pw.port0
                 , 0x27
                 , (byte)((sw ? 0x40 : 0))
@@ -190,7 +190,7 @@ namespace Core
             fb &= 7;
             alg &= 7;
 
-            parent.OutData(port, (byte)(0xb0 + vch), (byte)((fb << 3) + alg));
+            pw.OutData(port, (byte)(0xb0 + vch), (byte)((fb << 3) + alg));
         }
 
         public void OutFmSetDtMl(partWork pw, int ope, int dt, int ml)
@@ -203,7 +203,7 @@ namespace Core
             dt &= 7;
             ml &= 15;
 
-            parent.OutData(port, (byte)(0x30 + vch + ope * 4), (byte)((dt << 4) + ml));
+            pw.OutData(port, (byte)(0x30 + vch + ope * 4), (byte)((dt << 4) + ml));
         }
 
         public void OutFmSetTl(partWork pw, int ope, int tl)
@@ -214,7 +214,7 @@ namespace Core
             ope = (ope == 1) ? 2 : ((ope == 2) ? 1 : ope);
             tl &= 0x7f;
 
-            parent.OutData(port, (byte)(0x40 + vch + ope * 4), (byte)tl);
+            pw.OutData(port, (byte)(0x40 + vch + ope * 4), (byte)tl);
         }
 
         public void OutFmSetKsAr(partWork pw, int ope, int ks, int ar)
@@ -227,7 +227,7 @@ namespace Core
             ks &= 3;
             ar &= 31;
 
-            parent.OutData(port, (byte)(0x50 + vch + ope * 4), (byte)((ks << 6) + ar));
+            pw.OutData(port, (byte)(0x50 + vch + ope * 4), (byte)((ks << 6) + ar));
         }
 
         public void OutFmSetAmDr(partWork pw, int ope, int am, int dr)
@@ -240,7 +240,7 @@ namespace Core
             am &= 1;
             dr &= 31;
 
-            parent.OutData(port, (byte)(0x60 + vch + ope * 4), (byte)((am << 7) + dr));
+            pw.OutData(port, (byte)(0x60 + vch + ope * 4), (byte)((am << 7) + dr));
         }
 
         public void OutFmSetSr(partWork pw, int ope, int sr)
@@ -252,7 +252,7 @@ namespace Core
             ope = (ope == 1) ? 2 : ((ope == 2) ? 1 : ope);
             sr &= 31;
 
-            parent.OutData(port, (byte)(0x70 + vch + ope * 4), (byte)(sr));
+            pw.OutData(port, (byte)(0x70 + vch + ope * 4), (byte)(sr));
         }
 
         public void OutFmSetSlRr(partWork pw, int ope, int sl, int rr)
@@ -265,7 +265,7 @@ namespace Core
             sl &= 15;
             rr &= 15;
 
-            parent.OutData(port, (byte)(0x80 + vch + ope * 4), (byte)((sl << 4) + rr));
+            pw.OutData(port, (byte)(0x80 + vch + ope * 4), (byte)((sl << 4) + rr));
         }
 
         public void OutFmSetSSGEG(partWork pw, int ope, int n)
@@ -277,7 +277,7 @@ namespace Core
             ope = (ope == 1) ? 2 : ((ope == 2) ? 1 : ope);
             n &= 15;
 
-            parent.OutData(port, (byte)(0x90 + vch + ope * 4), (byte)n);
+            pw.OutData(port, (byte)(0x90 + vch + ope * 4), (byte)n);
         }
 
         /// <summary>
@@ -358,13 +358,13 @@ namespace Core
             ope &= 3;
             if (ope == 0)
             {
-                parent.OutData(pw.port0, 0xa6, (byte)(((num & 0x700) >> 8) + (((octave - 1) & 0x7) << 3)));
-                parent.OutData(pw.port0, 0xa2, (byte)(num & 0xff));
+                pw.OutData(pw.port0, 0xa6, (byte)(((num & 0x700) >> 8) + (((octave - 1) & 0x7) << 3)));
+                pw.OutData(pw.port0, 0xa2, (byte)(num & 0xff));
             }
             else
             {
-                parent.OutData(pw.port0, (byte)(0xac + ope), (byte)(((num & 0x700) >> 8) + (((octave - 1) & 0x7) << 3)));
-                parent.OutData(pw.port0, (byte)(0xa8 + ope), (byte)(num & 0xff));
+                pw.OutData(pw.port0, (byte)(0xac + ope), (byte)(((num & 0x700) >> 8) + (((octave - 1) & 0x7) << 3)));
+                pw.OutData(pw.port0, (byte)(0xa8 + ope), (byte)(num & 0xff));
             }
         }
 
@@ -417,14 +417,14 @@ namespace Core
                 vch = (byte)(vch > 2 ? vch - 3 : vch);
                 for (int ope = 0; ope < 4; ope++)
                 {
-                    parent.OutData(port, (byte)(0x30 + vch + ope * 4), parent.instFM[n].data[ope]); //DT/ML
-                    parent.OutData(port, (byte)(0x40 + vch + ope * 4), parent.instFM[n].data[ope + 4]); //TL
-                    parent.OutData(port, (byte)(0x50 + vch + ope * 4), parent.instFM[n].data[ope + 8]); //KS/AR
-                    parent.OutData(port, (byte)(0x60 + vch + ope * 4), (byte)(parent.instFM[n].data[ope + 12] | 0x80)); //AMON/DR
-                    parent.OutData(port, (byte)(0x70 + vch + ope * 4), parent.instFM[n].data[ope + 16]); //SR
-                    parent.OutData(port, (byte)(0x80 + vch + ope * 4), parent.instFM[n].data[ope + 20]); //SL/RR
+                    pw.OutData(port, (byte)(0x30 + vch + ope * 4), parent.instFM[n].data[ope]); //DT/ML
+                    pw.OutData(port, (byte)(0x40 + vch + ope * 4), parent.instFM[n].data[ope + 4]); //TL
+                    pw.OutData(port, (byte)(0x50 + vch + ope * 4), parent.instFM[n].data[ope + 8]); //KS/AR
+                    pw.OutData(port, (byte)(0x60 + vch + ope * 4), (byte)(parent.instFM[n].data[ope + 12] | 0x80)); //AMON/DR
+                    pw.OutData(port, (byte)(0x70 + vch + ope * 4), parent.instFM[n].data[ope + 16]); //SR
+                    pw.OutData(port, (byte)(0x80 + vch + ope * 4), parent.instFM[n].data[ope + 20]); //SL/RR
                 }
-                parent.OutData(port, (byte)(0xb0 + vch ), parent.instFM[n].data[24]); //FB/AL
+                pw.OutData(port, (byte)(0xb0 + vch ), parent.instFM[n].data[24]); //FB/AL
             }
 
             OutFmSetVolume(pw, vol, n);
@@ -443,7 +443,7 @@ namespace Core
 
                     int slot = (pw.chip.lstPartWork[2].Ch3SpecialModeKeyOn ? pw.chip.lstPartWork[2].slots : 0x0);
 
-                    parent.OutData(pw.port0, 0x28, (byte)((slot << 4) + 2));
+                    pw.OutData(pw.port0, 0x28, (byte)((slot << 4) + 2));
                 }
                 else
                 {
@@ -451,7 +451,7 @@ namespace Core
                     {
                         byte vch = (byte)((pw.ch > 2) ? pw.ch + 1 : pw.ch);
                         //key off
-                        parent.OutData(pw.port0, 0x28, (byte)(0x00 + (vch & 7)));
+                        pw.OutData(pw.port0, 0x28, (byte)(0x00 + (vch & 7)));
                     }
                 }
 
@@ -468,7 +468,7 @@ namespace Core
                 if (pw.pcmWaitKeyOnCounter != -1)
                 {
                     //Stop Stream
-                    parent.OutData(
+                    pw.OutData(
                         0x94
                         , (byte)pw.streamID
                         );
@@ -510,8 +510,8 @@ namespace Core
                     if (f != pw.slotFreq[3])
                     {
                         pw.slotFreq[3] = f;
-                        parent.OutData(pw.port0, (byte)0xa6, (byte)(f >> 8));
-                        parent.OutData(pw.port0, (byte)0xa2, (byte)f);
+                        pw.OutData(pw.port0, (byte)0xa6, (byte)(f >> 8));
+                        pw.OutData(pw.port0, (byte)0xa2, (byte)f);
                     }
                 }
                 if ((pw.slots & 4) != 0)
@@ -520,8 +520,8 @@ namespace Core
                     if (f != pw.slotFreq[2])
                     {
                         pw.slotFreq[2] = f;
-                        parent.OutData(pw.port0, (byte)0xac, (byte)(f >> 8));
-                        parent.OutData(pw.port0, (byte)0xa8, (byte)f);
+                        pw.OutData(pw.port0, (byte)0xac, (byte)(f >> 8));
+                        pw.OutData(pw.port0, (byte)0xa8, (byte)f);
                     }
                 }
                 if ((pw.slots & 1) != 0)
@@ -530,8 +530,8 @@ namespace Core
                     if (f != pw.slotFreq[0])
                     {
                         pw.slotFreq[0] = f;
-                        parent.OutData(pw.port0, (byte)0xad, (byte)(f >> 8));
-                        parent.OutData(pw.port0, (byte)0xa9, (byte)f);
+                        pw.OutData(pw.port0, (byte)0xad, (byte)(f >> 8));
+                        pw.OutData(pw.port0, (byte)0xa9, (byte)f);
                     }
                 }
                 if ((pw.slots & 2) != 0)
@@ -540,8 +540,8 @@ namespace Core
                     if (f != pw.slotFreq[1])
                     {
                         pw.slotFreq[1] = f;
-                        parent.OutData(pw.port0, (byte)0xae, (byte)(f >> 8));
-                        parent.OutData(pw.port0, (byte)0xaa, (byte)f);
+                        pw.OutData(pw.port0, (byte)0xae, (byte)(f >> 8));
+                        pw.OutData(pw.port0, (byte)0xaa, (byte)f);
                     }
                 }
             }
@@ -562,8 +562,8 @@ namespace Core
                     byte port = pw.ch > 2 ? pw.port1 : pw.port0;
                     byte vch = (byte)(pw.ch > 2 ? pw.ch - 3 : pw.ch);
 
-                    parent.OutData(port, (byte)(0xa4 + vch), (byte)(pw.freq >> 8));
-                    parent.OutData(port, (byte)(0xa0 + vch), (byte)pw.freq);
+                    pw.OutData(port, (byte)(0xa4 + vch), (byte)(pw.freq >> 8));
+                    pw.OutData(port, (byte)(0xa0 + vch), (byte)pw.freq);
                 }
             }
         }
@@ -590,7 +590,7 @@ namespace Core
 
                     int slot = (pw.chip.lstPartWork[2].Ch3SpecialModeKeyOn ? pw.chip.lstPartWork[2].slots : 0x0);
 
-                    parent.OutData(pw.port0, 0x28, (byte)((slot << 4) + 2));
+                    pw.OutData(pw.port0, 0x28, (byte)((slot << 4) + 2));
                 }
                 else
                 {
@@ -598,7 +598,7 @@ namespace Core
                     {
                         byte vch = (byte)((pw.ch > 2) ? pw.ch + 1 : pw.ch);
                         //key on
-                        parent.OutData(pw.port0, 0x28, (byte)((pw.slots << 4) + (vch & 7)));
+                        pw.OutData(pw.port0, 0x28, (byte)((pw.slots << 4) + (vch & 7)));
                     }
                 }
 
@@ -622,7 +622,7 @@ namespace Core
             long p = parent.instPCM[pw.instrument].stAdr;
             if (parent.info.Version == 1.51f)
             {
-                parent.OutData(
+                pw.OutData(
                     0xe0
                     , (byte)(p & 0xff)
                     , (byte)((p & 0xff00) / 0x100)
@@ -652,7 +652,7 @@ namespace Core
                     parent.newStreamID++;
                     pw.streamID = parent.newStreamID;
 
-                    parent.OutData(
+                    pw.OutData(
                         // setup stream control
                         0x90
                         , (byte)pw.streamID
@@ -673,7 +673,7 @@ namespace Core
                 if (pw.streamFreq != f)
                 {
                     //Set Stream Frequency
-                    parent.OutData(
+                    pw.OutData(
                         0x92
                         , (byte)pw.streamID
                         , (byte)f
@@ -686,7 +686,7 @@ namespace Core
                 }
 
                 //Start Stream
-                parent.OutData(
+                pw.OutData(
                     0x93
                     , (byte)pw.streamID
                     , (byte)p
@@ -752,7 +752,7 @@ namespace Core
                 {
                     continue;
                 }
-                if (pw.lfo[lfo].type != eLfoType.Vibrato)
+                if (pw.lfo[lfo].type != enmLfoType.Vibrato)
                 {
                     continue;
                 }
@@ -842,7 +842,7 @@ namespace Core
                 {
                     continue;
                 }
-                if (pw.lfo[lfo].type != eLfoType.Tremolo)
+                if (pw.lfo[lfo].type != enmLfoType.Tremolo)
                 {
                     continue;
                 }
@@ -943,7 +943,7 @@ namespace Core
 
             adr += (byte)(vch + ((op-1) << 2));
 
-            parent.OutData(port, adr, dat);
+            pw.OutData(port, adr, dat);
         }
 
         private void CmdY_ToneParamOPN_FBAL(partWork pw, byte dat)
@@ -959,7 +959,7 @@ namespace Core
 
             byte adr = (byte)(0xb0 + vch);
 
-            parent.OutData(port, adr, dat);
+            pw.OutData(port, adr, dat);
         }
 
 
@@ -1237,8 +1237,8 @@ namespace Core
                     n = (int)mml.args[1];
                     if (pw.HardEnvelopeSpeed != n)
                     {
-                        parent.OutData(pw.port0, 0x0b, (byte)(n & 0xff));
-                        parent.OutData(pw.port0, 0x0c, (byte)((n >> 8) & 0xff));
+                        pw.OutData(pw.port0, 0x0b, (byte)(n & 0xff));
+                        pw.OutData(pw.port0, 0x0c, (byte)((n >> 8) & 0xff));
                         pw.HardEnvelopeSpeed = n;
                     }
                     break;
@@ -1252,7 +1252,7 @@ namespace Core
                     n = (int)mml.args[1];
                     if (pw.HardEnvelopeType != n)
                     {
-                        parent.OutData(pw.port0, 0x0d, (byte)(n & 0xf));
+                        pw.OutData(pw.port0, 0x0d, (byte)(n & 0xf));
                         pw.HardEnvelopeType = n;
                     }
                     break;

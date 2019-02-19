@@ -116,18 +116,18 @@ namespace Core
             return FNumTbl[0][f];
         }
 
-        public void OutGGPsgStereoPort(bool isSecondary, byte data)
+        public void OutGGPsgStereoPort(partWork pw, byte data)
         {
-            parent.OutData(
-                (byte)(isSecondary ? 0x3f : 0x4f)
+            pw.OutData(
+                (byte)(pw.isSecondary ? 0x3f : 0x4f)
                 , data
                 );
         }
 
-        public void OutPsgPort(bool isSecondary, byte data)
+        public void OutPsgPort(partWork pw, byte data)
         {
-            parent.OutData(
-                (byte)(isSecondary ? 0x30 : 0x50)
+            pw.OutData(
+                (byte)(pw.isSecondary ? 0x30 : 0x50)
                 , data
                 );
         }
@@ -183,7 +183,7 @@ namespace Core
                     {
                         continue;
                     }
-                    if (pw.lfo[lfo].type != eLfoType.Vibrato)
+                    if (pw.lfo[lfo].type != enmLfoType.Vibrato)
                     {
                         continue;
                     }
@@ -211,10 +211,10 @@ namespace Core
                 fi = Common.CheckRange(fi, 0, 0x3ff);
 
                 byte data = (byte)(0x80 + (pw.ch << 5) + (fi & 0xf));
-                OutPsgPort(pw.isSecondary, data);
+                OutPsgPort(pw, data);
 
                 data = (byte)((fi & 0x3f0) >> 4);
-                OutPsgPort(pw.isSecondary, data);
+                OutPsgPort(pw, data);
             }
             else
             {
@@ -222,7 +222,7 @@ namespace Core
                 if (pw.freq == f) return;
                 pw.freq = f;
                 byte data = (byte)f;
-                OutPsgPort(pw.isSecondary, data);
+                OutPsgPort(pw, data);
             }
 
         }
@@ -285,7 +285,7 @@ namespace Core
             {
                 data = (byte)(0x80 + (pw.ch << 5) + 0x10 + (15 - VolTbl[vol]));
                 log.Write(string.Format("vol:{0} volTbl:{1}", vol, VolTbl[vol]));
-                OutPsgPort(pw.isSecondary, data);
+                OutPsgPort(pw, data);
                 pw.beforeVolume = vol;
             }
         }
@@ -340,7 +340,7 @@ namespace Core
             byte adr = (byte)mml.args[0];
             byte dat = (byte)mml.args[1];
 
-            OutPsgPort(pw.isSecondary, dat);
+            OutPsgPort(pw, dat);
         }
 
         public override void CmdNoiseToneMixer(partWork pw, MML mml)
@@ -418,7 +418,7 @@ namespace Core
             }
 
             if (beforePanData == dat) return;
-            OutGGPsgStereoPort(IsSecondary, (byte)dat);
+            OutGGPsgStereoPort(lstPartWork[0], (byte)dat);
             beforePanData = dat;
 
         }

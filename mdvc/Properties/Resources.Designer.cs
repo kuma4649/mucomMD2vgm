@@ -65,9 +65,12 @@ namespace mdvc.Properties {
         ///                                      By kuma
         ///
         ///Usage:
-        ///    mdvc muM[.muM] [vgm[.vgm|.vgz]]
+        ///    mdvc [-l] muM[.muM] [vgm[.vgm|.vgz]]
         ///
         ///Parameter
+        ///    -l         Lコマンド解析拡張モードを指定します。
+        ///               lの後に指定した数値分だけ演奏を行います。
+        ///               未指定の場合はデフォルト値600(秒)を指定したことになります。
         ///    muM        muMファイル又はmucファイルを指定してください。
         ///               拡張子を省略すると.muMが補完されます。
         ///    vgm        出力するvgm,vgzファイルを指定できます。

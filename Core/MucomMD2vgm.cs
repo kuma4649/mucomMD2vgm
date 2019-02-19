@@ -17,18 +17,22 @@ namespace Core
         public ClsVgm desVGM = null;
         private Action<string> Disp = null;
         private int pcmDataSeqNum = 0;
+        private bool isLoopEx = false;
+        private int rendSecond=600;
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
         /// <param name="srcFn">ソースファイル</param>
         /// <param name="desFn">出力ファイル</param>
-        public MucomMD2vgm(string srcFn, string desFn, string stPath, Action<string> disp)
+        public MucomMD2vgm(string srcFn, string desFn, string stPath, Action<string> disp,bool isLoopEx,int rendSecond)
         {
             this.srcFn = srcFn;
             this.desFn = desFn;
             this.stPath = stPath;
             this.Disp = disp;
+            this.isLoopEx = isLoopEx;
+            this.rendSecond = rendSecond;
 
             log.ForcedWrite(srcFn);
             log.ForcedWrite(desFn);
@@ -63,7 +67,7 @@ namespace Core
                 }
 
                 Disp(msg.get("I04003"));
-                desVGM = new ClsVgm(stPath, srcFn);
+                desVGM = new ClsVgm(stPath, srcFn, isLoopEx, rendSecond);
                 if (desVGM.Analyze(src) != 0)
                 {
                     msgBox.setErrMsg(string.Format(
@@ -84,35 +88,92 @@ namespace Core
                 Disp(msg.get("I04004"));
                 if (desVGM.instPCMDatSeq.Count > 0) GetPCMData(path);
 
-                Disp(msg.get("I04005"));
-                MMLAnalyze mmlAnalyze = new MMLAnalyze(desVGM);
-                if (mmlAnalyze.Start() != 0)
-                {
-                    msgBox.setErrMsg(string.Format(
-                        msg.get("E04003")
-                        , mmlAnalyze.lineNumber));
-                    return -1;
-                }
-
                 byte[] desBuf = null;
-                switch (desVGM.info.format)
+
+                if (!isLoopEx)
                 {
-                    case enmFormat.VGM:
-                        Disp(msg.get("I04006"));
-                        desBuf = desVGM.Vgm_getByteData(mmlAnalyze.mmlData);
-                        Disp(msg.get("I04007"));
-                        break;
-                    default:
-                        break;
+                    Disp(msg.get("I04005"));
+                    MMLAnalyze mmlAnalyze = new MMLAnalyze(desVGM);
+                    if (mmlAnalyze.Start() != 0)
+                    {
+                        msgBox.setErrMsg(string.Format(msg.get("E04003"), mmlAnalyze.lineNumber));
+                        return -1;
+                    }
+
+                    Disp(msg.get("I04006"));
+                    desBuf = desVGM.Vgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.none);
+                    Disp(msg.get("I04007"));
+                    if (desBuf == null)
+                    {
+                        msgBox.setErrMsg(string.Format(
+                            msg.get("E04004")
+                            , desVGM.lineNumber));
+                        return -1;
+                    }
+
+                }
+                else
+                {
+                    //Loopポイントその他の情報を採取するために一旦解析と1ループの演奏を行う。
+
+                    Disp(msg.get("I04024"));
+                    MMLAnalyze mmlAnalyze = new MMLAnalyze(desVGM);
+                    if (mmlAnalyze.Start() != 0)
+                    {
+                        msgBox.setErrMsg(string.Format(msg.get("E04003"), mmlAnalyze.lineNumber));
+                        return -1;
+                    }
+
+                    Disp(msg.get("I04025"));
+                    desBuf = desVGM.Vgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.Inspect);
+                    Disp(msg.get("I04026"));
+
+                    if (desBuf == null)
+                    {
+                        msgBox.setErrMsg(string.Format(
+                            msg.get("E04004")
+                            , desVGM.lineNumber));
+                        return -1;
+                    }
+
+
+                    //情報収集
+                    Dictionary<KeyValuePair<enmChipType, int>, clsLoopInfo> dicLoopInfo = GetLoopInfo();
+
+
+                    //収集した情報をもとに 本解析と演奏を行う。
+
+                    desBuf = null;
+                    
+                    Disp(msg.get("I04027"));
+                    mmlAnalyze = new MMLAnalyze(desVGM);
+                    if (mmlAnalyze.Start() != 0)
+                    {
+                        msgBox.setErrMsg(string.Format(msg.get("E04003"), mmlAnalyze.lineNumber));
+                        return -1;
+                    }
+
+                    SetLoopInfo(desVGM, dicLoopInfo);
+
+                    //1.ループ無しのパートがすべて演奏完了するまで演奏する
+                    //(この間、ループ有りのパートはループ回数を消化しながらループさせる)
+                    //2.ループ無しのパートがすべて演奏完了したうえで、ループ有りのパートがループ回数を完全に消化したら、
+                    //もう一度ループ回数を充てんし、ループ回数を全て消化するまでループする
+                    Disp(msg.get("I04028"));
+                    desBuf = desVGM.Vgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.Playing);
+                    Disp(msg.get("I04029"));
+
+                    if (desBuf == null)
+                    {
+                        msgBox.setErrMsg(string.Format(
+                            msg.get("E04004")
+                            , desVGM.lineNumber));
+                        return -1;
+                    }
+
                 }
 
-                if (desBuf == null)
-                {
-                    msgBox.setErrMsg(string.Format(
-                        msg.get("E04004")
-                        , desVGM.lineNumber));
-                    return -1;
-                }
+
 
                 Disp(msg.get("I04010"));
                 outFile(desBuf);
@@ -136,6 +197,111 @@ namespace Core
                 Disp(msg.get("I04011"));
                 Disp("");
             }
+        }
+
+        private void SetLoopInfo(ClsVgm desVGM, Dictionary<KeyValuePair<enmChipType, int>, clsLoopInfo> dicLoopInfo)
+        {
+            foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in desVGM.chips)
+            {
+                foreach (ClsChip chip in kvp.Value)
+                {
+                    if (!chip.use) continue;
+
+                    foreach (partWork pw in chip.lstPartWork)
+                    {
+                        if (pw.pData == null) continue;
+
+                        KeyValuePair<enmChipType, int> k = new KeyValuePair<enmChipType, int>(kvp.Key, pw.ch);
+                        if (dicLoopInfo.ContainsKey(k))
+                        {
+                            pw.loopInfo = dicLoopInfo[k];
+                        }
+                    }
+                }
+            }
+        }
+
+        private Dictionary<KeyValuePair<enmChipType, int>, clsLoopInfo> GetLoopInfo()
+        {
+            //  各パートのループの有無を取得
+            //  ループありのパートのLコマンド後のLengthから最大公倍数を得る
+            //  取得した最大公倍数から各パートのループ回数を算出する
+            desVGM.partCount = 0;
+            desVGM.loopUsePartCount = 0;
+
+            List<long> lengths = new List<long>();
+            long clockLength = 0;
+            foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in desVGM.chips)
+            {
+                foreach (ClsChip chip in kvp.Value)
+                {
+                    if (!chip.use) continue;
+
+                    foreach (partWork pw in chip.lstPartWork)
+                    {
+                        if (pw.pData == null) continue;
+
+                        desVGM.partCount++;
+                        if (!pw.loopInfo.use) continue;
+                        desVGM.loopUsePartCount++;
+                        lengths.Add(pw.loopInfo.length);
+                        if (clockLength < pw.loopInfo.clockPos)//.clockCounter)
+                        {
+                            clockLength = pw.loopInfo.clockPos;//.clockCounter;
+                        }
+                    }
+                }
+            }
+
+            foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in desVGM.chips)
+            {
+                foreach (ClsChip chip in kvp.Value)
+                {
+                    if (!chip.use) continue;
+
+                    foreach (partWork pw in chip.lstPartWork)
+                    {
+                        if (pw.pData == null) continue;
+                        if (!pw.loopInfo.use) continue;
+                        if (clockLength == pw.loopInfo.clockPos)//.clockCounter)
+                        {
+                            pw.loopInfo.isLongMml = true;
+                            goto loopExit;
+                        }
+                    }
+                }
+            }
+
+        loopExit:
+            long lcm = Common.aryLcm(lengths.ToArray());
+            Dictionary<KeyValuePair<enmChipType, int>, clsLoopInfo> dicLoopInfo = new Dictionary<KeyValuePair<enmChipType, int>, clsLoopInfo>();
+
+            foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in desVGM.chips)
+            {
+                foreach (ClsChip chip in kvp.Value)
+                {
+                    if (!chip.use) continue;
+
+                    foreach (partWork pw in chip.lstPartWork)
+                    {
+                        if (pw.pData == null) continue;
+                        if (!pw.loopInfo.use) continue;
+
+                        pw.loopInfo.playingTimes = (int)(lcm / pw.loopInfo.length);
+                        pw.loopInfo.loopCount = pw.loopInfo.playingTimes;
+
+                        pw.loopInfo.totalCounter = pw.clockCounter;
+                        pw.loopInfo.loopCounter = pw.loopInfo.length;
+
+                        pw.loopInfo.startFlag = false;
+                        pw.loopInfo.lastOne = false;
+
+                        dicLoopInfo.Add(new KeyValuePair<enmChipType, int>(kvp.Key, pw.ch), pw.loopInfo);
+                    }
+                }
+            }
+
+            return dicLoopInfo;
         }
 
         private void outFile(byte[] desBuf)
@@ -535,4 +701,6 @@ namespace Core
 
 
     }
+
+
 }

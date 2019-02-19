@@ -84,6 +84,26 @@ namespace Core
         /// </summary>
         public long clockCounter = 0L;
 
+        ///// <summary>
+        ///// Lコマンド使用フラグ
+        ///// </summary>
+        //public bool LSwitch = false;
+
+        ///// <summary>
+        ///// Lコマンドの位置
+        ///// </summary>
+        //public long LClock = 0;
+
+        ///// <summary>
+        ///// Lコマンド後の長さ
+        ///// </summary>
+        //public long LLength = 0;
+
+        /// <summary>
+        /// パート全体の長さ
+        /// </summary>
+        public long totalSamples = 0;
+
         /// <summary>
         /// あとどれだけ待機するかを示すカウンター(clock)
         /// </summary>
@@ -321,7 +341,7 @@ namespace Core
         public int HardEnvelopeSpeed = -1;
 
         /// <summary>
-        /// Lfo(4つ)
+        /// Lfo(1つ)
         /// </summary>
         public clsLfo[] lfo = new clsLfo[1] { new clsLfo() };// new clsLfo[4] { new clsLfo(), new clsLfo(), new clsLfo(), new clsLfo() };
 
@@ -432,6 +452,23 @@ namespace Core
         public bool ReverbSwitch = false;
         public bool ReverbNowSwitch = false;
         public int ReverbMode = 0;
+
+        public clsLoopInfo loopInfo = new clsLoopInfo();
+
+        private List<byte> dataBuf = new List<byte>();
+        public void OutData(params byte[] data)
+        {
+            foreach (byte b in data) dataBuf.Add(b);
+        }
+        public byte[] GetData()
+        {
+            return dataBuf.ToArray();
+        }
+        public void Flash()
+        {
+            dataBuf.Clear();
+        }
+
 
         /// <summary>
         /// パート情報をリセットする
@@ -988,7 +1025,7 @@ namespace Core
         /// <summary>
         /// Lfoの種類
         /// </summary>
-        public eLfoType type = eLfoType.unknown;
+        public enmLfoType type = enmLfoType.unknown;
 
         /// <summary>
         /// Lfoの設定値

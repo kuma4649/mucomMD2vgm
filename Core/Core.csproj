@@ -77,6 +77,7 @@
     <Compile Include="Information.cs" />
     <Compile Include="Line.cs" />
     <Compile Include="log.cs" />
+    <Compile Include="clsLoopInfo.cs" />
     <Compile Include="message.cs" />
     <Compile Include="MML.cs" />
     <Compile Include="MMLAnalyze.cs" />

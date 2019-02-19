@@ -117,8 +117,7 @@ namespace Core
         public clsPcmDataInfo[] pcmDataInfo;
         public byte[] pcmDataEasy = null;
         public List<byte[]> pcmDataDirect = new List<byte[]>();
-
-
+        public bool isLoopEx;
 
         public ClsChip(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary)
         {
@@ -285,7 +284,7 @@ namespace Core
 
             if (parent.instSSG[n].M == null || parent.instSSG[n].M.Length < 1) return;
 
-            pw.lfo[0].type = eLfoType.Vibrato;
+            pw.lfo[0].type = enmLfoType.Vibrato;
             pw.lfo[0].sw = true;
             for (int i = 0; i < Math.Min(parent.instSSG[n].M.Length, 4); i++)
                 pw.lfo[0].param[i] = parent.instSSG[n].M[i];
@@ -687,7 +686,7 @@ namespace Core
         public virtual void CmdSoftLfo(partWork pw,MML mml)
         {
             for (int i = 0; i < Math.Min(mml.args.Count, 4); i++) pw.lfo[0].param[i] = (int)mml.args[i];
-            pw.lfo[0].type = eLfoType.Vibrato;
+            pw.lfo[0].type = enmLfoType.Vibrato;
             pw.lfo[0].sw = true;
             pw.lfo[0].waitCounter = parent.GetWaitCounter(pw.lfo[0].param[0]);
             pw.lfo[0].direction = Math.Sign(pw.lfo[0].param[2]);
@@ -1024,10 +1023,27 @@ namespace Core
 
         public void CmdLoop(partWork pw, MML mml)
         {
-            pw.incPos();
-            parent.loopOffset = (long)parent.dat.Count;
-            parent.loopClock = (long)parent.lClock;
-            parent.loopSamples = (long)parent.dSample;
+            if (pw.chip.parent.isLoopEx)
+            {
+                pw.loopInfo.use = true;
+                pw.loopInfo.clockPos = (long)parent.lClock;
+                pw.loopInfo.mmlPos = pw.mmlPos;
+
+                pw.incPos();
+                if (pw.loopInfo.isLongMml && pw.chip.parent.unusePartEndCount == pw.chip.parent.loopUnusePartCount)
+                {
+                    parent.loopOffset = (long)parent.dat.Count;
+                    parent.loopClock = (long)parent.lClock;
+                    parent.loopSamples = (long)parent.dSample;
+                }
+            }
+            else
+            {
+                pw.incPos();
+                parent.loopOffset = (long)parent.dat.Count;
+                parent.loopClock = (long)parent.lClock;
+                parent.loopSamples = (long)parent.dSample;
+            }
 
             if (parent.info.format == enmFormat.XGM)
             {
@@ -1291,7 +1307,7 @@ namespace Core
                 else pw.waitKeyOnCounter = pw.waitCounter;
             }
 
-            pw.clockCounter += pw.waitCounter;
+            //pw.clockCounter += pw.waitCounter;
         }
 
         public virtual void CmdRest(partWork pw, MML mml)
@@ -1328,7 +1344,7 @@ namespace Core
             //pw.noteCmd = rest.cmd;
             //pw.shift = 0;
 
-            pw.clockCounter += pw.waitCounter;
+            //pw.clockCounter += pw.waitCounter;
         }
 
         public virtual void CmdLyric(partWork pw, MML mml)
@@ -1351,7 +1367,7 @@ namespace Core
             pw.waitCounter = parent.GetWaitCounter(ml); 
             pw.tie = false;
 
-            pw.clockCounter += pw.waitCounter;
+            //pw.clockCounter += pw.waitCounter;
         }
 
         public virtual void CmdBend(partWork pw, MML mml)

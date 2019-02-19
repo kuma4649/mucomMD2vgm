@@ -705,7 +705,7 @@ namespace Core
         private void CmdLoop(partWork pw, MML mml)
         {
             pw.incPos();
-            if (pw.Type == enmChannelType.FMOPN && pw.ch == 0)
+            if (desVGM.isLoopEx || (pw.Type == enmChannelType.FMOPN && pw.ch == 0))
             {
                 mml.type = enmMMLType.LoopPoint;
                 mml.args = null;

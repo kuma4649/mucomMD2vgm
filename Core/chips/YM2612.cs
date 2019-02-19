@@ -113,7 +113,7 @@ namespace Core
 
         public void OutSetCh6PCMMode(partWork pw, bool sw)
         {
-            parent.OutData(
+            pw.OutData(
                 pw.port0
                 , 0x2b
                 , (byte)((sw ? 0x80 : 0))
@@ -218,7 +218,7 @@ namespace Core
 
             byte adr = (byte)mml.args[0];
             byte dat = (byte)mml.args[1];
-            parent.OutData((pw.ch > 2 && pw.ch < 6) ? pw.port1 : pw.port0, adr, dat);
+            pw.OutData((pw.ch > 2 && pw.ch < 6) ? pw.port1 : pw.port0, adr, dat);
         }
 
         public override void CmdMPMS(partWork pw, MML mml)
@@ -252,7 +252,7 @@ namespace Core
             base.CmdLfo(pw, mml);
 
             int c = (char)mml.args[0] - 'P';
-            if (pw.lfo[c].type == eLfoType.Hardware)
+            if (pw.lfo[c].type == enmLfoType.Hardware)
             {
                 //if (pw.lfo[c].param.Count < 4)
                 //{
@@ -286,7 +286,7 @@ namespace Core
 
             int c = (char)mml.args[0] - 'P';
             int n = (int)mml.args[1];
-            if (pw.lfo[c].type == eLfoType.Hardware)
+            if (pw.lfo[c].type == enmLfoType.Hardware)
             {
                 if (pw.lfo[c].param[4] == 0)
                 {
@@ -401,7 +401,7 @@ namespace Core
                 pl.value = 0;
                 pl.PeakLevelCounter = pl.param[3] >> 1;
 
-                if (pl.type == eLfoType.Vibrato)
+                if (pl.type == enmLfoType.Vibrato)
                 {
                     SetFmFNum(pw);
 
