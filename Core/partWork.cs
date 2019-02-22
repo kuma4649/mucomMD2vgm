@@ -630,6 +630,10 @@ namespace Core
         }
 
         private List<clsPos> LstPos = null;
+        internal int beforeTLOP1=-1;
+        internal int beforeTLOP3 = -1;
+        internal int beforeTLOP2 = -1;
+        internal int beforeTLOP4 = -1;
 
         public void MakeLstPos()
         {

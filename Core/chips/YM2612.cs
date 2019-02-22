@@ -77,6 +77,10 @@ namespace Core
             pw.port1 = (byte)(0x3 | (pw.isSecondary ? 0xa0 : 0x50));
             pw.octaveNew = 6;
             pw.octaveNow = 6;
+            pw.beforeTLOP1 = -1;
+            pw.beforeTLOP3 = -1;
+            pw.beforeTLOP2 = -1;
+            pw.beforeTLOP4 = -1;
         }
 
         public override void InitChip()

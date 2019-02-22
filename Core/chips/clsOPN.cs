@@ -214,6 +214,25 @@ namespace Core
             ope = (ope == 1) ? 2 : ((ope == 2) ? 1 : ope);
             tl &= 0x7f;
 
+            switch (ope)
+            {
+                case 0:
+                    if (pw.beforeTLOP1 == tl) return;
+                    pw.beforeTLOP1 = tl;
+                    break;
+                case 1:
+                    if (pw.beforeTLOP3 == tl) return;
+                    pw.beforeTLOP3 = tl;
+                    break;
+                case 2:
+                    if (pw.beforeTLOP2 == tl) return;
+                    pw.beforeTLOP2 = tl;
+                    break;
+                case 3:
+                    if (pw.beforeTLOP4 == tl) return;
+                    pw.beforeTLOP4 = tl;
+                    break;
+            }
             pw.OutData(port, (byte)(0x40 + vch + ope * 4), (byte)tl);
         }
 
@@ -397,7 +416,6 @@ namespace Core
                     ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 4 + 2], parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 3 + 2]);
                     ((ClsOPN)pw.chip).OutFmSetSSGEG(pw, ope, 0);
                     ((ClsOPN)pw.chip).OutFmSetTl(pw, ope, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 5 + 2]);
-
                 }
                 pw.op1ml = parent.instFM[n].data[0 * Const.INSTRUMENT_OPERATOR_SIZE + 7];
                 pw.op2ml = parent.instFM[n].data[1 * Const.INSTRUMENT_OPERATOR_SIZE + 7];
@@ -427,6 +445,10 @@ namespace Core
                 pw.OutData(port, (byte)(0xb0 + vch ), parent.instFM[n].data[24]); //FB/AL
             }
 
+            pw.beforeTLOP1 = -1;
+            pw.beforeTLOP3 = -1;
+            pw.beforeTLOP2 = -1;
+            pw.beforeTLOP4 = -1;
             OutFmSetVolume(pw, vol, n);
             //SetFmVolume(pw);
         }
@@ -1190,6 +1212,21 @@ namespace Core
                         CmdY_ToneParamOPN(0x30, pw, op, dat);
                         break;
                     case "TL,":
+                        switch (op)
+                        {
+                            case 1:
+                                pw.beforeTLOP1 = dat;
+                                break;
+                            case 2:
+                                pw.beforeTLOP2 = dat;
+                                break;
+                            case 3:
+                                pw.beforeTLOP3 = dat;
+                                break;
+                            case 4:
+                                pw.beforeTLOP4 = dat;
+                                break;
+                        }
                         CmdY_ToneParamOPN(0x40, pw, op, dat);
                         break;
                     case "KA,":

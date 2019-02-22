@@ -1826,7 +1826,7 @@ namespace Core
             ProcEnvelope(pw);
 
             pw.chip.SetFNum(pw);
-            pw.chip.SetVolume(pw);
+            //pw.chip.SetVolume(pw);
 
             log.Write("wait消化待ち");
             if (pw.waitCounter > 0)
@@ -2277,6 +2277,8 @@ namespace Core
             {
                 pw.chip.SetKeyOff(pw);
             }
+
+            pw.chip.SetVolume(pw);
         }
 
         private void Commander(partWork pw, MML mml)

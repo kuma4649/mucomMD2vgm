@@ -1277,7 +1277,8 @@ namespace Core
                 }
                 SetEnvelopeAtKeyOn(pw);
                 SetLfoAtKeyOn(pw);
-                SetVolume(pw);
+                if(pw.ReverbSwitch)
+                    SetVolume(pw);
                 //強制設定
                 //pw.freq = -1;
                 //発音周波数の決定
@@ -1293,7 +1294,8 @@ namespace Core
                 //pw.freq = -1;
                 //発音周波数の決定
                 SetFNum(pw);
-                SetVolume(pw);
+                //if (pw.ReverbSwitch)
+                    //SetVolume(pw);
             }
 
             //gateTimeの決定
@@ -1388,6 +1390,7 @@ namespace Core
             pw.ReverbSwitch = (val == 1);
             pw.ReverbNowSwitch = false;
             SetKeyOff(pw);
+            SetVolume(pw);
         }
 
         public virtual void CmdReverbMode(partWork pw, MML mml)
