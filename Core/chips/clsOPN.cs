@@ -406,9 +406,10 @@ namespace Core
 
             if (parent.instFM[n].type == 0)
             {
+                for (int ope = 0; ope < 4; ope++) ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, 0, 15);
+
                 for (int ope = 0; ope < 4; ope++)
                 {
-
                     ((ClsOPN)pw.chip).OutFmSetDtMl(pw, ope, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 8 + 2], parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 7 + 2]);
                     ((ClsOPN)pw.chip).OutFmSetKsAr(pw, ope, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 6 + 2], parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 0 + 2]);
                     ((ClsOPN)pw.chip).OutFmSetAmDr(pw, ope, 1, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 1 + 2]);
@@ -417,6 +418,7 @@ namespace Core
                     ((ClsOPN)pw.chip).OutFmSetSSGEG(pw, ope, 0);
                     ((ClsOPN)pw.chip).OutFmSetTl(pw, ope, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 5 + 2]);
                 }
+
                 pw.op1ml = parent.instFM[n].data[0 * Const.INSTRUMENT_OPERATOR_SIZE + 7];
                 pw.op2ml = parent.instFM[n].data[1 * Const.INSTRUMENT_OPERATOR_SIZE + 7];
                 pw.op3ml = parent.instFM[n].data[2 * Const.INSTRUMENT_OPERATOR_SIZE + 7];
