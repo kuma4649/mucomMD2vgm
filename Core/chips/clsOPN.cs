@@ -435,6 +435,9 @@ namespace Core
                 int vch = pw.ch;
                 byte port = vch > 2 ? pw.port1 : pw.port0;
                 vch = (byte)(vch > 2 ? vch - 3 : vch);
+
+                for (int ope = 0; ope < 4; ope++) ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, 0, 15);
+
                 for (int ope = 0; ope < 4; ope++)
                 {
                     pw.OutData(port, (byte)(0x30 + vch + ope * 4), parent.instFM[n].data[ope]); //DT/ML
