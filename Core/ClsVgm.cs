@@ -548,25 +548,25 @@ namespace Core
 
             string fn = vs[1].Trim().Trim('"');
 
-            int fq;
-            try
-            {
-                fq = Common.ParseNumber(vs[2]);
-            }
-            catch
-            {
-                fq = -1;
-            }
+            int fq = 8000;
+            //try
+            //{
+            //    fq = Common.ParseNumber(vs[2]);
+            //}
+            //catch
+            //{
+            //    fq = -1;
+            //}
 
-            int vol;
-            try
-            {
-                vol = Common.ParseNumber(vs[3]);
-            }
-            catch
-            {
-                vol = 100;
-            }
+            int vol = 100;
+            //try
+            //{
+            //    vol = Common.ParseNumber(vs[3]);
+            //}
+            //catch
+            //{
+            //    vol = 100;
+            //}
 
             bool isSecondary = false;
 
