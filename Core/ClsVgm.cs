@@ -1790,6 +1790,21 @@ namespace Core
                 //}
             }
 
+            foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+            {
+                foreach (ClsChip chip in kvp.Value)
+                {
+                    foreach (partWork pw in chip.lstPartWork)
+                    {
+                        if (!isLoopEx || (isLoopEx && !lastRendFinished))
+                        {
+                            OutData(pw.GetData());
+                        }
+                        pw.Flash();
+                    }
+                }
+            }
+
             log.Write("フッター情報の作成");
             MakeFooter();
 
@@ -2672,7 +2687,7 @@ namespace Core
 
         public void OutData(params byte[] data)
         {
-            foreach (byte d in data) dat.Add(d);
+            dat.AddRange(data);
         }
 
         private void OutWaitNSamples(long n)
