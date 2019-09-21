@@ -69,6 +69,7 @@
     <Compile Include="chips\Conductor.cs" />
     <Compile Include="chips\SN76489.cs" />
     <Compile Include="chips\YM2612.cs" />
+    <Compile Include="chips\YM2612X.cs" />
     <Compile Include="ClsVgm.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="Const.cs" />

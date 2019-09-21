@@ -162,47 +162,50 @@ namespace Core
                 stream = asm.GetManifestResourceStream(fn);
             }
 
+            if (stream == null)
+            {
+                return null;
+            }
+
             try
             {
-                if (stream != null)
+
+                using (System.IO.StreamReader sr = new System.IO.StreamReader(stream, Encoding.Unicode))
                 {
-                    using (System.IO.StreamReader sr = new System.IO.StreamReader(stream, Encoding.Unicode))
+                    stream = null;
+                    while (!sr.EndOfStream)
                     {
-                        stream = null;
-                        while (!sr.EndOfStream)
+                        //内容を読み込む
+                        string[] s = sr.ReadLine().Split(new string[] { "=" }, StringSplitOptions.None);
+                        if (s == null || s.Length != 2) continue;
+                        if (s[0].Trim() == "" || s[0].Trim().Length < 1 || s[0].Trim()[0] == '\'') continue;
+                        string[] val = s[1].Split(new string[] { "," }, StringSplitOptions.None);
+                        s[0] = s[0].ToUpper().Trim();
+
+                        if (!dic.ContainsKey(s[0]))
                         {
-                            //内容を読み込む
-                            string[] s = sr.ReadLine().Split(new string[] { "=" }, StringSplitOptions.None);
-                            if (s == null || s.Length != 2) continue;
-                            if (s[0].Trim() == "" || s[0].Trim().Length < 1 || s[0].Trim()[0] == '\'') continue;
-                            string[] val = s[1].Split(new string[] { "," }, StringSplitOptions.None);
-                            s[0] = s[0].ToUpper().Trim();
-
-                            if (!dic.ContainsKey(s[0]))
-                            {
-                                List<double> value = new List<double>();
-                                dic.Add(s[0], value);
-                            }
-
-                            foreach (string v in val)
-                            {
-                                string vv = v.Trim();
-
-                                if (vv[0] == '$' && vv.Length > 1)
-                                {
-                                    int num16 = Convert.ToInt32(vv.Substring(1), 16);
-                                    dic[s[0]].Add(num16);
-                                }
-                                else
-                                {
-                                    if (double.TryParse(vv, out double o))
-                                    {
-                                        dic[s[0]].Add(o);
-                                    }
-                                }
-                            }
-
+                            List<double> value = new List<double>();
+                            dic.Add(s[0], value);
                         }
+
+                        foreach (string v in val)
+                        {
+                            string vv = v.Trim();
+
+                            if (vv[0] == '$' && vv.Length > 1)
+                            {
+                                int num16 = Convert.ToInt32(vv.Substring(1), 16);
+                                dic[s[0]].Add(num16);
+                            }
+                            else
+                            {
+                                if (double.TryParse(vv, out double o))
+                                {
+                                    dic[s[0]].Add(o);
+                                }
+                            }
+                        }
+
                     }
                 }
             }
@@ -1011,6 +1014,13 @@ namespace Core
                     , mml.line.Fn
                     , mml.line.Num
                     );
+        }
+
+        public virtual void CmdPcmMapSw(partWork pw, MML mml)
+        {
+            msgBox.setErrMsg(msg.get("E10023")
+                    , mml.line.Fn
+                    , mml.line.Num);
         }
 
         public virtual void CmdNoiseToneMixer(partWork pw, MML mml)

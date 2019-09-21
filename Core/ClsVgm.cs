@@ -14,6 +14,7 @@ namespace Core
         public Conductor[] conductor = null;
         public YM2612[] ym2612 = null;
         public SN76489[] sn76489 = null;
+        public YM2612X[] ym2612x = null;
 
         public Dictionary<enmChipType, ClsChip[]> chips;
 
@@ -24,6 +25,7 @@ namespace Core
         public Dictionary<int, clsPcm> instPCM = new Dictionary<int, clsPcm>();
         public Dictionary<int, Ssgdat.Instrument> instSSG = new Dictionary<int, Ssgdat.Instrument>();
         public List<clsPcmDatSeq> instPCMDatSeq = new List<clsPcmDatSeq>();
+        public Dictionary<int, Dictionary<int, int>> instPCMMap = new Dictionary<int, Dictionary<int, int>>();
         public Dictionary<int, clsToneDoubler> instToneDoubler = new Dictionary<int, clsToneDoubler>();
         public Dictionary<int, byte[]> instWF = new Dictionary<int, byte[]>();
 
@@ -60,11 +62,13 @@ namespace Core
 
             conductor = new Conductor[] { new Conductor(this, 0, "Cn", stPath, false) };
             ym2612 = new YM2612[] { new YM2612(this, 0, "F", stPath, false) };
-            sn76489 = new SN76489[] { new SN76489(this, 0, "S", stPath, false)};
+            sn76489 = new SN76489[] { new SN76489(this, 0, "S", stPath, false) };
+            ym2612x = new YM2612X[] { new YM2612X(this, 0, "E", stPath, false) };
 
             chips.Add(enmChipType.CONDUCTOR, conductor);
             chips.Add(enmChipType.YM2612, ym2612);
             chips.Add(enmChipType.SN76489, sn76489);
+            chips.Add(enmChipType.YM2612X, ym2612x);
 
             List<clsTD> lstTD = new List<clsTD>
             {
@@ -92,6 +96,28 @@ namespace Core
             clsToneDoubler toneDoubler = new clsToneDoubler(0, lstTD);
             instToneDoubler.Add(0, toneDoubler);
 
+        }
+
+        /// <summary>
+        /// 余計なYM2612を使用不可にする(mucomMD独自)
+        /// パート定義が重複するため
+        /// </summary>
+        public void CutYM2612()
+        {
+            if(info.format== enmFormat.VGM)
+            {
+                foreach(KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+                    if(kvp.Key== enmChipType.YM2612X)
+                        foreach (ClsChip c in kvp.Value)
+                            c.use = false;
+            }
+            else
+            {
+                foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+                    if (kvp.Key == enmChipType.YM2612)
+                        foreach (ClsChip c in kvp.Value)
+                            c.use = false;
+            }
         }
 
         public void LoadVoicedat()
@@ -1810,6 +1836,12 @@ namespace Core
 
             return dat.ToArray();
         }
+
+        public byte[] Xgm_getByteData(Dictionary<string, List<MML>> mmlData, enmLoopExStep loopExStep)
+        {
+            throw new NotImplementedException();
+        }
+
 
         public long GetWaitCounter(int ml)
         {

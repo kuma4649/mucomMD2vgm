@@ -154,18 +154,21 @@ namespace mucomMD2vgm
             textBox1.AppendText("\r\n");
             textBox1.AppendText(string.Format(msg.get("I0110"), msgBox.getErr().Length, msgBox.getWrn().Length));
 
-            if (mv.desVGM.loopSamples != -1)
+            if (isSuccess)
             {
-                textBox1.AppendText(string.Format(msg.get("I0111"), mv.desVGM.loopClock));
+                if (mv.desVGM.loopSamples != -1)
+                {
+                    textBox1.AppendText(string.Format(msg.get("I0111"), mv.desVGM.loopClock));
                     textBox1.AppendText(string.Format(msg.get("I0112")
                         , mv.desVGM.loopSamples
                         , mv.desVGM.loopSamples / 44100L));
-            }
+                }
 
-            textBox1.AppendText(string.Format(msg.get("I0113"), mv.desVGM.lClock));
+                textBox1.AppendText(string.Format(msg.get("I0113"), mv.desVGM.lClock));
                 textBox1.AppendText(string.Format(msg.get("I0114")
                     , mv.desVGM.dSample
                     , mv.desVGM.dSample / 44100L));
+            }
 
             textBox1.AppendText(msg.get("I0126"));
             this.toolStrip1.Enabled = true;
@@ -237,8 +240,8 @@ namespace mucomMD2vgm
 
             Core.log.Write("Disp Result");
 
-            dmy = finishedCompile;
-            this.Invoke(dmy);
+                dmy = finishedCompile;
+                this.Invoke(dmy);
 
             Core.log.Write("end compile thread");
             Core.log.Close();

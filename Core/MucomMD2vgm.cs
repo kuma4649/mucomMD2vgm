@@ -100,9 +100,22 @@ namespace Core
                         return -1;
                     }
 
-                    Disp(msg.get("I04006"));
-                    desBuf = desVGM.Vgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.none);
-                    Disp(msg.get("I04007"));
+                    desVGM.CutYM2612();
+
+                    switch (desVGM.info.format)
+                    {
+                        case enmFormat.VGM:
+                            Disp(msg.get("I04006"));
+                            desBuf = desVGM.Vgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.none);
+                            Disp(msg.get("I04007"));
+                            break;
+                        case enmFormat.XGM:
+                            Disp(msg.get("I04008"));
+                            desBuf = desVGM.Xgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.none);
+                            Disp(msg.get("I04009"));
+                            break;
+                    }
+
                     if (desBuf == null)
                     {
                         msgBox.setErrMsg(string.Format(
@@ -124,9 +137,21 @@ namespace Core
                         return -1;
                     }
 
-                    Disp(msg.get("I04025"));
-                    desBuf = desVGM.Vgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.Inspect);
-                    Disp(msg.get("I04026"));
+                    desVGM.CutYM2612();
+
+                    switch (desVGM.info.format)
+                    {
+                        case enmFormat.VGM:
+                            Disp(msg.get("I04025"));
+                            desBuf = desVGM.Vgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.Inspect);
+                            Disp(msg.get("I04026"));
+                            break;
+                        case enmFormat.XGM:
+                            Disp(msg.get("I04030"));
+                            desBuf = desVGM.Xgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.Inspect);
+                            Disp(msg.get("I04031"));
+                            break;
+                    }
 
                     if (desBuf == null)
                     {
@@ -153,15 +178,27 @@ namespace Core
                         return -1;
                     }
 
+                    desVGM.CutYM2612();
+
                     SetLoopInfo(desVGM, dicLoopInfo);
 
                     //1.ループ無しのパートがすべて演奏完了するまで演奏する
                     //(この間、ループ有りのパートはループ回数を消化しながらループさせる)
                     //2.ループ無しのパートがすべて演奏完了したうえで、ループ有りのパートがループ回数を完全に消化したら、
                     //もう一度ループ回数を充てんし、ループ回数を全て消化するまでループする
-                    Disp(msg.get("I04028"));
-                    desBuf = desVGM.Vgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.Playing);
-                    Disp(msg.get("I04029"));
+                    switch (desVGM.info.format)
+                    {
+                        case enmFormat.VGM:
+                            Disp(msg.get("I04028"));
+                            desBuf = desVGM.Vgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.Playing);
+                            Disp(msg.get("I04029"));
+                            break;
+                        case enmFormat.XGM:
+                            Disp(msg.get("I04032"));
+                            desBuf = desVGM.Xgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.Playing);
+                            Disp(msg.get("I04033"));
+                            break;
+                    }
 
                     if (desBuf == null)
                     {
@@ -176,7 +213,10 @@ namespace Core
 
 
                 Disp(msg.get("I04010"));
-                outFile(desBuf);
+                if (desVGM.info.format == enmFormat.VGM)
+                    outFile(desBuf);
+                else
+                    OutXgmFile(desBuf);
 
 
                 Result();
@@ -187,7 +227,7 @@ namespace Core
             {
                 log.ForcedWrite(ex);
                 msgBox.setErrMsg(string.Format(msg.get("E04005")
-                    , desVGM.lineNumber
+                    , (desVGM == null) ? -1 : desVGM.lineNumber
                     , ex.Message
                     , ex.StackTrace));
                 return -1;
@@ -304,6 +344,108 @@ namespace Core
             return dicLoopInfo;
         }
 
+        private void OutXgmFile(byte[] desBuf)
+        {
+            List<byte> lstBuf = new List<byte>();
+
+            int adr;
+            int sampleDataBlockSize = desBuf[0x100] + desBuf[0x101] * 0x100;
+            int sampleDataBlockAddr = 0x104;
+            adr = sampleDataBlockAddr + sampleDataBlockSize * 256;
+            int musicDataBlockSize = desBuf[adr] + desBuf[adr + 1] * 0x100 + desBuf[adr + 2] * 0x100_00 + desBuf[adr + 3] * 0x100_00_00;
+            int musicDataBlockAddr = sampleDataBlockAddr + sampleDataBlockSize * 256 + 4;
+            int gd3InfoStartAddr = musicDataBlockAddr + musicDataBlockSize;
+            //int dumcnt = 0;
+
+            for (int i = 0; i < desBuf.Length;)
+            {
+
+                byte od = desBuf[i];
+                if (i < musicDataBlockAddr || i >= gd3InfoStartAddr)
+                {
+                    if (i == gd3InfoStartAddr)
+                    {
+                        int newGd3InfoStartAddr = lstBuf.Count;
+                        int newMusicDataBlockSize = newGd3InfoStartAddr - musicDataBlockAddr;
+                        lstBuf[adr] = (byte)newMusicDataBlockSize;
+                        lstBuf[adr + 1] = (byte)(newMusicDataBlockSize >> 8);
+                        lstBuf[adr + 2] = (byte)(newMusicDataBlockSize >> 16);
+                        lstBuf[adr + 3] = (byte)(newMusicDataBlockSize >> 24);
+                    }
+
+                    i++;
+                    lstBuf.Add(od);
+                    continue;
+                }
+
+                byte L = (byte)(od & 0xf);
+                byte H = (byte)(od & 0xf0);
+
+                //dummyコマンド以外は書き込む
+                if (H != 0x60) lstBuf.Add(od);
+
+                i++;
+                switch (H)
+                {
+                    case 0x00://waitコマンド
+                        //Console.WriteLine("Wait command {0:x} adr:{1:x}", H | L, i - 1);
+                        break;
+                    case 0x10://DCSGコマンド
+                        //Console.WriteLine("DCSG command {0:x} adr:{1:x}", H | L, i - 1);
+                        for (int x = 0; x < L + 1; x++) lstBuf.Add(desBuf[i++]);
+                        break;
+                    case 0x20://OPN2 port0
+                    case 0x30://OPN2 port1
+                        //Console.WriteLine("OPN2 p01 command {0:x} adr:{1:x}", H | L, i - 1);
+                        for (int x = 0; x < L + 1; x++)
+                        {
+                            lstBuf.Add(desBuf[i++]);
+                            lstBuf.Add(desBuf[i++]);
+                        }
+                        break;
+                    case 0x40://OPN2 KeyONコマンド
+                        //Console.WriteLine("OPN2 keyon command {0:x} adr:{1:x}", H | L, i - 1);
+                        for (int x = 0; x < L + 1; x++) lstBuf.Add(desBuf[i++]);
+                        break;
+                    case 0x50://OPN2 PCMコマンド
+                        //Console.WriteLine("OPN2 pcm command {0:x} adr:{1:x}", H | L, i - 1);
+                        lstBuf.Add(desBuf[i++]);
+                        break;
+                    //case 0x60://dummyChipコマンド　(第2引数：chipID 第３引数:isSecondary)
+                    //    //TODO: Dummy Command
+                    //    //Console.WriteLine("dummy command {0:x} adr:{1:x}", H | L, i - 1);
+                    //    if (Common.CheckDummyCommand(od.type))//ここで指定できるmmlコマンドは元々はChipに送信することのないコマンドのみ(さもないと、通常のコマンドのデータと見分けがつかなくなる可能性がある)
+                    //    {
+                    //        //lstBuf.Add(desBuf[i++].val);
+                    //        //lstBuf.Add(desBuf[i++].val);
+                    //        i += 2;
+                    //        dumcnt += 3;
+                    //    }
+                    //    break;
+                    case 0x70:
+                        if (L == 0xe)//loop
+                        {
+                            //Console.WriteLine("loop command {0:x} adr:{1:x}", H | L, i - 1);
+                            lstBuf.Add((byte)desVGM.loopOffset);
+                            lstBuf.Add((byte)(desVGM.loopOffset >> 8));
+                            lstBuf.Add((byte)(desVGM.loopOffset >> 16));
+                            i += 3;
+                        }
+                        else if (L == 0xf)//end
+                        {
+                            //Console.WriteLine("end command {0:x} adr:{1:x}", H | L, i - 1);
+                        }
+                        break;
+                    default:
+                        Console.WriteLine("Warning Unkown command {0:x} adr:{1:x}", H | L, i - 1);
+                        break;
+                }
+            }
+
+            byte[] bufs = lstBuf.ToArray();
+            outFile(bufs);
+        }
+
         private void outFile(byte[] desBuf)
         {
             if (Path.GetExtension(desFn).ToLower() != ".vgz")
@@ -352,6 +494,7 @@ namespace Core
                 if (inStream != null) inStream.Dispose();
             }
         }
+
 
         private List<Line> GetSrc(string[] srcBuf, string path)
         {

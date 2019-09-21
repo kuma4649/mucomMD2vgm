@@ -272,6 +272,11 @@ namespace Core
         /// </summary>
         public bool pcm = false;
 
+        /// <summary>
+        /// PCM マッピングモードスイッチ
+        /// </summary>
+        public bool isPcmMap = false;
+
         public float pcmBaseFreqPerFreq = 0.0f;
         public float pcmFreqCountBuffer = 0.0f;
         public long pcmWaitKeyOnCounter = 0L;
@@ -456,6 +461,11 @@ namespace Core
         public clsLoopInfo loopInfo = new clsLoopInfo();
 
         private List<byte> dataBuf = new List<byte>();
+
+        public int pcmMapNo { get; set; } = 0;
+
+
+
         public void OutData(params byte[] data)
         {
             foreach (byte b in data) dataBuf.Add(b);
