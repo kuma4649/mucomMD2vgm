@@ -626,6 +626,7 @@ namespace Core
             int timerB = (int)mml.args[0];
             timerB = Common.CheckRange(timerB, 1, 255);
             parent.info.timerB = (int)timerB;
+
         }
 
         public virtual void CmdTempo(partWork pw, MML mml)
@@ -1315,7 +1316,7 @@ namespace Core
                 pw.waitKeyOnCounter = pw.waitCounter - parent.GetWaitCounter(pw.gatetime);
             if (pw.waitKeyOnCounter < 1)
             {
-                if (pw.chip is YM2612) pw.waitKeyOnCounter = 1;
+                if ((pw.chip is YM2612)|| (pw.chip is YM2612X)) pw.waitKeyOnCounter = 1;
                 else pw.waitKeyOnCounter = pw.waitCounter;
             }
 

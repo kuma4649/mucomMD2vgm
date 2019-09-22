@@ -470,7 +470,10 @@ namespace Core
 
                     int slot = (pw.chip.lstPartWork[2].Ch3SpecialModeKeyOn ? pw.chip.lstPartWork[2].slots : 0x0);
 
-                    pw.OutData(pw.port0, 0x28, (byte)((slot << 4) + 2));
+                    if (pw.chip is YM2612X)
+                        parent.xgmKeyOnData.Add((byte)((slot << 4) + 2));
+                    else
+                        pw.OutData(pw.port0, 0x28, (byte)((slot << 4) + 2));
                 }
                 else
                 {
@@ -478,7 +481,11 @@ namespace Core
                     {
                         byte vch = (byte)((pw.ch > 2) ? pw.ch + 1 : pw.ch);
                         //key off
-                        pw.OutData(pw.port0, 0x28, (byte)(0x00 + (vch & 7)));
+
+                        if (parent.xgmKeyOnData!=null && pw.chip is YM2612X)
+                            parent.xgmKeyOnData.Add((byte)(0x00 + (vch & 7)));
+                        else
+                            pw.OutData(pw.port0, 0x28, (byte)(0x00 + (vch & 7)));
                     }
                 }
 
@@ -597,9 +604,21 @@ namespace Core
 
         public void OutFmKeyOn(partWork pw)
         {
+            if (pw.chip is YM2612X && (pw.ch > 13 || pw.ch == 6) && pw.pcm)
+            {
+                if (!parent.PCMmode)
+                {
+                    pw.freq = -1;//freqをリセット
+                    parent.PCMmode = true;
+                    ((YM2612)(pw.chip)).OutSetCh6PCMMode(pw, true);
+                }
+                ((YM2612X)pw.chip).OutYM2612XPcmKeyON(pw);
+                return;
+            }
+
             int n =  3;
 
-            if (pw.ch != 6 || pw.Type != enmChannelType.FMPCM)
+            if (pw.ch != 6)// || pw.Type != enmChannelType.FMPCM || pw.Type != enmChannelType.FMPCMex)
             {
                 if (pw.ch == 6)
                 {
@@ -617,7 +636,10 @@ namespace Core
 
                     int slot = (pw.chip.lstPartWork[2].Ch3SpecialModeKeyOn ? pw.chip.lstPartWork[2].slots : 0x0);
 
-                    pw.OutData(pw.port0, 0x28, (byte)((slot << 4) + 2));
+                    if (pw.chip is YM2612X)
+                        parent.xgmKeyOnData.Add((byte)((slot << 4) + 2));
+                    else
+                        pw.OutData(pw.port0, 0x28, (byte)((slot << 4) + 2));
                 }
                 else
                 {
@@ -625,7 +647,14 @@ namespace Core
                     {
                         byte vch = (byte)((pw.ch > 2) ? pw.ch + 1 : pw.ch);
                         //key on
-                        pw.OutData(pw.port0, 0x28, (byte)((pw.slots << 4) + (vch & 7)));
+                        if (pw.chip is YM2612X)
+                        {
+                            parent.xgmKeyOnData.Add((byte)((pw.slots << 4) + (vch & 7)));
+                        }
+                        else
+                        {
+                            pw.OutData(pw.port0, 0x28, (byte)((pw.slots << 4) + (vch & 7)));
+                        }
                     }
                 }
 

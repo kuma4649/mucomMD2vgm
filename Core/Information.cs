@@ -24,7 +24,7 @@ namespace Core
         //public const string CLOCKCOUNT = "CLOCKCOUNT";
         public const string FORCEDMONOPARTYM2612 = "FORCEDMONOPARTYM2612";
         public const string VERSION = "MUCOM88";
-        public const string FORMAT = "FORMAT";
+        public const string FORMAT = "FILEFORMAT";
         public const string XGMBASEFRAME = "XGMBASEFRAME";
         public const string OCTAVEREV = "OCTAVE-REV";
         //public const string ISK052539 = "ISK052539";

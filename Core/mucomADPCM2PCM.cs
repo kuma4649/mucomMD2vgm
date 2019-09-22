@@ -9,10 +9,11 @@ namespace Core
     public static class mucomADPCM2PCM
     {
         public static List<mucomPCMInfo> lstMucomPCMInfo;
-        private static uint SamplingRate = 8000;
+        private static uint vgmSamplingRate = 8000;
+        private static uint xgmSamplingRate = 14000;
         private static MDSound.MDSound mds = null;
 
-        public static void initial(byte[] mucompcmbin)
+        public static void initial(byte[] mucompcmbin,enmFormat format)
         {
             uint samplingBuffer = 1024;
             MDSound.MDSound.Chip[] chips = new MDSound.MDSound.Chip[1];
@@ -27,13 +28,13 @@ namespace Core
             chip.Start = ym2608.Start;
             chip.Stop = ym2608.Stop;
             chip.Reset = ym2608.Reset;
-            chip.SamplingRate = SamplingRate;
+            chip.SamplingRate = format == enmFormat.VGM ? vgmSamplingRate : xgmSamplingRate;
             chip.Clock = 7987200;
             chip.Volume = 0;
             chip.Option = null;
             chips[0] = chip;
 
-            mds = new MDSound.MDSound(SamplingRate, samplingBuffer, chips);
+            mds = new MDSound.MDSound(format == enmFormat.VGM ? vgmSamplingRate : xgmSamplingRate, samplingBuffer, chips);
 
             mds.WriteYM2608(0, 0, 0x2d, 0x00);
             mds.WriteYM2608(0, 0, 0x29, 0x82);

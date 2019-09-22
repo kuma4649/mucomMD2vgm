@@ -115,6 +115,7 @@ namespace mucomMD2vgm
                 {
                     foreach (ClsChip chip in kvp.Value)
                     {
+                        if (chip == null) continue;
                         List<partWork> pw = chip.lstPartWork;
                         for (int i = 0; i < pw.Count; i++)
                         {
@@ -180,7 +181,10 @@ namespace mucomMD2vgm
                 {
                     try
                     {
-                        Process.Start(Path.ChangeExtension(args[1], Properties.Resources.ExtensionVGM));
+                        if (mv.desVGM.info.format == enmFormat.VGM)
+                            Process.Start(Path.ChangeExtension(args[1], Properties.Resources.ExtensionVGM));
+                        else
+                            Process.Start(Path.ChangeExtension(args[1], Properties.Resources.ExtensionXGM));
                     }
                     catch (Exception)
                     {

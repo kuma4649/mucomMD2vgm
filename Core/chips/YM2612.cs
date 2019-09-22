@@ -373,7 +373,7 @@ namespace Core
 
             if (type == 'N')
             {
-                if (pw.ch==6 && pw.Type== enmChannelType.FMPCM)
+                if (pw.ch == 6 && (pw.Type == enmChannelType.FMPCM || pw.Type == enmChannelType.FMPCMex))
                 {
                     pw.instrument = n;
                     if (!parent.instPCM.ContainsKey(n))
@@ -382,7 +382,7 @@ namespace Core
                     }
                     else
                     {
-                        if (parent.instPCM[n].chip != enmChipType.YM2612)
+                        if ((parent.instPCM[n].chip != enmChipType.YM2612)&& (parent.instPCM[n].chip != enmChipType.YM2612X))
                         {
                             msgBox.setErrMsg(string.Format(msg.get("E20003"), n), pw.getSrcFn(), pw.getLineNumber());
                         }

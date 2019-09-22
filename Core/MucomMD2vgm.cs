@@ -620,7 +620,7 @@ namespace Core
                             , 0
                             , pds.DatLoopAdr
                             , false
-                            , 8000);
+                            , desVGM.info.format == enmFormat.VGM ? 8000 : 14000);
                         desVGM.instPCM.Add(pds.No, v);
 
                         mucomADPCM2PCM.mucomPCMInfo info = null;
@@ -659,7 +659,8 @@ namespace Core
                             , new KeyValuePair<int, clsPcm>(pds.No, v)
                             , buf
                             , false
-                            , 8000);
+                            , desVGM.info.format == enmFormat.VGM ? 8000 : 14000
+                            );
 
                         break;
                     case enmPcmDefineType.RawData:

@@ -136,6 +136,10 @@ I04026= INSPECT : End   VGM_GetByteData
 I04027= PLAYING : MML文法解析
 I04028= PLAYING : Start VGM_GetByteData
 I04029= PLAYING : End   VGM_GetByteData
+I04030=INSPECT : Start XGM_GetByteData
+I04031=INSPECT : End   XGM_GetByteData
+I04032=PLAYING : Start XGM_GetByteData
+I04033=PLAYING : End   XGM_GetByteData
 
 E04000=ファイルが見つかりません。
 E04001=想定外のエラー　ソースファイルの取得に失敗
@@ -266,6 +270,9 @@ E10019=この音源はInstrumentを持っていません。
 E10020=Tone DoublerはOPN,OPM音源以外では使用できません。
 E10021=未定義の音色(@{0})を指定しています。
 E10022=このパートではso,sfコマンドは使用できません。
+E10023=このパートではmon,mofコマンドは使用できません。
+E10024=指定されたPCM Map番号({0})は未定義です。
+E10025=指定された音符(o{0}{1} shift:{2})はPCMが未定義です。
 
 
 ;clsOPN.cs 11000

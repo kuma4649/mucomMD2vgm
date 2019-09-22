@@ -32,7 +32,7 @@ namespace Core
         public Dictionary<string, List<Line>> partData = new Dictionary<string, List<Line>>();
         public Dictionary<int, Line> aliesData = new Dictionary<int, Line>();
 
-        private int instrumentCounter = -1;
+        //private int instrumentCounter = -1;
         private byte[] instrumentBufCache = new byte[Const.INSTRUMENT_SIZE];
         private int toneDoublerCounter = -1;
         private List<int> toneDoublerBufCache = new List<int>();
@@ -62,13 +62,13 @@ namespace Core
 
             conductor = new Conductor[] { new Conductor(this, 0, "Cn", stPath, false) };
             ym2612 = new YM2612[] { new YM2612(this, 0, "F", stPath, false) };
-            sn76489 = new SN76489[] { new SN76489(this, 0, "S", stPath, false) };
             ym2612x = new YM2612X[] { new YM2612X(this, 0, "E", stPath, false) };
+            sn76489 = new SN76489[] { new SN76489(this, 0, "S", stPath, false) };
 
             chips.Add(enmChipType.CONDUCTOR, conductor);
             chips.Add(enmChipType.YM2612, ym2612);
-            chips.Add(enmChipType.SN76489, sn76489);
             chips.Add(enmChipType.YM2612X, ym2612x);
+            chips.Add(enmChipType.SN76489, sn76489);
 
             List<clsTD> lstTD = new List<clsTD>
             {
@@ -204,18 +204,18 @@ namespace Core
             }
 
             byte[] pcmdat = File.ReadAllBytes(decidePcm);
-            mucomADPCM2PCM.initial(pcmdat);
+            mucomADPCM2PCM.initial(pcmdat, info.format);
             List<mucomADPCM2PCM.mucomPCMInfo> lstInfo = mucomADPCM2PCM.lstMucomPCMInfo;
 
-            foreach (mucomADPCM2PCM.mucomPCMInfo info in lstInfo)
+            foreach (mucomADPCM2PCM.mucomPCMInfo pinfo in lstInfo)
             {
                 clsPcmDatSeq pds = new clsPcmDatSeq(
                     enmPcmDefineType.Mucom88
-                    , info.no
-                    , info.name
-                    , 8000
+                    , pinfo.no
+                    , pinfo.name
+                    , info.format == enmFormat.VGM ? 8000 : 14000
                     , 150
-                    , enmChipType.YM2612
+                    , info.format == enmFormat.VGM ? enmChipType.YM2612 : enmChipType.YM2612X
                     , false
                     , -1
                     );
@@ -461,7 +461,7 @@ namespace Core
                 case 'E':
                     try
                     {
-                        instrumentCounter = -1;
+                        //instrumentCounter = -1;
                         string[] vs = s.Substring(1).Trim().Split(new string[] { "," }, StringSplitOptions.None);
                         int[] env = null;
                         env = new int[9];
@@ -503,7 +503,7 @@ namespace Core
                 case 'T':
                     try
                     {
-                        instrumentCounter = -1;
+                        //instrumentCounter = -1;
 
                         if (s.ToUpper()[1] != 'D') return 0;
 
@@ -567,7 +567,7 @@ namespace Core
         /// </summary>
         private void definePCMInstrumentEasy(string srcFn, int lineNumber, string[] vs)
         {
-            instrumentCounter = -1;
+            //instrumentCounter = -1;
             enmChipType enmChip = enmChipType.YM2612;
 
             int num = Common.ParseNumber(vs[0]);
@@ -1078,7 +1078,7 @@ namespace Core
 
                 instFM.Add(voi.No, voi);
 
-                instrumentCounter = -1;
+                //instrumentCounter = -1;
             }
             catch
             {
@@ -1512,6 +1512,34 @@ namespace Core
 
         private Random rnd = new Random();
 
+        /// <summary>
+        /// ダミーコマンドの総バイト数
+        /// </summary>
+        public long dummyCmdCounter = 0;
+        /// <summary>
+        /// ダミーコマンドの総クロック数
+        /// </summary>
+        public long dummyCmdClock = 0;
+        /// <summary>
+        /// ダミーコマンドの総サンプル数
+        /// </summary>
+        public long dummyCmdSample = 0;
+        /// <summary>
+        /// ダミーコマンドを含むLoopOffset
+        /// </summary>
+        public long dummyCmdLoopOffset = 0;
+        /// <summary>
+        /// ダミーコマンドを含むLoopOffset
+        /// </summary>
+        public long dummyCmdLoopClock = 0;
+        /// <summary>
+        /// ダミーコマンドを含むLoopOffset
+        /// </summary>
+        public long dummyCmdLoopSamples = 0;
+        public long dummyCmdLoopOffsetAddress = 0;
+
+
+
         public byte[] Vgm_getByteData(Dictionary<string, List<MML>> mmlData, enmLoopExStep loopExStep)
         {
             this.loopExStep = loopExStep;
@@ -1839,9 +1867,816 @@ namespace Core
 
         public byte[] Xgm_getByteData(Dictionary<string, List<MML>> mmlData, enmLoopExStep loopExStep)
         {
-            throw new NotImplementedException();
+            if (ym2612x == null || ym2612x[0] == null) return null;
+
+            //PartInit();
+            this.loopExStep = loopExStep;
+
+            dat = new List<byte>();
+            xdat = new List<byte>();
+
+            log.Write("ヘッダー情報作成(XGM)");
+            Xgm_makeHeader();
+
+            int endChannel = 0;
+            int totalChannel = 0;
+            foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+            {
+                foreach (ClsChip chip in kvp.Value)
+                {
+                    if (chip == null) continue;
+                    if (chip.ShortName != "OPN2X" && chip.ShortName != "DCSG")
+                    {
+                        foreach (partWork pw in chip.lstPartWork) pw.chip.use = false;
+                    }
+                    totalChannel += chip.ChMax;
+                }
+            }
+
+            //workの初期化
+            useJumpCommand = 0;
+            PCMmode = false;
+            dSample = 0.0;
+            lClock = 0L;
+            sampleB = 0.0;
+            lyric = "";
+            unusePartEndCount = 0;
+            lastRendFinished = false;
+
+            loopOffset = -1L;
+            loopClock = -1L;
+            loopSamples = -1L;
+
+            log.Write("MML解析開始(XGM)");
+            long waitCounter;
+            do
+            {
+                //KeyOnリストをクリア
+                xgmKeyOnData = new List<byte>();
+
+                foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+                {
+                    foreach (ClsChip chip in kvp.Value)
+                    {
+                        if (chip == null) continue;
+                        log.Write(string.Format("Chip [{0}]", chip.Name));
+
+                        //未使用のchipの場合は処理を行わない
+                        if (!chip.use) continue;
+
+                        //chip毎の処理
+                        Xgm_procChip(chip);
+                    }
+                }
+
+                log.Write("全パートのうち次のコマンドまで一番近い値を求める");
+                waitCounter = Xgm_procCheckMinimumWaitCounter();
+
+                foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+                {
+                    foreach (ClsChip chip in kvp.Value)
+                    {
+                        foreach (partWork pw in chip.lstPartWork)
+                        {
+                            if (!isLoopEx || (isLoopEx && !lastRendFinished))
+                            {
+                                OutData(pw.GetData());
+                            }
+                            pw.Flash();
+                        }
+                    }
+                }
+                log.Write("KeyOn情報をかき出し");
+                foreach (byte dat in xgmKeyOnData)
+                    OutData(0x52, 0x28, dat);
+
+                if (isLoopEx && lastRendFinished) waitCounter = 0;
+
+                log.Write("全パートのwaitcounterを減らす");
+                if (waitCounter != long.MaxValue)
+                {
+                    //wait処理
+                    Xgm_procWait(waitCounter);
+                }
+
+                if (isLoopEx)
+                {
+                    if (dSample >= rendSecond * info.xgmSamplesPerSecond)
+                    {
+                        break;
+                    }
+                }
+
+                log.Write("終了パートのカウント");
+                endChannel = 0;
+                foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+                {
+                    foreach (ClsChip chip in kvp.Value)
+                    {
+                        if (chip == null) continue;
+
+                        foreach (partWork pw in chip.lstPartWork)
+                        {
+                            //未使用のチップの場合は終了したものとしてカウント
+                            if (!pw.chip.use)
+                            {
+                                endChannel++;
+                                continue;
+                            }
+                            //データが終わっていない場合はノーカウント
+                            if (!pw.dataEnd) continue;
+
+                            if (!pw.loopInfo.use && pw.mmlData != null && pw.mmlData.Count > 0)
+                            {
+                                unusePartEndCount++;
+                            }
+
+                            if (loopOffset != -1 && pw.envIndex == 3)
+                            {
+                                endChannel++;
+                                continue;
+                            }
+
+                            if (pw.waitCounter < 1)
+                            {
+                                //Lコマンド後の演奏時間が一番長いパートが終わった場合は強制オールカウント
+                                if (pw.loopInfo.isLongMml) endChannel = totalChannel;
+
+                                endChannel++;
+                                continue;
+                            }
+
+                            //if (!isLoopEx || loopExStep != enmLoopExStep.Playing)
+                            //{
+                            //    if (loopOffset != -1 && pw.envIndex == 3) endChannel++;
+
+                            //    continue;
+                            //}
+
+                            //if (pw.envIndex == 3)
+                            //{
+                            //    endChannel++;
+                            //    continue;
+                            //}
+
+
+                            //endChannel++;
+
+                        }
+                    }
+                }
+
+            } while (endChannel < totalChannel);//全てのチャンネルが終了していない場合はループする
+
+            if (loopClock != -1 && waitCounter > 0 && waitCounter != long.MaxValue)
+            {
+                long waitSample = (long)(waitCounter * (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * info.xgmSamplesPerSecond);
+                lClock -= waitCounter;
+                dSample -= waitSample;
+            }
+
+            //foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+            //{
+            //    foreach (ClsChip chip in kvp.Value)
+            //    {
+            //        foreach (partWork pw in chip.lstPartWork)
+            //        {
+            //            if (!isLoopEx || (isLoopEx && !lastRendFinished))
+            //            {
+            //                OutData(pw.GetData());
+            //            }
+            //            pw.Flash();
+            //        }
+            //    }
+            //}
+            //log.Write("KeyOn情報をかき出し");
+            //foreach (byte dat in xgmKeyOnData)
+            //    OutData(0x52, 0x28, dat);
+
+            log.Write("VGMデータをXGMへコンバート");
+            dat = ConvertVGMtoXGM(dat);
+
+            log.Write("フッター情報の作成");
+            Xgm_makeFooter();
+
+            return dat.ToArray();
         }
 
+        private void Xgm_makeHeader()
+        {
+            if (ym2612x == null || ym2612x[0] == null) return;
+
+            //Header
+            foreach (byte b in Const.xhDat)
+            {
+                xdat.Add(b);
+            }
+
+            //FM音源を初期化
+
+            ym2612x[0].OutOPNSetHardLfo( ym2612x[0].lstPartWork[0], false, 0);
+            ym2612x[0].OutOPNSetCh3SpecialMode( ym2612x[0].lstPartWork[0], false);
+            ym2612x[0].OutSetCh6PCMMode( ym2612x[0].lstPartWork[0], false);
+            ym2612x[0].OutFmAllKeyOff();
+
+            foreach (partWork pw in ym2612x[0].lstPartWork)
+            {
+                if (pw.ch == 0)
+                {
+                    pw.hardLfoSw = false;
+                    pw.hardLfoNum = 0;
+                    ym2612x[0].OutOPNSetHardLfo(pw, pw.hardLfoSw, pw.hardLfoNum);
+                }
+
+                if (pw.ch < 6)
+                {
+                    pw.pan.val = 3;
+                    pw.ams = 0;
+                    pw.fms = 0;
+                    if (!pw.dataEnd) ym2612x[0].OutOPNSetPanAMSPMS(pw, 3, 0, 0);
+                }
+            }
+        }
+
+        private void Xgm_makeFooter()
+        {
+
+            //$0004               Sample id table
+            uint ptr = 0;
+            int n = 4;
+            foreach (clsPcm p in instPCM.Values)
+            {
+                if (p.chip != enmChipType.YM2612X) continue;
+
+                uint stAdr = ptr;
+                uint size = (uint)p.size;
+                //if (size > (uint)p.xgmMaxSampleCount + 1)
+                //{
+                //size = (uint)p.xgmMaxSampleCount + 1;
+                //size = (uint)((size & 0xffff00) + (size % 0x100 != 0 ? 0x100 : 0x0));
+                //}
+                p.size = size;
+
+                xdat[n + 0] = (byte)((stAdr / 256) & 0xff);
+                xdat[n + 1] = (byte)(((stAdr / 256) & 0xff00) >> 8);
+                xdat[n + 2] = (byte)((size / 256) & 0xff);
+                xdat[n + 3] = (byte)(((size / 256) & 0xff00) >> 8);
+
+                ptr += size;
+                n += 4;
+            }
+
+            //$0100               Sample data bloc size / 256
+            if (ym2612x[0].pcmDataEasy != null)
+            {
+                xdat[0x100] = (byte)((ptr / 256) & 0xff);
+                xdat[0x101] = (byte)(((ptr / 256) & 0xff00) >> 8);
+            }
+            else
+            {
+                xdat[0x100] = 0;
+                xdat[0x101] = 0;
+            }
+
+            //$0103 bit #0: NTSC / PAL information
+            xdat[0x103] = (byte)(xdat[0x103] | (byte)(info.xgmSamplesPerSecond == 50 ? 1 : 0));
+
+            //$0104               Sample data block
+            if (ym2612x[0].pcmDataEasy != null)
+            {
+                foreach (clsPcm p in instPCM.Values)
+                {
+                    if (p.chip != enmChipType.YM2612X) continue;
+
+                    for (uint cnt = 0; cnt < p.size; cnt++)
+                    {
+                        xdat.Add(ym2612x[0].pcmDataEasy[p.stAdr + cnt]);
+                    }
+
+                }
+            }
+
+            dummyCmdLoopOffsetAddress += xdat.Count + 4;
+
+            if (dat != null)
+            {
+                //$0104 + SLEN        Music data bloc size.
+                xdat.Add((byte)((dat.Count & 0xff) >> 0));
+                xdat.Add((byte)((dat.Count & 0xff00) >> 8));
+                xdat.Add((byte)((dat.Count & 0xff0000) >> 16));
+                xdat.Add((byte)((dat.Count & 0xff000000) >> 24));
+
+                //$0108 + SLEN        Music data bloc
+                foreach (byte b in dat)
+                {
+                    //Console.WriteLine("{0:x2}", b.val);
+                    xdat.Add(b);
+                }
+            }
+            else
+            {
+                xdat.Add(0);
+                xdat.Add(0);
+                xdat.Add(0);
+                xdat.Add(0);
+            }
+
+            //$0108 + SLEN + MLEN GD3 tags
+            GD3maker gd3 = new GD3maker();
+            gd3.make(xdat, info, lyric);
+
+            dat = xdat;
+        }
+
+        private void Xgm_procChip(ClsChip chip)
+        {
+            if (chip == null) throw new ArgumentNullException();
+
+            foreach (partWork pw in chip.lstPartWork)
+            {
+                log.Write("KeyOff");
+                ProcKeyOff(pw);
+
+                log.Write("Bend");
+                ProcBend(pw);
+
+                log.Write("Lfo");
+                ProcLfo(pw);
+
+                log.Write("Envelope");
+                ProcEnvelope(pw);
+
+                pw.chip.SetFNum(pw);
+                //pw.chip.SetVolume(pw);
+
+                log.Write("wait消化待ち");
+                if (pw.waitCounter > 0) continue;
+
+                log.Write("データは最後まで実施されたか");
+                if (pw.dataEnd) continue;
+
+                log.Write("パートのデータがない場合は何もしないで次へ");
+                if (pw.mmlData == null || pw.mmlData.Count < 1)
+                {
+                    pw.dataEnd = true;
+                    continue;
+                }
+
+                log.Write("コマンド毎の処理を実施");
+                while (pw.waitCounter == 0 && !pw.dataEnd)
+                {
+                    if (pw.mmlPos >= pw.mmlData.Count)
+                    {
+                        if (!isLoopEx || loopExStep != enmLoopExStep.Playing)
+                        {
+                            pw.dataEnd = true;
+                        }
+                        else
+                        {
+                            if (!pw.loopInfo.use)
+                            {
+                                pw.dataEnd = true;
+                            }
+                            else if (pw.loopInfo.isLongMml)
+                            {
+                                pw.loopInfo.loopCount--;
+                                if (pw.loopInfo.loopCount == 0)
+                                {
+                                    if (unusePartEndCount == loopUnusePartCount)
+                                    {
+                                        if (pw.loopInfo.lastOne)
+                                        {
+                                            pw.dataEnd = true;
+                                            lastRendFinished = true;
+                                            pw.Flash();
+                                        }
+                                        else
+                                        {
+                                            pw.loopInfo.loopCount = pw.loopInfo.playingTimes;
+                                            pw.loopInfo.lastOne = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        pw.loopInfo.loopCount = pw.loopInfo.playingTimes;
+                                    }
+                                }
+                            }
+
+                            pw.mmlPos = pw.loopInfo.mmlPos;
+                        }
+                    }
+                    else
+                    {
+                        MML mml = pw.mmlData[pw.mmlPos];
+                        //lineNumber = pw.getLineNumber();
+                        Commander(pw, mml);
+                    }
+                }
+            }
+        }
+
+        private long Xgm_procCheckMinimumWaitCounter()
+        {
+            long cnt = long.MaxValue;
+
+            foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+            {
+                foreach (ClsChip chip in kvp.Value)
+                {
+                    if (chip == null) continue;
+                    if (!chip.use) continue;
+
+                    foreach (partWork pw in chip.lstPartWork)
+                    {
+                        //note
+                        if (pw.waitKeyOnCounter > 0) cnt = Math.Min(cnt, pw.waitKeyOnCounter);
+                        else if (pw.waitCounter > 0) cnt = Math.Min(cnt, pw.waitCounter);
+
+                        //bend
+                        if (pw.bendWaitCounter != -1) cnt = Math.Min(cnt, pw.bendWaitCounter);
+
+                        //lfoとenvelopeは音長によるウエイトカウントが存在する場合のみ対象にする。(さもないと、曲のループ直前の効果を出せない)
+                        if (cnt < 1) continue;
+
+                        //lfo
+                        for (int lfo = 0; lfo < 1; lfo++)
+                        {
+                            if (!pw.lfo[lfo].sw) continue;
+                            if (pw.lfo[lfo].waitCounter == -1) continue;
+
+                            cnt = Math.Min(cnt, pw.lfo[lfo].waitCounter);
+                        }
+
+                        //envelope
+                        if (!(pw.chip is SN76489)) continue;
+                        if (pw.envelopeMode && pw.envIndex != -1) cnt = Math.Min(cnt, GetWaitCounter(1));
+                    }
+                }
+            }
+
+            return cnt;
+        }
+
+        private void Xgm_procWait(long cnt)
+        {
+            foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+            {
+                foreach (ClsChip chip in kvp.Value)
+                {
+                    if (chip == null) continue;
+                    if (!chip.use) continue;
+
+                    foreach (partWork pw in chip.lstPartWork)
+                    {
+                        if (pw.waitKeyOnCounter > 0) pw.waitKeyOnCounter -= cnt;
+                        if (pw.waitCounter > 0) pw.waitCounter -= cnt;
+                        if (pw.bendWaitCounter > 0) pw.bendWaitCounter -= cnt;
+
+                        for (int lfo = 0; lfo < 1; lfo++)
+                        {
+                            if (!pw.lfo[lfo].sw) continue;
+                            if (pw.lfo[lfo].waitCounter == -1) continue;
+
+                            if (pw.lfo[lfo].waitCounter > 0)
+                            {
+                                pw.lfo[lfo].waitCounter -= cnt;
+                                if (pw.lfo[lfo].waitCounter < 0) pw.lfo[lfo].waitCounter = 0;
+                            }
+                        }
+
+                        if (pw.pcmWaitKeyOnCounter > 0)
+                        {
+                            pw.pcmWaitKeyOnCounter -= cnt;
+                        }
+
+                        long sample = (long)(cnt * (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * info.xgmSamplesPerSecond);
+
+                        if (pw.chip.use && !pw.dataEnd)
+                        {
+                            pw.clockCounter += cnt;
+                            pw.totalSamples += sample;
+                            if (pw.loopInfo.use) pw.loopInfo.length += cnt;
+                        }
+
+                        //if (!(pw.chip is SN76489)) continue;
+                        //if (pw.envelopeMode && pw.envIndex != -1) pw.envCounter -= (int)cnt;
+                    }
+                }
+            }
+
+            foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+            {
+                foreach (ClsChip chip in kvp.Value)
+                {
+                    foreach (partWork pw in chip.lstPartWork)
+                    {
+                        if (!isLoopEx || (isLoopEx && !lastRendFinished))
+                        {
+                            OutData(pw.GetData());
+                        }
+                        pw.Flash();
+                    }
+                }
+            }
+
+            if (useJumpCommand == 0)
+            {
+                info.samplesPerClock = (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * info.xgmSamplesPerSecond;// info.xgmSamplesPerSecond * 60.0 * 4.0 / (info.tempo * info.clockCount);
+                // wait発行
+                lClock += cnt;
+                dSample += (long)(info.samplesPerClock * cnt);
+                //Console.WriteLine("pw.ch{0} lclock{1}", ym2612x[0].lstPartWork[0].clockCounter, lClock);
+
+                sampleB += info.samplesPerClock * cnt;
+                OutWaitNSamples((long)(sampleB));
+                sampleB -= (long)sampleB;
+            }
+        }
+
+        private List<byte> ConvertVGMtoXGM(List<byte> src)
+        {
+            if (src == null || src.Count < 1) return null;
+
+            List<byte> des = new List<byte>();
+            loopOffset = -1;
+
+            int[][] opn2reg = new int[2][] { new int[0x100], new int[0x100] };
+            for (int i = 0; i < 512; i++) opn2reg[i / 0x100][i % 0x100] = -1;
+            byte?[] psgreg = new byte?[16];
+            int psgch = -1;
+            int psgtp = -1;
+            //for (int i = 0; i < 16; i++) psgreg[i] = -1;
+            int framePtr = 0;
+            int frameCnt = 0;
+            int frameDummyCounter = 0;
+            byte od;
+            dummyCmdCounter = 0;
+
+            for (int ptr = 0; ptr < src.Count; ptr++)
+            {
+
+                byte cmd = src[ptr];
+                int p;
+                int c;
+
+                switch (cmd)
+                {
+                    case 0x61: //Wait
+
+                        if (psgtp != -1)
+                        {
+                            p = des.Count;
+                            c = 0;
+                            od = 0x10;
+                            des.Add(od);
+                            for (int j = 0; j < 16; j++)
+                            {
+                                if (psgreg[j] == null) continue;
+                                int latch = (j & 1) == 0 ? 0x80 : 0;
+                                int ch = (j & 0x0c) << 3;
+                                int tp = (j & 2) << 3;
+                                od = (byte)(latch | (latch != 0 ? (ch | tp) : 0) | psgreg[j]);
+                                des.Add(od);
+                                c++;
+                            }
+                            c--;
+                            des[p] |= (byte)c;
+
+                            psgch = -1;
+                            psgtp = -1;
+                            for (int i = 0; i < 16; i++) psgreg[i] = null;
+                        }
+
+                        if (des.Count - frameDummyCounter - framePtr > 256)
+                        {
+                            msgBox.setWrnMsg(string.Format(msg.get("E01015"), frameCnt, des.Count - frameDummyCounter - framePtr));
+                        }
+                        framePtr = des.Count;
+                        frameDummyCounter = 0;
+
+                        int cnt = src[ptr + 1] + src[ptr + 2] * 0x100;
+                        for (int j = 0; j < cnt; j++)
+                        {
+                            //wait
+                            od = 0x00;
+                            des.Add(od);
+                            frameCnt++;
+                        }
+                        ptr += 2;
+                        break;
+                    case 0x50: //DCSG
+                        do
+                        {
+                            bool latch = (src[ptr + 1] & 0x80) != 0;
+                            int ch = (src[ptr + 1] & 0x60) >> 5;
+                            int tp = (src[ptr + 1] & 0x10) >> 3;
+                            int d1 = (src[ptr + 1] & 0xf);
+                            int d2 = (src[ptr + 1] & 0x3f);
+                            if (latch)
+                            {
+                                psgch = ch;
+                                psgtp = tp;
+                                psgreg[ch * 4 + 0 + tp] = (byte)d1;
+                            }
+                            else
+                            {
+                                if (psgch != -1)
+                                {
+                                    psgreg[psgch * 4 + 1 + psgtp] = (byte)d2;
+                                }
+                                psgch = -1;
+                            }
+                            ptr += 2;
+                        } while (ptr < src.Count - 1 && src[ptr] == 0x50);
+                        ptr--;
+                        break;
+                    case 0x52: //YM2612 Port0
+                        //送信しようとしているデータがすでにチップに送ったものと同じかどうかチェックする。
+                        //同じ場合は送信しない(データサイズ的には圧縮されることになる)
+                        //また、キーオン(0x28)の場合は別のコマンドになる
+                        if (opn2reg[0][src[ptr + 1]] != src[ptr + 2] || src[ptr + 1] == 0x28)
+                        {
+                            bool isKeyOn = src[ptr + 1] == 0x28;
+                            if (!isKeyOn)
+                            {
+                                //キーオンではない場合は、キーオン以外のデータが続くものとして処理する
+                                p = des.Count;
+                                c = 0;
+
+                                //0x20(OPN2のデータが続くことを示すデータ)を書く
+                                od = 0x20;
+                                des.Add(od);
+
+                                do
+                                {
+                                    //送信しようとしているデータがすでにチップに送ったものと同じかどうかチェックする。
+                                    //同じ場合は送信しない(データサイズ的には圧縮されることになる)
+                                    //(ループに入った初回は、違うことが保証されているがそれ以降は調べる必要がある)
+                                    if (opn2reg[0][src[ptr + 1]] != src[ptr + 2])
+                                    {
+                                        //F-numの場合は圧縮対象外
+                                        if (src[ptr + 1] < 0xa0 || src[ptr + 1] >= 0xb0) opn2reg[0][src[ptr + 1]] = src[ptr + 2];
+
+                                        //OPN2アドレスの書き込み
+                                        od = src[ptr + 1];
+                                        des.Add(od);
+                                        //Console.WriteLine("{0:x2}", od.val);
+                                        //OPN2値の書き込み
+                                        od = src[ptr + 2];
+                                        des.Add(od);
+                                        //Console.WriteLine("    {0:x2}", od.val);
+                                        c++;
+                                    }
+
+                                    //次の命令へ移るため3足す(vgmではOPN2の命令長が3byte固定のため)
+                                    ptr += 3;
+
+                                } while (c < 16 //圧縮は最大16個
+                                    && ptr < src.Count - 1 //ポインターがデータ内であることをチェック
+                                    && src[ptr] == 0x52 //次の命令がOPN2の命令である間はループ
+                                    && src[ptr + 1] != 0x28 //しかしキーオン(0x28)の場合はループから抜ける
+                                    );
+                                c--;//cは0x0～0xfで1～16個を表すため-1する
+                                ptr--;//ptrはfor文で必ず+1されるのでその分引いておく
+                                des[p] |= (byte)c;//命令に圧縮できた個数を論理和
+                            }
+                            else
+                            {
+                                //キーオンの場合は、そのデータが続くものとして処理する
+                                p = des.Count;
+                                c = 0;
+
+                                //0x40(OPN2のキーオンのデータが続くことを示すデータ)を書く
+                                od = 0x40;
+                                des.Add(od);
+                                do
+                                {
+                                    //des.Add(src[ptr + 1]);
+                                    od = src[ptr + 2];
+                                    des.Add(od);
+                                    c++;
+                                    ptr += 3;
+                                } while (c < 16
+                                    && ptr < src.Count - 1
+                                    && src[ptr] == 0x52
+                                    && src[ptr + 1] == 0x28
+                                    );
+                                c--;
+                                ptr--;
+                                des[p] |= (byte)c;
+                            }
+                        }
+                        else
+                        {
+                            //次の命令へ
+                            ptr += 2;
+                        }
+                        break;
+                    case 0x53: //YM2612 Port1
+                        if (opn2reg[1][src[ptr + 1]] != src[ptr + 2])
+                        {
+
+                            p = des.Count;
+                            c = 0;
+                            od = 0x30;
+                            des.Add(od);
+                            do
+                            {
+                                if (opn2reg[1][src[ptr + 1]] != src[ptr + 2])
+                                {
+                                    //F-numの場合は圧縮対象外
+                                    if (src[ptr + 1] < 0xa0 || src[ptr + 1] >= 0xb0) opn2reg[1][src[ptr + 1]] = src[ptr + 2];
+                                    od = src[ptr + 1];
+                                    des.Add(od);
+                                    od = src[ptr + 2];
+                                    des.Add(od);
+                                    c++;
+                                }
+                                ptr += 3;
+                            } while (c < 16 && ptr < src.Count - 1 && src[ptr] == 0x53);
+                            c--;
+                            ptr--;
+                            des[p] |= (byte)c;
+                        }
+                        else
+                        {
+                            ptr += 2;
+                        }
+                        break;
+                    case 0x54: //PCM KeyON (YM2151)
+                        //mml2vgmではxgmを生成するとき0x54を4重PCMのコマンドに割り当てている。(本体はvgmではOPMのコマンド)
+                        od = src[ptr + 1];
+                        des.Add(od);
+                        od =  src[ptr + 2];
+                        des.Add(od);
+                        ptr += 2;
+                        break;
+                    case 0x7e: //LOOP Point
+                        loopOffset = des.Count - dummyCmdCounter;//ダミーコマンドを抜いた場合のオフセット値
+                        dummyCmdLoopOffset = des.Count;//ダミーコマンド込みのオフセット値
+                        dummyCmdLoopOffsetAddress = ptr;//ソースのループコマンドが存在するアドレス
+
+                        //ループ後のレジスタに反応するために現在の値を全て初期化する
+                        //さもなくばループ後に音色が変わらないなどの現象が発生する
+                        for (int i = 0; i < 512; i++) opn2reg[i / 0x100][i % 0x100] = -1;
+
+                        break;
+                    case 0x2f:
+                        //TODO: Dummy Command
+                        //dummyコマンドの除去はmml2vgm.cs:OutXgmFileで行う。
+                        if (cmd == 0x2f //dummyChipコマンド　(第2引数：chipID 第３引数:isSecondary)
+                            //&& Common.CheckDummyCommand(cmd.type)//ここで指定できるmmlコマンドは元々はChipに送信することのないコマンドのみ(さもないと、通常のコマンドのデータと見分けがつかなくなる可能性がある)
+                            )
+                        {
+                            src[ptr] = 0x60;//XGM向けダミーコマンド
+                            des.Add(src[ptr]);
+                            des.Add(src[ptr + 1]);
+                            des.Add(src[ptr + 2]);
+                            ptr += 2;
+                            dummyCmdCounter += 3;
+                            frameDummyCounter += 3;
+                        }
+                        else
+                        {
+                            ;
+                        }
+
+                        break;
+                    default:
+                        msgBox.setErrMsg(string.Format("Unknown command[{0:X}]", cmd));
+                        return null;
+                }
+            }
+
+            if (loopOffset == -1 || loopOffset == des.Count)
+            {
+                od = 0x7f;
+                des.Add(od);
+            }
+            else
+            {
+                dummyCmdLoopOffsetAddress = des.Count;
+                od = 0x7e;
+                des.Add(od);
+
+                //od = new outDatum(enmMMLType.unknown, null, null, (byte)loopOffset);
+                //des.Add(od);
+                //od = new outDatum(enmMMLType.unknown, null, null, (byte)(loopOffset >> 8));
+                //des.Add(od);
+                //od = new outDatum(enmMMLType.unknown, null, null, (byte)(loopOffset >> 16));
+                //des.Add(od);
+                od = (byte)dummyCmdLoopOffset;
+                des.Add(od);
+                od = (byte)(dummyCmdLoopOffset >> 8);
+                des.Add(od);
+                od = (byte)(dummyCmdLoopOffset >> 16);
+                des.Add(od);
+
+            }
+
+            return des;
+        }
 
         public long GetWaitCounter(int ml)
         {
@@ -2004,7 +2839,8 @@ namespace Core
 
             int p = dat.Count + 12;
 
-            MakeGD3(dat);
+            GD3maker gd3 = new GD3maker();
+            gd3.make(dat, info, lyric);
 
             //EoF offset
             v = DivInt2ByteAry(dat.Count - 0x4);
@@ -2072,61 +2908,6 @@ namespace Core
             else
             { dat[0x08] = 0x61; dat[0x09] = 0x01; }
 
-        }
-
-        private void MakeGD3(List<byte> dat)
-        {
-            //'Gd3 '
-            dat.Add(0x47); dat.Add(0x64); dat.Add(0x33); dat.Add(0x20);
-
-            //GD3 Version
-            dat.Add(0x00); dat.Add(0x01); dat.Add(0x00); dat.Add(0x00);
-
-            //GD3 Length(dummy)
-            dat.Add(0x00); dat.Add(0x00); dat.Add(0x00); dat.Add(0x00);
-
-            //TrackName
-            dat.AddRange(Encoding.Unicode.GetBytes(info.TitleName));
-            dat.Add(0x00); dat.Add(0x00);
-            dat.AddRange(Encoding.Unicode.GetBytes(info.TitleNameJ));
-            dat.Add(0x00); dat.Add(0x00);
-
-            //GameName
-            dat.AddRange(Encoding.Unicode.GetBytes(info.GameName));
-            dat.Add(0x00); dat.Add(0x00);
-            dat.AddRange(Encoding.Unicode.GetBytes(info.GameNameJ));
-            dat.Add(0x00); dat.Add(0x00);
-
-            //SystemName
-            dat.AddRange(Encoding.Unicode.GetBytes(info.SystemName));
-            dat.Add(0x00); dat.Add(0x00);
-            dat.AddRange(Encoding.Unicode.GetBytes(info.SystemNameJ));
-            dat.Add(0x00); dat.Add(0x00);
-
-            //Composer
-            dat.AddRange(Encoding.Unicode.GetBytes(info.Composer));
-            dat.Add(0x00); dat.Add(0x00);
-            dat.AddRange(Encoding.Unicode.GetBytes(info.ComposerJ));
-            dat.Add(0x00); dat.Add(0x00);
-
-            //ReleaseDate
-            dat.AddRange(Encoding.Unicode.GetBytes(info.ReleaseDate));
-            dat.Add(0x00); dat.Add(0x00);
-
-            //Converted
-            dat.AddRange(Encoding.Unicode.GetBytes(info.Converted));
-            dat.Add(0x00); dat.Add(0x00);
-
-            //Notes
-            dat.AddRange(Encoding.Unicode.GetBytes(info.Notes));
-            dat.Add(0x00); dat.Add(0x00);
-
-            //歌詞
-            if (lyric != "")
-            {
-                dat.AddRange(Encoding.Unicode.GetBytes(lyric));
-                dat.Add(0x00); dat.Add(0x00);
-            }
         }
 
         private void ProcKeyOff(partWork pw)
@@ -2275,49 +3056,51 @@ namespace Core
             }
         }
 
+        //int slcnt = 0;
         private void ProcEnvelope(partWork pw)
         {
             if (!pw.envelopeMode) return;
             if (pw.envIndex == -1) return;
 
-            int maxValue = pw.MaxVolume;
+            //int maxValue = pw.MaxVolume;
             //while (pw.envCounter == 0 && pw.envIndex != -1)
             //{
-                switch (pw.envIndex)
-                {
-                    case 0: //Attack phase
-                        pw.envCounter += pw.envelope[1]; // counter += AR
-                        if (pw.envCounter >= 255)
-                        {
-                            pw.envCounter = 255;
-                            pw.envIndex++;
-                        }
-                        break;
-                    case 1: //Decay phase
-                        pw.envCounter -= pw.envelope[2]; // counter -= DR
-                        if (pw.envCounter <= pw.envelope[3]) // counter <= SR
-                        {
-                            pw.envCounter = pw.envelope[3]; // SR
-                            pw.envIndex++;
-                        }
-                        break;
-                    case 2: //Sustain phase
-                        pw.envCounter -= pw.envelope[4]; // counter -= SL
-                        if (pw.envCounter <= 0)
-                        {
-                            pw.envCounter = 0;
-                            pw.envIndex = -1;
-                        }
-                        break;
-                    case 3: //Release phase
-                        pw.envCounter -= pw.envelope[5]; // counter -= RR
-                        if (pw.envCounter <= 0)
-                        {
-                            pw.envCounter = 0;
-                            pw.envIndex = -1;
-                        }
-                        break;
-                }
+            switch (pw.envIndex)
+            {
+                case 0: //Attack phase
+                    pw.envCounter += pw.envelope[1]; // counter += AR
+                    if (pw.envCounter >= 255)
+                    {
+                        pw.envCounter = 255;
+                        pw.envIndex++;
+                    }
+                    break;
+                case 1: //Decay phase
+                    pw.envCounter -= pw.envelope[2]; // counter -= DR
+                    if (pw.envCounter <= pw.envelope[3]) // counter <= SR
+                    {
+                        pw.envCounter = pw.envelope[3]; // SR
+                        pw.envIndex++;
+                    }
+                    break;
+                case 2: //Sustain phase
+                    pw.envCounter -= pw.envelope[4]; // counter -= SL
+                    if (pw.envCounter <= 0)
+                    {
+                        pw.envCounter = 0;
+                        pw.envIndex = -1;
+                    }
+                    //Console.WriteLine("{0}", slcnt++);
+                    break;
+                case 3: //Release phase
+                    pw.envCounter -= pw.envelope[5]; // counter -= RR
+                    if (pw.envCounter <= 0)
+                    {
+                        pw.envCounter = 0;
+                        pw.envIndex = -1;
+                    }
+                    break;
+            }
             //}
 
             if (pw.envIndex == -1)

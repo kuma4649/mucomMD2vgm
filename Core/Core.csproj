@@ -75,6 +75,7 @@
     <Compile Include="Const.cs" />
     <Compile Include="dv.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="GD3maker.cs" />
     <Compile Include="Information.cs" />
     <Compile Include="Line.cs" />
     <Compile Include="log.cs" />

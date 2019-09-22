@@ -77,13 +77,20 @@ namespace Core
             pw.slots = (byte)((pw.Type == enmChannelType.FMOPN || pw.ch == 2 || pw.ch == 5) ? 0xf : 0x0);
             pw.volume = 127;
             pw.MaxVolume = 127;
-            pw.port0 = 0xa2;
-            pw.port1 = 0xa3;
-            pw.pcm = pw.ch > 9;
+            pw.MaxVolumeEasy = 15;
+            pw.port0 = 0x52;
+            pw.port1 = 0x53;
+            pw.pcm = (pw.ch == 6 || pw.ch > 13);
+            pw.octaveNew = 6;
+            pw.octaveNow = 6;
+            pw.beforeTLOP1 = -1;
+            pw.beforeTLOP3 = -1;
+            pw.beforeTLOP2 = -1;
+            pw.beforeTLOP4 = -1;
         }
 
 
-        public void OutYM2612XPcmKeyON(MML mml, partWork pw)
+        public void OutYM2612XPcmKeyON(partWork pw)
         {
             if (pw.instrument >= 63) return;
 
@@ -118,7 +125,7 @@ namespace Core
 
             int id = parent.instPCM[pw.instrument].seqNum + 1;
 
-            int ch = Math.Max(0, pw.ch - 8);
+            int ch = Math.Max(0, pw.ch - 6);
             int priority = 0;
 
             parent.OutData(
@@ -267,9 +274,9 @@ namespace Core
                 {
                     pw.instrument = n;
                     lstPartWork[2].instrument = n;
-                    lstPartWork[6].instrument = n;
                     lstPartWork[7].instrument = n;
                     lstPartWork[8].instrument = n;
+                    lstPartWork[9].instrument = n;
                     OutFmSetInstrument(pw, n, pw.volume);
                     return;
                 }
