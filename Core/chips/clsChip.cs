@@ -1093,15 +1093,6 @@ namespace Core
 
 
 
-        public virtual void CmdExtendChannel(partWork pw, MML mml)
-        {
-            msgBox.setWrnMsg(msg.get("E10012")
-                    , mml.line.Fn
-                    , mml.line.Num
-                    );
-        }
-
-
         public virtual void CmdRenpuStart(partWork pw, MML mml)
         {
             List<int> lstRenpuLength = new List<int>();
@@ -1414,6 +1405,13 @@ namespace Core
         {
         }
 
+        public virtual void CmdExtendChannel(partWork pw, MML mml)
+        {
+            msgBox.setWrnMsg(msg.get("E10012")
+                    , mml.line.Fn
+                    , mml.line.Num
+                    );
+        }
 
         public virtual void MultiChannelCommand()
         { }

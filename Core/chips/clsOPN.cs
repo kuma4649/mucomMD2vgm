@@ -360,8 +360,7 @@ namespace Core
             }
 
             partWork vpw = pw;
-            int m =  3;
-            if (pw.chip.lstPartWork[2].Ch3SpecialMode && pw.ch >= m + 3 && pw.ch < m + 6)
+            if (pw.chip.lstPartWork[2].Ch3SpecialMode && pw.ch >= 7 && pw.ch < 10)
             {
                 vpw = pw.chip.lstPartWork[2];
             }
@@ -468,7 +467,10 @@ namespace Core
                 {
                     pw.Ch3SpecialModeKeyOn = false;
 
-                    int slot = (pw.chip.lstPartWork[2].Ch3SpecialModeKeyOn ? pw.chip.lstPartWork[2].slots : 0x0);
+                    int slot = (pw.chip.lstPartWork[2].Ch3SpecialModeKeyOn ? pw.chip.lstPartWork[2].slots : 0x0)
+                        | (pw.chip.lstPartWork[7].Ch3SpecialModeKeyOn ? pw.chip.lstPartWork[7].slots : 0x0)
+                        | (pw.chip.lstPartWork[8].Ch3SpecialModeKeyOn ? pw.chip.lstPartWork[8].slots : 0x0)
+                        | (pw.chip.lstPartWork[9].Ch3SpecialModeKeyOn ? pw.chip.lstPartWork[9].slots : 0x0);
 
                     if (pw.chip is YM2612X)
                         parent.xgmKeyOnData.Add((byte)((slot << 4) + 2));
@@ -534,46 +536,48 @@ namespace Core
             freq = ((num & 0x700) >> 8) + (((octave - 1) & 0x7) << 3);
             freq = (freq << 8) + (num & 0xff);
 
+            if (freq == pw.freq) return;
+            pw.freq = freq;
+
             if (pw.chip.lstPartWork[2].Ch3SpecialMode && pw.Type == enmChannelType.FMOPNex)
             {
-                pw.freq = freq;
-
+                partWork vpw = pw.chip.lstPartWork[2];
                 if ((pw.slots & 8) != 0)
                 {
-                    int f = pw.freq + pw.slotDetune[3];
-                    if (f != pw.slotFreq[3])
+                    int f = pw.freq + vpw.slotDetune[3];
+                    if (f != vpw.slotFreq[3])
                     {
-                        pw.slotFreq[3] = f;
+                        vpw.slotFreq[3] = f;
                         pw.OutData(pw.port0, (byte)0xa6, (byte)(f >> 8));
                         pw.OutData(pw.port0, (byte)0xa2, (byte)f);
                     }
                 }
                 if ((pw.slots & 4) != 0)
                 {
-                    int f = pw.freq + pw.slotDetune[2];
-                    if (f != pw.slotFreq[2])
+                    int f = pw.freq + vpw.slotDetune[2];
+                    if (f != vpw.slotFreq[2])
                     {
-                        pw.slotFreq[2] = f;
+                        vpw.slotFreq[2] = f;
                         pw.OutData(pw.port0, (byte)0xac, (byte)(f >> 8));
                         pw.OutData(pw.port0, (byte)0xa8, (byte)f);
                     }
                 }
                 if ((pw.slots & 1) != 0)
                 {
-                    int f = pw.freq + pw.slotDetune[0];
-                    if (f != pw.slotFreq[0])
+                    int f = pw.freq + vpw.slotDetune[0];
+                    if (f != vpw.slotFreq[0])
                     {
-                        pw.slotFreq[0] = f;
+                        vpw.slotFreq[0] = f;
                         pw.OutData(pw.port0, (byte)0xad, (byte)(f >> 8));
                         pw.OutData(pw.port0, (byte)0xa9, (byte)f);
                     }
                 }
                 if ((pw.slots & 2) != 0)
                 {
-                    int f = pw.freq + pw.slotDetune[1];
-                    if (f != pw.slotFreq[1])
+                    int f = pw.freq + vpw.slotDetune[1];
+                    if (f != vpw.slotFreq[1])
                     {
-                        pw.slotFreq[1] = f;
+                        vpw.slotFreq[1] = f;
                         pw.OutData(pw.port0, (byte)0xae, (byte)(f >> 8));
                         pw.OutData(pw.port0, (byte)0xaa, (byte)f);
                     }
@@ -581,30 +585,28 @@ namespace Core
             }
             else
             {
-                if (freq == pw.freq) return;
-                pw.freq = freq;
 
-                int n =  3;
-                if (pw.ch >= n + 3 && pw.ch < n + 6)
+                //拡張チャンネルの場合は処理しない
+                if (pw.ch >= 7 && pw.ch < 9)
                 {
                     return;
                 }
-                if (pw.ch < n + 3)
-                {
-                    if (pw.pcm) return;
 
-                    byte port = pw.ch > 2 ? pw.port1 : pw.port0;
-                    byte vch = (byte)(pw.ch > 2 ? pw.ch - 3 : pw.ch);
+                if (pw.ch > 5) return;
+                if (pw.pcm) return;
 
-                    pw.OutData(port, (byte)(0xa4 + vch), (byte)(pw.freq >> 8));
-                    pw.OutData(port, (byte)(0xa0 + vch), (byte)pw.freq);
-                }
+                byte port = pw.ch > 2 ? pw.port1 : pw.port0;
+                byte vch = (byte)(pw.ch > 2 ? pw.ch - 3 : pw.ch);
+
+                pw.OutData(port, (byte)(0xa4 + vch), (byte)(pw.freq >> 8));
+                pw.OutData(port, (byte)(0xa0 + vch), (byte)pw.freq);
             }
         }
 
         public void OutFmKeyOn(partWork pw)
         {
-            if (pw.chip is YM2612X && (pw.ch > 13 || pw.ch == 6) && pw.pcm)
+            //xgm pcmチャンネル処理
+            if (pw.chip is YM2612X && (pw.ch > 9 || pw.ch == 6))// && pw.pcm)
             {
                 if (!parent.PCMmode)
                 {
@@ -616,25 +618,40 @@ namespace Core
                 return;
             }
 
+            //Jパート(FM Ch.5)が発音時はpcmModeを解除する
+            if (((pw.chip is YM2612) || (pw.chip is YM2612X)) && pw.ch == 5)
+            {
+                if (parent.PCMmode)
+                {
+                    pw.freq = -1;//freqをリセット
+                    parent.PCMmode = false;
+                    ((YM2612)(pw.chip)).OutSetCh6PCMMode(pw, false);
+                }
+            }
+
             int n =  3;
 
             if (pw.ch != 6)// || pw.Type != enmChannelType.FMPCM || pw.Type != enmChannelType.FMPCMex)
             {
-                if (pw.ch == 6)
-                {
-                    if (parent.PCMmode)
-                    {
-                        pw.pcm = true;
-                        pw.freq = -1;//freqをリセット
-                        parent.PCMmode = false;
-                        ((YM2612)(pw.chip)).OutSetCh6PCMMode(pw, false);
-                    }
-                }
+                //if (pw.ch == 6)
+                //{
+                //    if (parent.PCMmode)
+                //    {
+                //        pw.pcm = true;
+                //        pw.freq = -1;//freqをリセット
+                //        parent.PCMmode = false;
+                //        ((YM2612)(pw.chip)).OutSetCh6PCMMode(pw, false);
+                //    }
+                //}
+
                 if (pw.chip.lstPartWork[2].Ch3SpecialMode && pw.Type == enmChannelType.FMOPNex)
                 {
                     pw.Ch3SpecialModeKeyOn = true;
 
-                    int slot = (pw.chip.lstPartWork[2].Ch3SpecialModeKeyOn ? pw.chip.lstPartWork[2].slots : 0x0);
+                    int slot = (pw.chip.lstPartWork[2].Ch3SpecialModeKeyOn ? pw.chip.lstPartWork[2].slots : 0x0)
+                        | (pw.chip.lstPartWork[7].Ch3SpecialModeKeyOn ? pw.chip.lstPartWork[7].slots : 0x0)
+                        | (pw.chip.lstPartWork[8].Ch3SpecialModeKeyOn ? pw.chip.lstPartWork[8].slots : 0x0)
+                        | (pw.chip.lstPartWork[9].Ch3SpecialModeKeyOn ? pw.chip.lstPartWork[9].slots : 0x0);
 
                     if (pw.chip is YM2612X)
                         parent.xgmKeyOnData.Add((byte)((slot << 4) + 2));
@@ -661,6 +678,7 @@ namespace Core
                 return;
             }
 
+            //以下vgm pcmCh処理
 
             if (!parent.instPCM.ContainsKey(pw.instrument)) return;
 
@@ -1084,6 +1102,13 @@ namespace Core
 
             n = Common.CheckRange(n, 0, 255);
             pw.instrument = n;
+            if(pw.Type== enmChannelType.FMOPNex)
+            {
+                pw.chip.lstPartWork[2].instrument = n;
+                pw.chip.lstPartWork[7].instrument = n;
+                pw.chip.lstPartWork[8].instrument = n;
+                pw.chip.lstPartWork[9].instrument = n;
+            }
             //if (pw.beforeInstrument == pw.instrument) return;
             pw.beforeInstrument = n;
             ((ClsOPN)pw.chip).OutFmSetInstrument(pw, n, pw.volume);
@@ -1112,74 +1137,6 @@ namespace Core
                     {
                         pw.beforeVolume = -1;
                     }
-                    break;
-            }
-        }
-
-        public override void CmdExtendChannel(partWork pw, MML mml)
-        {
-            string cmd = (string)mml.args[0];
-
-            switch (cmd)
-            {
-                case "EX":
-                    int n = (int)mml.args[1];
-                    byte res = 0;
-                    while (n % 10 != 0)
-                    {
-                        if (n % 10 > 0 && n % 10 < 5)
-                        {
-                            res += (byte)(1 << (n % 10 - 1));
-                        }
-                        else
-                        {
-                            msgBox.setErrMsg(string.Format(msg.get("E11005"), n), pw.getSrcFn(), pw.getLineNumber());
-                            break;
-                        }
-                        n /= 10;
-                    }
-                    if (res != 0)
-                    {
-                        pw.slotsEX = res;
-                        if (pw.Ch3SpecialMode) pw.slots = pw.slotsEX;
-                    }
-                    break;
-                case "EXON":
-                    pw.Ch3SpecialMode = true;
-                    ((ClsOPN)pw.chip).OutOPNSetCh3SpecialMode(pw, true);
-                    foreach (partWork p in pw.chip.lstPartWork)
-                    {
-                        if (p.Type == enmChannelType.FMOPNex)
-                        {
-                            p.slots = p.slotsEX;
-                            p.beforeVolume = -1;
-                            p.beforeFNum = -1;
-                            p.freq = -1;
-                            //SetFmFNum(p);
-                        }
-                    }
-                    break;
-                case "EXOF":
-                    pw.Ch3SpecialMode = false;
-                    ((ClsOPN)pw.chip).OutOPNSetCh3SpecialMode(pw, false);
-                    foreach (partWork p in pw.chip.lstPartWork)
-                    {
-                        if (p.Type == enmChannelType.FMOPNex)
-                        {
-                            if (p.ch != 2) p.slots = 0;
-                            else p.slots = p.slots4OP;
-                            p.beforeVolume = -1;
-                            p.beforeFNum = -1;
-                            p.freq = -1;
-                            //SetFmFNum(p);
-                        }
-                    }
-                    break;
-                case "EXD":
-                    pw.slotDetune[0] = (int)mml.args[1];
-                    pw.slotDetune[1] = (int)mml.args[2];
-                    pw.slotDetune[2] = (int)mml.args[3];
-                    pw.slotDetune[3] = (int)mml.args[4];
                     break;
             }
         }
@@ -1343,6 +1300,76 @@ namespace Core
             pw.slotFreq[2] = -1;
             pw.slotFreq[3] = -1;
             ((ClsOPN)pw.chip).OutOPNSetCh3SpecialMode(pw, true);
+            pw.slots = 0xf;
         }
+
+        public override void CmdExtendChannel(partWork pw, MML mml)
+        {
+            string cmd = (string)mml.args[0];
+
+            switch (cmd)
+            {
+                case "EX":
+                    int n = (int)mml.args[1];
+                    byte res = 0;
+                    while (n % 10 != 0)
+                    {
+                        if (n % 10 > 0 && n % 10 < 5)
+                        {
+                            res += (byte)(1 << (n % 10 - 1));
+                        }
+                        else
+                        {
+                            msgBox.setErrMsg(string.Format(msg.get("E11005"), n), pw.getSrcFn(), pw.getLineNumber());
+                            break;
+                        }
+                        n /= 10;
+                    }
+                    if (res != 0)
+                    {
+                        pw.slotsEX = res;
+                        if (pw.Ch3SpecialMode) pw.slots = pw.slotsEX;
+                    }
+                    break;
+                case "EXON":
+                    ((ClsOPN)pw.chip).OutOPNSetCh3SpecialMode(pw, true);
+                    foreach (partWork p in pw.chip.lstPartWork)
+                    {
+                        if (p.Type == enmChannelType.FMOPNex)
+                        {
+                            p.Ch3SpecialMode = true;
+                            p.slots = p.slotsEX;
+                            p.beforeVolume = -1;
+                            p.beforeFNum = -1;
+                            p.freq = -1;
+                            //SetFmFNum(p);
+                        }
+                    }
+                    break;
+                case "EXOF":
+                    ((ClsOPN)pw.chip).OutOPNSetCh3SpecialMode(pw, false);
+                    foreach (partWork p in pw.chip.lstPartWork)
+                    {
+                        if (p.Type == enmChannelType.FMOPNex)
+                        {
+                            if (p.ch != 2) p.slots = 0;
+                            else p.slots = p.slots4OP;
+                            p.Ch3SpecialMode = false;
+                            p.beforeVolume = -1;
+                            p.beforeFNum = -1;
+                            p.freq = -1;
+                            //SetFmFNum(p);
+                        }
+                    }
+                    break;
+                //case "EXD":
+                //    pw.slotDetune[0] = (int)mml.args[1];
+                //    pw.slotDetune[1] = (int)mml.args[2];
+                //    pw.slotDetune[2] = (int)mml.args[3];
+                //    pw.slotDetune[3] = (int)mml.args[4];
+                //    break;
+            }
+        }
+
     }
 }

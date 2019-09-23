@@ -23,7 +23,7 @@ namespace Core
             _chipType = enmChipType.YM2612;
             _Name = "YM2612";
             _ShortName = "OPN2";
-            _ChMax = 7;
+            _ChMax = 10;
             _canUsePcm = true;
             _canUsePI = false;
             FNumTbl = _FNumTbl;
@@ -44,7 +44,7 @@ namespace Core
             }
 
             Ch = new ClsChannel[ChMax];
-            char[] PART_OPN2 = new char[] { 'A', 'B', 'C', 'H', 'I', 'J', 'K' };
+            char[] PART_OPN2 = new char[] { 'A', 'B', 'C', 'H', 'I', 'J', 'K', 'L', 'M', 'N' };
             for (int i = 0; i < Ch.Length; i++)
             {
                 if (Ch[i] == null) Ch[i] = new ClsChannel();
@@ -59,6 +59,9 @@ namespace Core
 
             Ch[2].Type = enmChannelType.FMOPNex;
             Ch[6].Type = enmChannelType.FMPCM;
+            Ch[7].Type = enmChannelType.FMOPNex;
+            Ch[8].Type = enmChannelType.FMOPNex;
+            Ch[9].Type = enmChannelType.FMOPNex;
 
             pcmDataInfo = new clsPcmDataInfo[] { new clsPcmDataInfo() };
             pcmDataInfo[0].totalBuf = new byte[7] { 0x67, 0x66, 0x00, 0x00, 0x00, 0x00, 0x00 };
@@ -373,7 +376,7 @@ namespace Core
 
             if (type == 'N')
             {
-                if (pw.ch == 6 && (pw.Type == enmChannelType.FMPCM || pw.Type == enmChannelType.FMPCMex))
+                if (pw.Type == enmChannelType.FMPCM || pw.Type == enmChannelType.FMPCMex)
                 {
                     pw.instrument = n;
                     if (!parent.instPCM.ContainsKey(n))

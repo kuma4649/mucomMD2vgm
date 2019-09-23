@@ -125,7 +125,7 @@ namespace Core
 
             int id = parent.instPCM[pw.instrument].seqNum + 1;
 
-            int ch = Math.Max(0, pw.ch - 6);
+            int ch = Common.CheckRange(pw.ch == 6 ? 0 : Math.Max(0, pw.ch - 9), 0, 3);
             int priority = 0;
 
             parent.OutData(
@@ -135,7 +135,7 @@ namespace Core
                 , (byte)id
                 );
 
-            parent.info.samplesPerClock = parent.info.xgmSamplesPerSecond * 60.0 * 4.0 / (parent.info.tempo * parent.info.clockCount);
+           // parent.info.samplesPerClock = parent.info.xgmSamplesPerSecond * 60.0 * 4.0 / (parent.info.tempo * parent.info.clockCount);
 
             //必要なサンプル数を算出し、保持しているサンプル数より大きい場合は更新
             double m = pw.waitCounter * 60.0 * 4.0 / (parent.info.tempo * parent.info.clockCount) * 14000.0;//14000(Hz) = xgm sampling Rate

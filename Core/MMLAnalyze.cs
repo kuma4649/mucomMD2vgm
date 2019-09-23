@@ -221,8 +221,8 @@ namespace Core
                     log.Write("Slot Detune");
                     CmdSlotDetune(pw, mml);
                     break;
-                case 'E': // envelope
-                    log.Write("envelope");
+                case 'E': // envelope / extendChannel
+                    log.Write("envelope / extendChannel");
                     CmdE(pw, mml);
                     break;
                 case 'P': // MixerMode
@@ -683,12 +683,64 @@ namespace Core
 
         private void CmdE(partWork pw, MML mml)
         {
+
+            pw.incPos();
             int n = -1;
-            mml.type = enmMMLType.Envelope;
-            mml.args = new List<object>();
-            do
+
+            //効果音モード関連コマンド解析
+
+            if (pw.getChar() == 'X')
             {
                 pw.incPos();
+
+                if (pw.getChar() == 'O')
+                {
+                    pw.incPos();
+                    switch (pw.getChar())
+                    {
+                        case 'N':
+                            pw.incPos();
+                            mml.type = enmMMLType.ExtendChannel;
+                            mml.args = new List<object>();
+                            mml.args.Add("EXON");
+                            break;
+                        case 'F':
+                            pw.incPos();
+                            mml.type = enmMMLType.ExtendChannel;
+                            mml.args = new List<object>();
+                            mml.args.Add("EXOF");
+                            break;
+                        default:
+                            msgBox.setErrMsg(string.Format(msg.get("E05019"), pw.getChar()), pw.getSrcFn(), pw.getLineNumber());
+                            break;
+                    }
+                    return;
+                }
+
+                if (!pw.getNum(out n))
+                {
+                    msgBox.setErrMsg(msg.get("E05021"), pw.getSrcFn(), pw.getLineNumber());
+                    n = 0;
+                }
+                if (n != -1)
+                {
+                    mml.type = enmMMLType.ExtendChannel;
+                    mml.args = new List<object>();
+                    mml.args.Add("EX");
+                    mml.args.Add(n);
+                }
+
+                return;
+            }
+
+
+            //envelopeコマンド解析
+
+            mml.type = enmMMLType.Envelope;
+            mml.args = new List<object>();
+
+            do
+            {
                 if (pw.getNum(out n))
                 {
                     mml.args.Add(n);
@@ -698,8 +750,10 @@ namespace Core
                     msgBox.setErrMsg(msg.get("E05022"), pw.getSrcFn(), pw.getLineNumber());
                     break;
                 }
-            } while (pw.getChar() == ',');
 
+                pw.incPos();
+
+            } while (pw.getChar() == ',');
         }
 
         private void CmdLoop(partWork pw, MML mml)

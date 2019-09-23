@@ -45,7 +45,7 @@ namespace Core
         public int useJumpCommand = 0;
         public bool PCMmode = false;
 
-        private char[] PART_OPN2 = new char[] { 'A', 'B', 'C', 'G', 'H', 'I', 'K' };
+        private char[] PART_OPN2 = new char[] { 'A', 'B', 'C', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q' };
         private char[] PART_DCSG = new char[] { 'D', 'E', 'F', 'J' };
         private string stPath;
         private string srcFn;
@@ -3256,11 +3256,6 @@ namespace Core
                     pw.chip.CmdHardEnvelope(pw, mml);
                     pw.mmlPos++;
                     break;
-                case enmMMLType.ExtendChannel:
-                    log.Write("ExtendChannel");
-                    pw.chip.CmdExtendChannel(pw, mml);
-                    pw.mmlPos++;
-                    break;
                 case enmMMLType.SoftLfo:
                     log.Write("SoftLfo");
                     pw.chip.CmdSoftLfo(pw, mml);
@@ -3395,6 +3390,11 @@ namespace Core
                 case enmMMLType.SlotDetune:
                     log.Write("SlotDetune");
                     pw.chip.CmdSlotDetune(pw, mml);
+                    pw.mmlPos++;
+                    break;
+                case enmMMLType.ExtendChannel:
+                    log.Write("ExtendChannel");
+                    pw.chip.CmdExtendChannel(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Shuffle:
