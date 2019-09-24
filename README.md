@@ -1,52 +1,53 @@
-# mucomMD2vgm
-���K�h���C�u����VGM/XGM�t�@�C���쐬�c�[��  
+﻿# mucomMD2vgm
+メガドライブ向けVGM/XGMファイル作成ツール  
   
-[�T�v]  
- ���̃c�[���́A���[�U�[���쐬����mucom�`����MML�t�@�C��������VGM�t�@�C������XGM�t�@�C�����쐬���܂��B  
+[概要]  
+ このツールは、ユーザーが作成したmucom形式のMMLファイルを元にVGMファイル又はXGMファイルを作成します。  
   
-[�@�\�A����]  
- �E���K�h���C�u�̉����\��(YM2612 + SN76489)�ɂ�����VGM�𐶐����܂��B  
- �EFM����(YM2612)�͍ő�6ch�g�p�\�ł��B  
- �EPCM(YM2612)��1ch�g�p�\�ł��B(FM����1ch�Ɣr���I�Ɏg�p���܂��B)  
-   XGM�̏ꍇ��PCM(YM2612)��4ch�g�p�\�ł��B(FM����1ch�Ɣr���I�Ɏg�p���܂��B)  
- �EPSG(DCSG)����(SN76489)��3ch(�m�C�Y�`�����l��������)�g�p�\�ł��B  
- �E�ȏ�A���K�h���C�u�����n�����ōő�9ch(12ch)�g�p�\�ł��B  
- �EMML�̎d�l��mucom88�ɏ������܂��B  
+[機能、特徴]  
+ ・メガドライブの音源構成(YM2612 + SN76489)にそったVGMを生成します。  
+ ・FM音源(YM2612)は最大6ch使用可能です。  
+ ・PCM(YM2612)を1ch使用可能です。(FM音源1chと排他的に使用します。)  
+   XGMの場合はPCM(YM2612)を4ch使用可能です。(FM音源1chと排他的に使用します。)  
+ ・PSG(DCSG)音源(SN76489)は3ch(ノイズチャンネルを除く)使用可能です。  
+ ・以上、メガドライブ音源系だけで最大9ch(12ch)使用可能です。  
+ ・MMLの仕様はmucom88に準拠します。  
   
-[�K�v�Ȋ�]  
- �EWindows7�ȍ~��OS���C���X�g�[�����ꂽPC  
- �E�e�L�X�g�G�f�B�^  
- �EVGM�����t����v���C���A�v��(MDPlayer�𐄏�)  
- �E�C���ƍ���  
+[必要な環境]  
+ ・Windows7以降のOSがインストールされたPC  
+ ・テキストエディタ  
+ ・VGMを演奏するプレイヤアプリ(MDPlayerを推奨)  
+ ・気合と根性  
   
-[���쌠�E�Ɛ�]  
-mucomMD2vgm,mdvc��MIT���C�Z���X�ɏ����镨�Ƃ��܂��BLICENSE.txt���Q�ƁB  
-���쌠�͍�҂��ۗL���Ă��܂��B  
-���̃\�t�g�͖��ۏ؂ł���A���̃\�t�g���g�p�������ɂ��  
-�����Ȃ鑹�Q����҂͈�؂̐ӔC�𕉂��܂���B  
-�܂��AMIT���C�Z���X�͒��쌠�\������і{�����\�������߂܂����{�\�t�g�ł͕s�v�ł��B  
+[著作権・免責]  
+mucomMD2vgm,mdvcはMITライセンスに準ずる物とします。LICENSE.txtを参照。  
+著作権は作者が保有しています。  
+このソフトは無保証であり、このソフトを使用した事による  
+いかなる損害も作者は一切の責任を負いません。  
+また、MITライセンスは著作権表示および本許諾表示を求めますが本ソフトでは不要です。  
   
-�ȉ��̃\�t�g�E�F�A�̃\�[�X�R�[�h��C#�����ɉ��ς��g�p���Ă��܂��B  
-���̓R�[�h��񋟂��Ă��������Ă���܂��B  
-�����̃\�[�X�͊e����҂����쌠�������܂��B  
-���C�Z���X�Ɋւ��ẮA�e�h�L�������g���Q�Ƃ��Ă��������B  
+以下のソフトウェアのソースコードをC#向けに改変し使用しています。  
+又はコードを提供していただいております。  
+これらのソースは各著作者が著作権を持ちます。  
+ライセンスに関しては、各ドキュメントを参照してください。  
   
-�Y���\�[�X�F  
-  Common.cs���̍ő���񐔁A�ŏ����{���Z�o���[�`��(MIT)  
-    ��ҁF����� ����  
+該当ソース：  
+  Common.cs中の最大公約数、最小公倍数算出ルーチン(MIT)  
+    作者：くろま さん  
   
   
 [SpecialThanks]  
- �{�c�[���͈ȉ��̕��X�ɂ����b�ɂȂ��Ă���܂��B�܂��ȉ��̃\�t�g�E�F�A�A�E�F�u�y�[�W���Q�l�A�g�p���Ă��܂��B  
- �{���ɂ��肪�Ƃ��������܂��B  
+ 本ツールは以下の方々にお世話になっております。また以下のソフトウェア、ウェブページを参考、使用しています。  
+ 本当にありがとうございます。  
   
- �EWING�� ����  
- �E����� ����  
-  
- �Emucom88/mucom88win  
- �EMusic LALF  
- �EVisual Studio Community 2017  
- �EVGM Player  
- �E������G�f�B�^�[  
+ ・WING☆ さん  
+ ・くろま さん  
+ ・欧場豪@マシㇼキ提督さん  
+
+ ・mucom88/mucom88win  
+ ・Music LALF  
+ ・Visual Studio Community 2017  
+ ・VGM Player  
+ ・さくらエディター  
   
   
