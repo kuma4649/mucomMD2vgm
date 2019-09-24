@@ -739,7 +739,7 @@ namespace Core
             mml.type = enmMMLType.Envelope;
             mml.args = new List<object>();
 
-            do
+            while (true)
             {
                 if (pw.getNum(out n))
                 {
@@ -748,12 +748,30 @@ namespace Core
                 else
                 {
                     msgBox.setErrMsg(msg.get("E05022"), pw.getSrcFn(), pw.getLineNumber());
-                    break;
+                    return;
                 }
 
+                if (pw.getChar() != ',')
+                {
+                    break;
+                }
                 pw.incPos();
+            }
 
-            } while (pw.getChar() == ',');
+            //do
+            //{
+            //    if (pw.getNum(out n))
+            //    {
+            //        mml.args.Add(n);
+            //    }
+            //    else
+            //    {
+            //        msgBox.setErrMsg(msg.get("E05022"), pw.getSrcFn(), pw.getLineNumber());
+            //        break;
+            //    }
+
+            //    pw.incPos();
+            //} while (pw.getChar() == ',');
         }
 
         private void CmdLoop(partWork pw, MML mml)

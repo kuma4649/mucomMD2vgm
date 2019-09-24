@@ -567,14 +567,24 @@ namespace Core
         /// </summary>
         private void definePCMInstrumentEasy(string srcFn, int lineNumber, string[] vs)
         {
-            //instrumentCounter = -1;
-            enmChipType enmChip = enmChipType.YM2612;
+
+            enmChipType enmChip;
+            int fq;
+
+            if (info.format == enmFormat.VGM)
+            {
+                enmChip = enmChipType.YM2612;
+                fq = 8000;
+            }
+            else
+            {
+                enmChip = enmChipType.YM2612X;
+                fq = 14000;
+            }
 
             int num = Common.ParseNumber(vs[0]);
-
             string fn = vs[1].Trim().Trim('"');
 
-            int fq = 8000;
             //try
             //{
             //    fq = Common.ParseNumber(vs[2]);
@@ -602,33 +612,33 @@ namespace Core
                 if (enmChip == enmChipType.None) return;
             }
 
-            if (info.format == enmFormat.XGM)
-            {
-                if (enmChip != enmChipType.YM2612X)
-                {
-                    msgBox.setErrMsg(msg.get("E01017"));
-                    return;
-                }
-            }
+            //if (info.format == enmFormat.XGM)
+            //{
+            //    if (enmChip != enmChipType.YM2612X)
+            //    {
+            //        msgBox.setErrMsg(msg.get("E01017"));
+            //        return;
+            //    }
+            //}
 
             int lp = -1;
 
-            if (vs.Length > 5)
-            {
-                try
-                {
-                    lp = Common.ParseNumber(vs[5]);
-                }
-                catch
-                {
-                    lp = -1;
-                }
-            }
+            //if (vs.Length > 5)
+            //{
+            //    try
+            //    {
+            //        lp = Common.ParseNumber(vs[5]);
+            //    }
+            //    catch
+            //    {
+            //        lp = -1;
+            //    }
+            //}
 
-            if (lp == -1 && enmChip == enmChipType.YM2610B)
-            {
-                lp = 0;
-            }
+            //if (lp == -1 && enmChip == enmChipType.YM2610B)
+            //{
+            //    lp = 0;
+            //}
 
             instPCMDatSeq.Add(new clsPcmDatSeq(
                 enmPcmDefineType.Easy
@@ -1796,7 +1806,8 @@ namespace Core
                             if (pw.waitCounter < 1)
                             {
                                 //Lコマンド後の演奏時間が一番長いパートが終わった場合は強制オールカウント
-                                if (pw.loopInfo.isLongMml) endChannel = totalChannel;
+                                if (pw.loopInfo.isLongMml)
+                                    endChannel = totalChannel;
 
                                 endChannel++;
                                 continue;
@@ -2237,28 +2248,35 @@ namespace Core
                             {
                                 pw.dataEnd = true;
                             }
-                            else if (pw.loopInfo.isLongMml)
+                            else
                             {
-                                pw.loopInfo.loopCount--;
-                                if (pw.loopInfo.loopCount == 0)
+                                if (pw.loopInfo.length == 0)
                                 {
-                                    if (unusePartEndCount == loopUnusePartCount)
+                                    pw.dataEnd = true;
+                                }
+                                else if (pw.loopInfo.isLongMml)
+                                {
+                                    pw.loopInfo.loopCount--;
+                                    if (pw.loopInfo.loopCount == 0)
                                     {
-                                        if (pw.loopInfo.lastOne)
+                                        if (unusePartEndCount == loopUnusePartCount)
                                         {
-                                            pw.dataEnd = true;
-                                            lastRendFinished = true;
-                                            pw.Flash();
+                                            if (pw.loopInfo.lastOne)
+                                            {
+                                                pw.dataEnd = true;
+                                                lastRendFinished = true;
+                                                pw.Flash();
+                                            }
+                                            else
+                                            {
+                                                pw.loopInfo.loopCount = pw.loopInfo.playingTimes;
+                                                pw.loopInfo.lastOne = true;
+                                            }
                                         }
                                         else
                                         {
                                             pw.loopInfo.loopCount = pw.loopInfo.playingTimes;
-                                            pw.loopInfo.lastOne = true;
                                         }
-                                    }
-                                    else
-                                    {
-                                        pw.loopInfo.loopCount = pw.loopInfo.playingTimes;
                                     }
                                 }
                             }
@@ -2613,7 +2631,10 @@ namespace Core
                         ptr += 2;
                         break;
                     case 0x7e: //LOOP Point
-                        loopOffset = des.Count - dummyCmdCounter;//ダミーコマンドを抜いた場合のオフセット値
+                        if (loopOffset != -1)
+                        {
+                            loopOffset = des.Count - dummyCmdCounter;//ダミーコマンドを抜いた場合のオフセット値
+                        }
                         dummyCmdLoopOffset = des.Count;//ダミーコマンド込みのオフセット値
                         dummyCmdLoopOffsetAddress = ptr;//ソースのループコマンドが存在するアドレス
 
@@ -2744,28 +2765,34 @@ namespace Core
                         {
                             pw.dataEnd = true;
                         }
-                        else if (pw.loopInfo.isLongMml)
-                        {
-                            pw.loopInfo.loopCount--;
-                            if (pw.loopInfo.loopCount == 0)
+                        else {
+                            if (pw.loopInfo.length == 0)
                             {
-                                if (unusePartEndCount == loopUnusePartCount)
+                                pw.dataEnd = true;
+                            }
+                            else if (pw.loopInfo.isLongMml)
+                            {
+                                pw.loopInfo.loopCount--;
+                                if (pw.loopInfo.loopCount == 0)
                                 {
-                                    if (pw.loopInfo.lastOne)
+                                    if (unusePartEndCount == loopUnusePartCount)
                                     {
-                                        pw.dataEnd = true;
-                                        lastRendFinished = true;
-                                        pw.Flash();
+                                        if (pw.loopInfo.lastOne)
+                                        {
+                                            pw.dataEnd = true;
+                                            lastRendFinished = true;
+                                            pw.Flash();
+                                        }
+                                        else
+                                        {
+                                            pw.loopInfo.loopCount = pw.loopInfo.playingTimes;
+                                            pw.loopInfo.lastOne = true;
+                                        }
                                     }
                                     else
                                     {
                                         pw.loopInfo.loopCount = pw.loopInfo.playingTimes;
-                                        pw.loopInfo.lastOne = true;
                                     }
-                                }
-                                else
-                                {
-                                    pw.loopInfo.loopCount = pw.loopInfo.playingTimes;
                                 }
                             }
                         }

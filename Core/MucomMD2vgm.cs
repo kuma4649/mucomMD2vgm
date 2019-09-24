@@ -270,7 +270,7 @@ namespace Core
             desVGM.loopUsePartCount = 0;
 
             List<long> lengths = new List<long>();
-            long clockLength = 0;
+            long clockPos = 0;
             foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in desVGM.chips)
             {
                 foreach (ClsChip chip in kvp.Value)
@@ -283,16 +283,26 @@ namespace Core
 
                         desVGM.partCount++;
                         if (!pw.loopInfo.use) continue;
+                        if (pw.loopInfo.length < 1)
+                        {
+                            pw.loopInfo.use = false;
+                            desVGM.loopUsePartCount++;
+                            continue;//Lコマンド後の長さが0のパートは対象に含めない
+                        }
+
                         desVGM.loopUsePartCount++;
                         lengths.Add(pw.loopInfo.length);
-                        if (clockLength < pw.loopInfo.clockPos)//.clockCounter)
+                        if (clockPos < pw.loopInfo.clockPos)//.clockCounter)
                         {
-                            clockLength = pw.loopInfo.clockPos;//.clockCounter;
+                            clockPos = pw.loopInfo.clockPos;//.clockCounter;
                         }
                     }
                 }
             }
 
+            //
+            long loopClockLength = -1;
+            partWork p = null;
             foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in desVGM.chips)
             {
                 foreach (ClsChip chip in kvp.Value)
@@ -303,16 +313,26 @@ namespace Core
                     {
                         if (pw.pData == null) continue;
                         if (!pw.loopInfo.use) continue;
-                        if (clockLength == pw.loopInfo.clockPos)//.clockCounter)
+                        if (pw.loopInfo.length < 1) continue;//Lコマンド後の長さが0のパートは対象に含めない
+
+                        if (clockPos == pw.loopInfo.clockPos)//.clockCounter)
                         {
-                            pw.loopInfo.isLongMml = true;
-                            goto loopExit;
+                            if (loopClockLength < pw.loopInfo.length)
+                            {
+                                p = pw;
+                                loopClockLength = pw.loopInfo.length;
+                            }
+                            //goto loopExit;
                         }
                     }
                 }
             }
+            if (p != null)
+            {
+                p.loopInfo.isLongMml = true;
+            }
 
-        loopExit:
+        //loopExit:
             long lcm = Common.aryLcm(lengths.ToArray());
             Dictionary<KeyValuePair<enmChipType, int>, clsLoopInfo> dicLoopInfo = new Dictionary<KeyValuePair<enmChipType, int>, clsLoopInfo>();
 
@@ -326,6 +346,7 @@ namespace Core
                     {
                         if (pw.pData == null) continue;
                         if (!pw.loopInfo.use) continue;
+                        if (pw.loopInfo.length < 1) continue;//Lコマンド後の長さが0のパートは対象に含めない
 
                         pw.loopInfo.playingTimes = (int)(lcm / pw.loopInfo.length);
                         pw.loopInfo.loopCount = pw.loopInfo.playingTimes;
@@ -425,11 +446,14 @@ namespace Core
                     case 0x70:
                         if (L == 0xe)//loop
                         {
-                            //Console.WriteLine("loop command {0:x} adr:{1:x}", H | L, i - 1);
-                            lstBuf.Add((byte)desVGM.loopOffset);
-                            lstBuf.Add((byte)(desVGM.loopOffset >> 8));
-                            lstBuf.Add((byte)(desVGM.loopOffset >> 16));
-                            i += 3;
+                            Console.WriteLine("loop command {0:x} adr:{1:x}", H | L, i - 1);
+                            if (desVGM.loopOffset != -1)
+                            {
+                                lstBuf.Add((byte)desVGM.loopOffset);
+                                lstBuf.Add((byte)(desVGM.loopOffset >> 8));
+                                lstBuf.Add((byte)(desVGM.loopOffset >> 16));
+                                i += 3;
+                            }
                         }
                         else if (L == 0xf)//end
                         {
@@ -572,16 +596,16 @@ namespace Core
                             , 0
                             , pds.DatLoopAdr
                             , false
-                            , 8000);
+                            , desVGM.info.format == enmFormat.VGM ? 8000 : 14000);
                         desVGM.instPCM.Add(pds.No, v);
 
                         //ファイルの読み込み
                         buf = Common.GetPCMDataFromFile(path, v, out isRaw, out is16bit, out samplerate);
                         if (buf == null)
                         {
-                            msgBox.setErrMsg(string.Format(
-                                msg.get("E04007")
-                                , v.fileName));
+                            //msgBox.setErrMsg(string.Format(
+                            //    msg.get("E04007")
+                            //    , v.fileName));
                             continue;
                         }
 
