@@ -300,7 +300,7 @@ namespace Core
                 }
             }
 
-            //
+            //全ての有効なパートの内、一番最後に現れるLコマンドの位置を得る。
             long loopClockLength = -1;
             partWork p = null;
             foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in desVGM.chips)
@@ -327,6 +327,7 @@ namespace Core
                     }
                 }
             }
+
             if (p != null)
             {
                 p.loopInfo.isLongMml = true;
@@ -334,6 +335,7 @@ namespace Core
 
         //loopExit:
             long lcm = Common.aryLcm(lengths.ToArray());
+
             Dictionary<KeyValuePair<enmChipType, int>, clsLoopInfo> dicLoopInfo = new Dictionary<KeyValuePair<enmChipType, int>, clsLoopInfo>();
 
             foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in desVGM.chips)
@@ -446,7 +448,7 @@ namespace Core
                     case 0x70:
                         if (L == 0xe)//loop
                         {
-                            Console.WriteLine("loop command {0:x} adr:{1:x}", H | L, i - 1);
+                            //Console.WriteLine("loop command {0:x} adr:{1:x}", H | L, i - 1);
                             if (desVGM.loopOffset != -1)
                             {
                                 lstBuf.Add((byte)desVGM.loopOffset);

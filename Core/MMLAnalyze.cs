@@ -777,10 +777,21 @@ namespace Core
         private void CmdLoop(partWork pw, MML mml)
         {
             pw.incPos();
-            if (desVGM.isLoopEx || (pw.Type == enmChannelType.FMOPN && pw.ch == 0))
-            {
+            if (desVGM.isLoopEx) {
                 mml.type = enmMMLType.LoopPoint;
                 mml.args = null;
+            }
+            else if(pw.Type == enmChannelType.FMOPN)
+            {
+                if (pw.ch == 0)
+                {
+                    mml.type = enmMMLType.LoopPoint;
+                    mml.args = null;
+                }
+                else
+                {
+                    msgBox.setErrMsg(msg.get("E05054"));
+                }
             }
             else
             {
@@ -1177,7 +1188,7 @@ namespace Core
             int n = -1;
             byte adr = 0;
             byte dat = 0;
-            byte op = 0;
+            //byte op = 0;
             string toneparamName = "";
             pw.incPos();
 

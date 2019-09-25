@@ -22,7 +22,7 @@ namespace mucomMD2vgm
         {
             InitializeComponent();
 #if DEBUG
-            Core.log.debug = true;
+            //Core.log.debug = true;
 #endif
         }
 

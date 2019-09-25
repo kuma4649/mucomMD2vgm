@@ -1980,6 +1980,7 @@ namespace Core
 
                 log.Write("終了パートのカウント");
                 endChannel = 0;
+                unusePartEndCount = 0;
                 foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
                 {
                     foreach (ClsChip chip in kvp.Value)
@@ -2046,20 +2047,21 @@ namespace Core
                 dSample -= waitSample;
             }
 
-            //foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
-            //{
-            //    foreach (ClsChip chip in kvp.Value)
-            //    {
-            //        foreach (partWork pw in chip.lstPartWork)
-            //        {
-            //            if (!isLoopEx || (isLoopEx && !lastRendFinished))
-            //            {
-            //                OutData(pw.GetData());
-            //            }
-            //            pw.Flash();
-            //        }
-            //    }
-            //}
+            foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+            {
+                foreach (ClsChip chip in kvp.Value)
+                {
+                    foreach (partWork pw in chip.lstPartWork)
+                    {
+                        if (!isLoopEx || (isLoopEx && !lastRendFinished))
+                        {
+                            OutData(pw.GetData());
+                        }
+                        pw.Flash();
+                    }
+                }
+            }
+
             //log.Write("KeyOn情報をかき出し");
             //foreach (byte dat in xgmKeyOnData)
             //    OutData(0x52, 0x28, dat);
@@ -2417,7 +2419,7 @@ namespace Core
             if (src == null || src.Count < 1) return null;
 
             List<byte> des = new List<byte>();
-            loopOffset = -1;
+            //loopOffset = -1;
 
             int[][] opn2reg = new int[2][] { new int[0x100], new int[0x100] };
             for (int i = 0; i < 512; i++) opn2reg[i / 0x100][i % 0x100] = -1;
@@ -2775,6 +2777,7 @@ namespace Core
                                 pw.loopInfo.loopCount--;
                                 if (pw.loopInfo.loopCount == 0)
                                 {
+                                    //
                                     if (unusePartEndCount == loopUnusePartCount)
                                     {
                                         if (pw.loopInfo.lastOne)

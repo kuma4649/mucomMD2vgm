@@ -1046,6 +1046,7 @@ namespace Core
                     parent.loopOffset = (long)parent.dat.Count;
                     parent.loopClock = (long)parent.lClock;
                     parent.loopSamples = (long)parent.dSample;
+                    if (parent.info.format == enmFormat.XGM) parent.OutData(0x7e);
                 }
             }
             else
@@ -1056,7 +1057,7 @@ namespace Core
                 parent.loopSamples = (long)parent.dSample;
             }
 
-            if (parent.info.format == enmFormat.XGM)
+            if (!pw.chip.parent.isLoopEx && parent.info.format == enmFormat.XGM)
             {
                 parent.OutData(0x7e);
             }
