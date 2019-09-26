@@ -717,6 +717,20 @@ namespace Core
                     return;
                 }
 
+                if (pw.getChar() == 'M')
+                {
+                    pw.incPos();
+                    if (!pw.getNum(out n))
+                    {
+                        n = 1234;
+                    }
+                    mml.type = enmMMLType.ExtendChannel;
+                    mml.args = new List<object>();
+                    mml.args.Add("EXM");
+                    mml.args.Add(n);
+                    return;
+                }
+
                 if (!pw.getNum(out n))
                 {
                     msgBox.setErrMsg(msg.get("E05021"), pw.getSrcFn(), pw.getLineNumber());

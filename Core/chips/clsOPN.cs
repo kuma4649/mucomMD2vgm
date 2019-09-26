@@ -313,28 +313,39 @@ namespace Core
                 return;
             }
 
-            int alg;
-            int[] ope;
-            if (parent.instFM[n].type == 0)
+            int alg = 0;
+            int[] ope = null;
+            switch (parent.instFM[n].type)
             {
-                alg = parent.instFM[n].data[1] & 0x7;
-                ope = new int[4] {
-                    parent.instFM[n].data[0*Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
-                    , parent.instFM[n].data[1 * Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
-                    , parent.instFM[n].data[2 * Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
-                    , parent.instFM[n].data[3 * Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
-                };
+                case 0:
+                    alg = parent.instFM[n].data[1] & 0x7;
+                    ope = new int[4] {
+                        parent.instFM[n].data[0*Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
+                        , parent.instFM[n].data[1 * Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
+                        , parent.instFM[n].data[2 * Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
+                        , parent.instFM[n].data[3 * Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
+                    };
+                    break;
+                case 1:
+                    alg = parent.instFM[n].data[24] & 0x7;
+                    ope = new int[4] {
+                        parent.instFM[n].data[4]
+                        , parent.instFM[n].data[6]
+                        , parent.instFM[n].data[5]
+                        , parent.instFM[n].data[7]
+                    };
+                    break;
+                case 2:
+                    alg = parent.instFM[n].data[1] & 0x7;
+                    ope = new int[4] {
+                        parent.instFM[n].data[0 * 11 + 5+2]
+                        , parent.instFM[n].data[1 * 11 + 5+2]
+                        , parent.instFM[n].data[2 * 11 + 5+2]
+                        , parent.instFM[n].data[3 * 11 + 5+2]
+                    };
+                    break;
             }
-            else
-            {
-                alg = parent.instFM[n].data[24] & 0x7;
-                ope = new int[4] {
-                    parent.instFM[n].data[4]
-                    , parent.instFM[n].data[6]
-                    , parent.instFM[n].data[5]
-                    , parent.instFM[n].data[7]
-                };
-            }
+
             int[][] algs = new int[8][]
             {
                 new int[4] { 0,0,0,1}
@@ -403,50 +414,76 @@ namespace Core
                 return;
             }
 
-            if (parent.instFM[n].type == 0)
+            switch (parent.instFM[n].type)
             {
-                for (int ope = 0; ope < 4; ope++) ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, 0, 15);
+                case 0:
+                    for (int ope = 0; ope < 4; ope++) ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, 0, 15);
 
-                for (int ope = 0; ope < 4; ope++)
-                {
-                    ((ClsOPN)pw.chip).OutFmSetDtMl(pw, ope, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 8 + 2], parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 7 + 2]);
-                    ((ClsOPN)pw.chip).OutFmSetKsAr(pw, ope, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 6 + 2], parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 0 + 2]);
-                    ((ClsOPN)pw.chip).OutFmSetAmDr(pw, ope, 1, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 1 + 2]);
-                    ((ClsOPN)pw.chip).OutFmSetSr(pw, ope, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 2 + 2]);
-                    ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 4 + 2], parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 3 + 2]);
-                    ((ClsOPN)pw.chip).OutFmSetSSGEG(pw, ope, 0);
-                    ((ClsOPN)pw.chip).OutFmSetTl(pw, ope, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 5 + 2]);
-                }
+                    for (int ope = 0; ope < 4; ope++)
+                    {
+                        ((ClsOPN)pw.chip).OutFmSetDtMl(pw, ope, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 8 + 2], parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 7 + 2]);
+                        ((ClsOPN)pw.chip).OutFmSetKsAr(pw, ope, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 6 + 2], parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 0 + 2]);
+                        ((ClsOPN)pw.chip).OutFmSetAmDr(pw, ope, 1, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 1 + 2]);
+                        ((ClsOPN)pw.chip).OutFmSetSr(pw, ope, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 2 + 2]);
+                        ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 4 + 2], parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 3 + 2]);
+                        ((ClsOPN)pw.chip).OutFmSetSSGEG(pw, ope, 0);
+                        ((ClsOPN)pw.chip).OutFmSetTl(pw, ope, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 5 + 2]);
+                    }
 
-                pw.op1ml = parent.instFM[n].data[0 * Const.INSTRUMENT_OPERATOR_SIZE + 7];
-                pw.op2ml = parent.instFM[n].data[1 * Const.INSTRUMENT_OPERATOR_SIZE + 7];
-                pw.op3ml = parent.instFM[n].data[2 * Const.INSTRUMENT_OPERATOR_SIZE + 7];
-                pw.op4ml = parent.instFM[n].data[3 * Const.INSTRUMENT_OPERATOR_SIZE + 7];
-                pw.op1dt2 = 0;
-                pw.op2dt2 = 0;
-                pw.op3dt2 = 0;
-                pw.op4dt2 = 0;
+                    pw.op1ml = parent.instFM[n].data[0 * Const.INSTRUMENT_OPERATOR_SIZE + 7];
+                    pw.op2ml = parent.instFM[n].data[1 * Const.INSTRUMENT_OPERATOR_SIZE + 7];
+                    pw.op3ml = parent.instFM[n].data[2 * Const.INSTRUMENT_OPERATOR_SIZE + 7];
+                    pw.op4ml = parent.instFM[n].data[3 * Const.INSTRUMENT_OPERATOR_SIZE + 7];
+                    pw.op1dt2 = 0;
+                    pw.op2dt2 = 0;
+                    pw.op3dt2 = 0;
+                    pw.op4dt2 = 0;
 
-                ((ClsOPN)pw.chip).OutFmSetFeedbackAlgorithm(pw, parent.instFM[n].data[0], parent.instFM[n].data[1]);
-            }
-            else
-            {
-                int vch = pw.ch;
-                byte port = vch > 2 ? pw.port1 : pw.port0;
-                vch = (byte)(vch > 2 ? vch - 3 : vch);
+                    ((ClsOPN)pw.chip).OutFmSetFeedbackAlgorithm(pw, parent.instFM[n].data[0], parent.instFM[n].data[1]);
+                    break;
+                case 1:
+                    int vch = pw.ch;
+                    byte port = vch > 2 ? pw.port1 : pw.port0;
+                    vch = (byte)(vch > 2 ? vch - 3 : vch);
 
-                for (int ope = 0; ope < 4; ope++) ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, 0, 15);
+                    for (int ope = 0; ope < 4; ope++) ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, 0, 15);
 
-                for (int ope = 0; ope < 4; ope++)
-                {
-                    pw.OutData(port, (byte)(0x30 + vch + ope * 4), parent.instFM[n].data[ope]); //DT/ML
-                    pw.OutData(port, (byte)(0x40 + vch + ope * 4), parent.instFM[n].data[ope + 4]); //TL
-                    pw.OutData(port, (byte)(0x50 + vch + ope * 4), parent.instFM[n].data[ope + 8]); //KS/AR
-                    pw.OutData(port, (byte)(0x60 + vch + ope * 4), (byte)(parent.instFM[n].data[ope + 12] | 0x80)); //AMON/DR
-                    pw.OutData(port, (byte)(0x70 + vch + ope * 4), parent.instFM[n].data[ope + 16]); //SR
-                    pw.OutData(port, (byte)(0x80 + vch + ope * 4), parent.instFM[n].data[ope + 20]); //SL/RR
-                }
-                pw.OutData(port, (byte)(0xb0 + vch ), parent.instFM[n].data[24]); //FB/AL
+                    for (int ope = 0; ope < 4; ope++)
+                    {
+                        pw.OutData(port, (byte)(0x30 + vch + ope * 4), parent.instFM[n].data[ope]); //DT/ML
+                        pw.OutData(port, (byte)(0x40 + vch + ope * 4), parent.instFM[n].data[ope + 4]); //TL
+                        pw.OutData(port, (byte)(0x50 + vch + ope * 4), parent.instFM[n].data[ope + 8]); //KS/AR
+                        pw.OutData(port, (byte)(0x60 + vch + ope * 4), (byte)(parent.instFM[n].data[ope + 12] | 0x80)); //AMON/DR
+                        pw.OutData(port, (byte)(0x70 + vch + ope * 4), parent.instFM[n].data[ope + 16]); //SR
+                        pw.OutData(port, (byte)(0x80 + vch + ope * 4), parent.instFM[n].data[ope + 20]); //SL/RR
+                    }
+                    pw.OutData(port, (byte)(0xb0 + vch), parent.instFM[n].data[24]); //FB/AL
+                    break;
+                case 2:
+                    for (int ope = 0; ope < 4; ope++) ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, 0, 15);
+
+                    for (int ope = 0; ope < 4; ope++)
+                    {
+                        ((ClsOPN)pw.chip).OutFmSetDtMl(pw, ope, parent.instFM[n].data[ope * 11 + 8 + 2], parent.instFM[n].data[ope * 11 + 7 + 2]);
+                        ((ClsOPN)pw.chip).OutFmSetKsAr(pw, ope, parent.instFM[n].data[ope * 11 + 6 + 2], parent.instFM[n].data[ope * 11 + 0 + 2]);
+                        ((ClsOPN)pw.chip).OutFmSetAmDr(pw, ope, parent.instFM[n].data[ope * 11 + 9 + 2], parent.instFM[n].data[ope * 11 + 1 + 2]);
+                        ((ClsOPN)pw.chip).OutFmSetSr(pw, ope, parent.instFM[n].data[ope * 11 + 2 + 2]);
+                        ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, parent.instFM[n].data[ope * 11 + 4 + 2], parent.instFM[n].data[ope * 11 + 3 + 2]);
+                        ((ClsOPN)pw.chip).OutFmSetSSGEG(pw, ope, parent.instFM[n].data[ope * 11 + 10 + 2]);
+                        ((ClsOPN)pw.chip).OutFmSetTl(pw, ope, parent.instFM[n].data[ope * 11 + 5 + 2]);
+                    }
+
+                    pw.op1ml = parent.instFM[n].data[0 * 11 + 7];
+                    pw.op2ml = parent.instFM[n].data[1 * 11 + 7];
+                    pw.op3ml = parent.instFM[n].data[2 * 11 + 7];
+                    pw.op4ml = parent.instFM[n].data[3 * 11 + 7];
+                    pw.op1dt2 = 0;
+                    pw.op2dt2 = 0;
+                    pw.op3dt2 = 0;
+                    pw.op4dt2 = 0;
+
+                    ((ClsOPN)pw.chip).OutFmSetFeedbackAlgorithm(pw, parent.instFM[n].data[0], parent.instFM[n].data[1]);
+                    break;
             }
 
             pw.beforeTLOP1 = -1;
@@ -1300,7 +1337,7 @@ namespace Core
             pw.slotFreq[2] = -1;
             pw.slotFreq[3] = -1;
             ((ClsOPN)pw.chip).OutOPNSetCh3SpecialMode(pw, true);
-            pw.slots = 0xf;
+            pw.slots = pw.slots4OP;
         }
 
         public override void CmdExtendChannel(partWork pw, MML mml)
@@ -1359,6 +1396,31 @@ namespace Core
                             p.beforeFNum = -1;
                             p.freq = -1;
                             //SetFmFNum(p);
+                        }
+                    }
+                    break;
+                case "EXM":
+                    int nm = (int)mml.args[1];
+                    byte resm = 0;
+                    while (nm % 10 != 0)
+                    {
+                        if (nm % 10 > 0 && nm % 10 < 5)
+                        {
+                            resm += (byte)(1 << (nm % 10 - 1));
+                        }
+                        else
+                        {
+                            msgBox.setErrMsg(string.Format(msg.get("E11005"), nm), pw.getSrcFn(), pw.getLineNumber());
+                            break;
+                        }
+                        nm /= 10;
+                    }
+                    if (resm != 0)
+                    {
+                        pw.slots4OP = resm;
+                        if (pw.ch != 2 && !pw.Ch3SpecialMode)
+                        {
+                            pw.slots = resm;
                         }
                     }
                     break;

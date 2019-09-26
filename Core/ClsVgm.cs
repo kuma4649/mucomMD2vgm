@@ -238,7 +238,7 @@ namespace Core
             bool voiceSetmode = false;
             List<string> voiceTemp = new List<string>();
             int voiceRow = 6;
-            string s2 = "";
+            //string s2 = "";
 
             foreach (Line line in src)
             {
@@ -1022,62 +1022,85 @@ namespace Core
 
             try
             {
-                bool nrmMode = true;
-                if (vals[0].IndexOf("@%") >= 0)
-                {
-                    nrmMode = false;
-                }
-                int[] inst = null;
                 mucomVoice voi = new mucomVoice();
-                if (nrmMode)
-                {
-                    voi.type = 0;
-                    voi.Name = "";
-                    inst = new int[2 + 4 * 9];
-                    //inst[0]に音色番号をセット
-                    bool ok = GetNums( inst, 0, 1, vals[0], vals[0].IndexOf("@") + 1);
-                    voi.No = inst[0];
-                    if (!ok) throw new ArgumentException();
-                    //inst[1],[2]に音色番号をセット
-                    ok = GetNums( inst, 0, 2, vals[1], 2);
-                    if (!ok) throw new ArgumentException();
-                    //inst[3]から[12]に音色番号をセット
-                    ok = GetNums( inst, 2, 9, vals[2], 2);
-                    if (!ok) throw new ArgumentException();
-                    ok = GetNums( inst, 11, 9, vals[3], 2);
-                    if (!ok) throw new ArgumentException();
-                    ok = GetNums( inst, 20, 9, vals[4], 2);
-                    if (!ok) throw new ArgumentException();
-                    ok = GetNums( inst, 29, 9, vals[5], 2);
-                    if (!ok) throw new ArgumentException();
-                    voi.data = new byte[38];
-                    for (int i = 0; i < voi.data.Length; i++) voi.data[i] = (byte)inst[i];
-
-                }
-                else
-                {
+                if (vals[0].IndexOf("@%") >= 0)
                     voi.type = 1;
-                    voi.Name = "";
-                    inst = new int[25];
-                    bool ok = GetNums(inst, 0, 1, vals[0], vals[0].IndexOf("%") + 1);
-                    voi.No = inst[0];
-                    if (!ok) throw new ArgumentException();
-                    ok = GetNums(inst, 0, 4, vals[1], 2);
-                    if (!ok) throw new ArgumentException();
-                    ok = GetNums(inst, 4, 4, vals[2], 2);
-                    if (!ok) throw new ArgumentException();
-                    ok = GetNums(inst, 8, 4, vals[3], 2);
-                    if (!ok) throw new ArgumentException();
-                    ok = GetNums(inst, 12, 4, vals[4], 2);
-                    if (!ok) throw new ArgumentException();
-                    ok = GetNums(inst, 16, 4, vals[5], 2);
-                    if (!ok) throw new ArgumentException();
-                    ok = GetNums(inst, 20, 4, vals[6], 2);
-                    if (!ok) throw new ArgumentException();
-                    ok = GetNums(inst, 24, 1, vals[7], 2);
-                    if (!ok) throw new ArgumentException();
-                    voi.data = new byte[25];
-                    for (int i = 0; i < voi.data.Length; i++) voi.data[i] = (byte)inst[i];
+                else if (vals[0].IndexOf("@N") >= 0)
+                    voi.type = 2;
+                else voi.type = 0;
+
+                int[] inst = null;
+                bool ok;
+
+                switch (voi.type)
+                {
+                    case 0:
+                        voi.Name = "";
+                        inst = new int[2 + 4 * 9];
+                        //inst[0]に音色番号をセット
+                        ok = GetNums(inst, 0, 1, vals[0], vals[0].IndexOf("@") + 1);
+                        voi.No = inst[0];
+                        if (!ok) throw new ArgumentException();
+                        //inst[1],[2]に音色番号をセット
+                        ok = GetNums(inst, 0, 2, vals[1], 2);
+                        if (!ok) throw new ArgumentException();
+                        //inst[3]から[12]に音色番号をセット
+                        ok = GetNums(inst, 2, 9, vals[2], 2);
+                        if (!ok) throw new ArgumentException();
+                        ok = GetNums(inst, 11, 9, vals[3], 2);
+                        if (!ok) throw new ArgumentException();
+                        ok = GetNums(inst, 20, 9, vals[4], 2);
+                        if (!ok) throw new ArgumentException();
+                        ok = GetNums(inst, 29, 9, vals[5], 2);
+                        if (!ok) throw new ArgumentException();
+                        voi.data = new byte[38];
+                        for (int i = 0; i < voi.data.Length; i++) voi.data[i] = (byte)inst[i];
+                        break;
+                    case 1:
+                        voi.Name = "";
+                        inst = new int[25];
+                        ok = GetNums(inst, 0, 1, vals[0], vals[0].IndexOf("%") + 1);
+                        voi.No = inst[0];
+                        if (!ok) throw new ArgumentException();
+                        ok = GetNums(inst, 0, 4, vals[1], 2);
+                        if (!ok) throw new ArgumentException();
+                        ok = GetNums(inst, 4, 4, vals[2], 2);
+                        if (!ok) throw new ArgumentException();
+                        ok = GetNums(inst, 8, 4, vals[3], 2);
+                        if (!ok) throw new ArgumentException();
+                        ok = GetNums(inst, 12, 4, vals[4], 2);
+                        if (!ok) throw new ArgumentException();
+                        ok = GetNums(inst, 16, 4, vals[5], 2);
+                        if (!ok) throw new ArgumentException();
+                        ok = GetNums(inst, 20, 4, vals[6], 2);
+                        if (!ok) throw new ArgumentException();
+                        ok = GetNums(inst, 24, 1, vals[7], 2);
+                        if (!ok) throw new ArgumentException();
+                        voi.data = new byte[25];
+                        for (int i = 0; i < voi.data.Length; i++) voi.data[i] = (byte)inst[i];
+                        break;
+                    case 2:
+                        voi.Name = "";
+                        inst = new int[2 + 4 * 11];
+                        //inst[0]に音色番号をセット
+                        ok = GetNums(inst, 0, 1, vals[0], vals[0].IndexOf("N") + 1);
+                        voi.No = inst[0];
+                        if (!ok) throw new ArgumentException();
+                        //inst[1],[2]に音色番号をセット
+                        ok = GetNums(inst, 0, 2, vals[1], 2);
+                        if (!ok) throw new ArgumentException();
+                        //inst[3]から[12]に音色番号をセット
+                        ok = GetNums(inst, 2, 11, vals[2], 2);
+                        if (!ok) throw new ArgumentException();
+                        ok = GetNums(inst, 13, 11, vals[3], 2);
+                        if (!ok) throw new ArgumentException();
+                        ok = GetNums(inst, 24, 11, vals[4], 2);
+                        if (!ok) throw new ArgumentException();
+                        ok = GetNums(inst, 35, 11, vals[5], 2);
+                        if (!ok) throw new ArgumentException();
+                        voi.data = new byte[46];
+                        for (int i = 0; i < voi.data.Length; i++) voi.data[i] = (byte)inst[i];
+                        break;
                 }
 
                 //すでに定義済みの場合はいったん削除する(後に定義されたものが優先)

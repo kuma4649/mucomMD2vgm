@@ -165,49 +165,51 @@ namespace Core
                     //情報収集
                     Dictionary<KeyValuePair<enmChipType, int>, clsLoopInfo> dicLoopInfo = GetLoopInfo();
 
-
-                    //収集した情報をもとに 本解析と演奏を行う。
-
-                    desBuf = null;
-                    
-                    Disp(msg.get("I04027"));
-                    mmlAnalyze = new MMLAnalyze(desVGM);
-                    if (mmlAnalyze.Start() != 0)
+                    if (dicLoopInfo.Count != 0)
                     {
-                        msgBox.setErrMsg(string.Format(msg.get("E04003"), mmlAnalyze.lineNumber));
-                        return -1;
+
+                        //収集した情報をもとに 本解析と演奏を行う。
+
+                        desBuf = null;
+
+                        Disp(msg.get("I04027"));
+                        mmlAnalyze = new MMLAnalyze(desVGM);
+                        if (mmlAnalyze.Start() != 0)
+                        {
+                            msgBox.setErrMsg(string.Format(msg.get("E04003"), mmlAnalyze.lineNumber));
+                            return -1;
+                        }
+
+                        desVGM.CutYM2612();
+
+                        SetLoopInfo(desVGM, dicLoopInfo);
+
+                        //1.ループ無しのパートがすべて演奏完了するまで演奏する
+                        //(この間、ループ有りのパートはループ回数を消化しながらループさせる)
+                        //2.ループ無しのパートがすべて演奏完了したうえで、ループ有りのパートがループ回数を完全に消化したら、
+                        //もう一度ループ回数を充てんし、ループ回数を全て消化するまでループする
+                        switch (desVGM.info.format)
+                        {
+                            case enmFormat.VGM:
+                                Disp(msg.get("I04028"));
+                                desBuf = desVGM.Vgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.Playing);
+                                Disp(msg.get("I04029"));
+                                break;
+                            case enmFormat.XGM:
+                                Disp(msg.get("I04032"));
+                                desBuf = desVGM.Xgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.Playing);
+                                Disp(msg.get("I04033"));
+                                break;
+                        }
+
+                        if (desBuf == null)
+                        {
+                            msgBox.setErrMsg(string.Format(
+                                msg.get("E04004")
+                                , desVGM.lineNumber));
+                            return -1;
+                        }
                     }
-
-                    desVGM.CutYM2612();
-
-                    SetLoopInfo(desVGM, dicLoopInfo);
-
-                    //1.ループ無しのパートがすべて演奏完了するまで演奏する
-                    //(この間、ループ有りのパートはループ回数を消化しながらループさせる)
-                    //2.ループ無しのパートがすべて演奏完了したうえで、ループ有りのパートがループ回数を完全に消化したら、
-                    //もう一度ループ回数を充てんし、ループ回数を全て消化するまでループする
-                    switch (desVGM.info.format)
-                    {
-                        case enmFormat.VGM:
-                            Disp(msg.get("I04028"));
-                            desBuf = desVGM.Vgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.Playing);
-                            Disp(msg.get("I04029"));
-                            break;
-                        case enmFormat.XGM:
-                            Disp(msg.get("I04032"));
-                            desBuf = desVGM.Xgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.Playing);
-                            Disp(msg.get("I04033"));
-                            break;
-                    }
-
-                    if (desBuf == null)
-                    {
-                        msgBox.setErrMsg(string.Format(
-                            msg.get("E04004")
-                            , desVGM.lineNumber));
-                        return -1;
-                    }
-
                 }
 
 
