@@ -153,6 +153,8 @@ namespace Core
                             break;
                     }
 
+                    msgBox.clear();
+
                     if (desBuf == null)
                     {
                         msgBox.setErrMsg(string.Format(

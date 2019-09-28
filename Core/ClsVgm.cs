@@ -2201,7 +2201,6 @@ namespace Core
             //log.Write("KeyOn情報をかき出し");
             //foreach (byte dat in xgmKeyOnData)
             //    OutData(0x52, 0x28, dat);
-
             log.Write("VGMデータをXGMへコンバート");
             dat = ConvertVGMtoXGM(dat);
 
