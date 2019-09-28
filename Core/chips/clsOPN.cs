@@ -1281,6 +1281,12 @@ namespace Core
 
         public override void CmdLoopExtProc(partWork pw, MML mml)
         {
+            pw.beforeFNum = -1;
+            pw.slotFreq[0] = -1;
+            pw.slotFreq[1] = -1;
+            pw.slotFreq[2] = -1;
+            pw.slotFreq[3] = -1;
+            //pw.freq = -1;
             //pw.beforeVolume = -1;
             //pw.beforeInstrument = -1;
             if (pw.ch == 2)
@@ -1338,6 +1344,8 @@ namespace Core
             pw.slotFreq[3] = -1;
             ((ClsOPN)pw.chip).OutOPNSetCh3SpecialMode(pw, true);
             pw.slots = pw.slots4OP;
+            pw.freq = -1;
+            //SetFmFNum(pw);
         }
 
         public override void CmdExtendChannel(partWork pw, MML mml)
@@ -1378,6 +1386,10 @@ namespace Core
                             p.slots = p.slotsEX;
                             p.beforeVolume = -1;
                             p.beforeFNum = -1;
+                            pw.slotFreq[0] = -1;
+                            pw.slotFreq[1] = -1;
+                            pw.slotFreq[2] = -1;
+                            pw.slotFreq[3] = -1;
                             p.freq = -1;
                             //SetFmFNum(p);
                         }
@@ -1394,6 +1406,10 @@ namespace Core
                             p.Ch3SpecialMode = false;
                             p.beforeVolume = -1;
                             p.beforeFNum = -1;
+                            pw.slotFreq[0] = -1;
+                            pw.slotFreq[1] = -1;
+                            pw.slotFreq[2] = -1;
+                            pw.slotFreq[3] = -1;
                             p.freq = -1;
                             //SetFmFNum(p);
                         }

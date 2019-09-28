@@ -164,6 +164,7 @@ namespace Core
 
                     //情報収集
                     Dictionary<KeyValuePair<enmChipType, int>, clsLoopInfo> dicLoopInfo = GetLoopInfo();
+                    Dictionary<KeyValuePair<enmChipType, int>, long> dicInspectedClockCounter = GetClockCounterInfo();
 
                     if (dicLoopInfo.Count != 0)
                     {
@@ -183,6 +184,7 @@ namespace Core
                         desVGM.CutYM2612();
 
                         SetLoopInfo(desVGM, dicLoopInfo);
+                        SetInspectedClockCounter(desVGM, dicInspectedClockCounter);
 
                         //1.ループ無しのパートがすべて演奏完了するまで演奏する
                         //(この間、ループ有りのパートはループ回数を消化しながらループさせる)
@@ -263,6 +265,28 @@ namespace Core
             }
         }
 
+        private void SetInspectedClockCounter(ClsVgm desVGM, Dictionary<KeyValuePair<enmChipType, int>, long> dicInspectedClockCounter)
+        {
+            foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in desVGM.chips)
+            {
+                foreach (ClsChip chip in kvp.Value)
+                {
+                    if (!chip.use) continue;
+
+                    foreach (partWork pw in chip.lstPartWork)
+                    {
+                        if (pw.pData == null) continue;
+
+                        KeyValuePair<enmChipType, int> k = new KeyValuePair<enmChipType, int>(kvp.Key, pw.ch);
+                        if (dicInspectedClockCounter.ContainsKey(k))
+                        {
+                            pw.inspectedClockCounter = dicInspectedClockCounter[k];
+                        }
+                    }
+                }
+            }
+        }
+
         private Dictionary<KeyValuePair<enmChipType, int>, clsLoopInfo> GetLoopInfo()
         {
             //  各パートのループの有無を取得
@@ -302,7 +326,7 @@ namespace Core
                 }
             }
 
-            //全ての有効なパートの内、一番最後に現れるLコマンドの位置を得る。
+                //全ての有効なパートの内、一番最後に現れるLコマンドの位置を得る。
             long loopClockLength = -1;
             partWork p = null;
             foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in desVGM.chips)
@@ -325,6 +349,16 @@ namespace Core
                                 loopClockLength = pw.loopInfo.length;
                             }
                             //goto loopExit;
+                        }
+
+                        //Lコマンドの存在しないパートが一つも存在しない場合は、
+                        //その「Lコマンドの存在しないパートがある」ことを考慮する必要がない（当たり前）
+                        //lastOneフラグは「Lコマンドの存在しないパートがある」場合にもう一度ループ処理させるためのフラグである。
+                        //よって、上記の条件が成り立つ場合はこれをあらかじめ立てておく。
+                        pw.loopInfo.lastOne = false;
+                        if (desVGM.unusePartEndCountTrue == desVGM.loopUnusePartCount)
+                        {
+                            pw.loopInfo.lastOne = true;
                         }
                     }
                 }
@@ -359,9 +393,28 @@ namespace Core
                         pw.loopInfo.loopCounter = pw.loopInfo.length;
 
                         pw.loopInfo.startFlag = false;
-                        pw.loopInfo.lastOne = false;
 
                         dicLoopInfo.Add(new KeyValuePair<enmChipType, int>(kvp.Key, pw.ch), pw.loopInfo);
+                    }
+                }
+            }
+
+            return dicLoopInfo;
+        }
+
+        private Dictionary<KeyValuePair<enmChipType, int>, long> GetClockCounterInfo()
+        {
+            Dictionary<KeyValuePair<enmChipType, int>, long> dicLoopInfo = new Dictionary<KeyValuePair<enmChipType, int>, long>();
+
+            foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in desVGM.chips)
+            {
+                foreach (ClsChip chip in kvp.Value)
+                {
+                    if (!chip.use) continue;
+
+                    foreach (partWork pw in chip.lstPartWork)
+                    {
+                        dicLoopInfo.Add(new KeyValuePair<enmChipType, int>(kvp.Key, pw.ch), pw.clockCounter);
                     }
                 }
             }

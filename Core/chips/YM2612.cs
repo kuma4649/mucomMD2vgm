@@ -158,12 +158,19 @@ namespace Core
 
         public override void SetKeyOn(partWork pw)
         {
+            //if (!pw.beforeKeyOff)
+            {
+                OutFmKeyOff(pw);
+                //pw.beforeKeyOff = true;
+            }
             OutFmKeyOn(pw);
+            //pw.beforeKeyOff = false;
         }
 
         public override void SetKeyOff(partWork pw)
         {
             OutFmKeyOff(pw);
+            //pw.beforeKeyOff = true;
         }
 
         public override void StorePcm(Dictionary<int, clsPcm> newDic, KeyValuePair<int, clsPcm> v, byte[] buf, bool is16bit, int samplerate, params object[] option)
@@ -372,6 +379,22 @@ namespace Core
             }
             else
             {
+                //文字指定
+                n = -1;
+                foreach (int instNo in parent.instFM.Keys)
+                {
+                    if (parent.instFM[instNo].Name.Trim() != ((string)mml.args[1]).Trim())
+                    {
+                        continue;
+                    }
+                    n = instNo;
+                    break;
+                }
+                if (n == -1)
+                {
+                    msgBox.setErrMsg(string.Format(msg.get("E11001"), "\"" + ((string)mml.args[1]).Trim() + "\""), pw.getSrcFn(), pw.getLineNumber());
+                    return;
+                }
             }
 
             if (type == 'N')

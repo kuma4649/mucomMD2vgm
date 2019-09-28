@@ -1041,31 +1041,36 @@ namespace Core
                 pw.loopInfo.mmlPos = pw.mmlPos;
 
                 pw.incPos();
-                if (pw.loopInfo.isLongMml && pw.chip.parent.unusePartEndCount == pw.chip.parent.loopUnusePartCount)
+                if (pw.loopInfo.isLongMml && parent.unusePartEndCount == parent.loopUnusePartCount)
                 {
+                    //parent.loopKusabi = true;
+                    //parent.loopKusabiOffset = (long)parent.dat.Count;
+                    //parent.loopKusabiClock = (long)parent.lClock;
+                    //parent.loopKusabiSamples = (long)parent.dSample;
+                    //parent.loopKusabiXGM0x7ePtr = parent.OutDataLength();
                     parent.loopOffset = (long)parent.dat.Count;
                     parent.loopClock = (long)parent.lClock;
                     parent.loopSamples = (long)parent.dSample;
                     if (parent.info.format == enmFormat.XGM) parent.OutData(0x7e);
                 }
-            }
-            else
-            {
-                pw.incPos();
-                parent.loopOffset = (long)parent.dat.Count;
-                parent.loopClock = (long)parent.lClock;
-                parent.loopSamples = (long)parent.dSample;
+
+                pw.reqFreqReset = true;
+                pw.chip.CmdLoopExtProc(pw, mml);
+                return;
             }
 
-            if (!pw.chip.parent.isLoopEx && parent.info.format == enmFormat.XGM)
-            {
-                parent.OutData(0x7e);
-            }
+            pw.incPos();
+            parent.loopOffset = (long)parent.dat.Count;
+            parent.loopClock = (long)parent.lClock;
+            parent.loopSamples = (long)parent.dSample;
+            if (parent.info.format == enmFormat.XGM) parent.OutData(0x7e);
 
             foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in parent.chips)
             {
                 foreach (ClsChip chip in kvp.Value)
                 {
+                    if (!chip.use) continue;
+
                     foreach (partWork p in chip.lstPartWork)
                     {
                         p.reqFreqReset = true;

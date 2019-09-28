@@ -266,6 +266,14 @@ namespace Core
             }
             else
             {
+                //文字指定
+                foreach (int instNo in parent.instFM.Keys)
+                {
+                    if (parent.instFM[instNo].Name == (string)mml.args[1])
+                    {
+                        n = instNo;
+                    }
+                }
             }
 
             if (type == 'n' || type == 'N' || type == 'R' || type == 'A')

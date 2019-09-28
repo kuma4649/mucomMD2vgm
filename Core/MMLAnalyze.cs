@@ -1781,48 +1781,52 @@ namespace Core
             mml.type = enmMMLType.Tie;
             mml.args = null;
 
-            int n;
-            bool directFlg = false;
-            if (!pw.getNumNoteLength(out n, out directFlg))
-            {
-                return;
-            }
+            //int n;
+            //bool directFlg = false;
+            //if (!pw.getNumNoteLength(out n, out directFlg))
+            //{
+            //    return;
+            //}
 
-            mml.type = enmMMLType.TiePC;
-            if (!directFlg)
-            {
-                if ((int)pw.clock % n != 0)
-                {
-                    msgBox.setWrnMsg(string.Format(
-                        msg.get("E05023")
-                        , n), pw.getSrcFn(), pw.getLineNumber());
-                }
-                n = (int)pw.clock / n;
-            }
-            else
-            {
-                n = Common.CheckRange(n, 1, 65535);
-            }
+            //mml.type = enmMMLType.TiePC;
+            //if (!directFlg)
+            //{
+            //    if ((int)pw.clock % n != 0)
+            //    {
+            //        msgBox.setWrnMsg(string.Format(
+            //            msg.get("E05023")
+            //            , n), pw.getSrcFn(), pw.getLineNumber());
+            //    }
+            //    n = (int)pw.clock / n;
+            //}
+            //else
+            //{
+            //    n = Common.CheckRange(n, 1, 65535);
+            //}
 
-            //.の解析
-            int futen = 0;
-            int fn = n;
-            while (pw.getChar() == '.')
-            {
-                if (fn % 2 != 0)
-                {
-                    msgBox.setWrnMsg(msg.get("E05036")
-                        , mml.line.Fn
-                        , mml.line.Num);
-                }
-                fn = fn / 2;
-                futen += fn;
-                pw.incPos();
-            }
-            n += futen;
+            ////.の解析
+            //int futen = 0;
+            //int fn = n;
+            //while (pw.getChar() == '.')
+            //{
+            //    if (fn % 2 != 0)
+            //    {
+            //        msgBox.setWrnMsg(msg.get("E05036")
+            //            , mml.line.Fn
+            //            , mml.line.Num);
+            //    }
+            //    fn = fn / 2;
+            //    futen += fn;
+            //    pw.incPos();
+            //}
+            //n += futen;
 
-            mml.args = new List<object>();
-            mml.args.Add(n);
+            ////シャッフル効果
+            //n += pw.shuffle * pw.shuffleDirection;
+            //pw.shuffleDirection = -pw.shuffleDirection;
+
+            //mml.args = new List<object>();
+            //mml.args.Add(n);
         }
 
         private void CmdTiePC(partWork pw, MML mml)
@@ -1879,6 +1883,10 @@ namespace Core
             }
             n += futen;
 
+            //シャッフル効果
+            n += pw.shuffle * pw.shuffleDirection;
+            pw.shuffleDirection = -pw.shuffleDirection;
+
             mml.args = new List<object>();
             mml.args.Add(n);
         }
@@ -1929,6 +1937,10 @@ namespace Core
                 pw.incPos();
             }
             n += futen;
+
+            //シャッフル効果
+            n += pw.shuffle * pw.shuffleDirection;
+            pw.shuffleDirection = -pw.shuffleDirection;
 
             mml.args = new List<object>();
             mml.args.Add(n);

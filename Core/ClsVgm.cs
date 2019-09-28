@@ -1537,7 +1537,17 @@ namespace Core
                 return partCount - loopUsePartCount;
             }
         }
+
+        /// <summary>
+        /// 今回のループで完了する予定のパート数
+        /// </summary>
         public int unusePartEndCount = 0;
+
+        /// <summary>
+        /// 今回のループで完了したパート数
+        /// </summary>
+        public int unusePartEndCountTrue = 0;
+
         public bool isLoopEx = false;
         public int rendSecond = 600;
         public enmLoopExStep loopExStep = enmLoopExStep.none;
@@ -1570,8 +1580,11 @@ namespace Core
         /// </summary>
         public long dummyCmdLoopSamples = 0;
         public long dummyCmdLoopOffsetAddress = 0;
-
-
+        //public bool loopKusabi=false;
+        //public long loopKusabiOffset=-1;
+        //public long loopKusabiClock = -1;
+        //public long loopKusabiSamples = -1;
+        //public int loopKusabiXGM0x7ePtr=-1;
 
         public byte[] Vgm_getByteData(Dictionary<string, List<MML>> mmlData, enmLoopExStep loopExStep)
         {
@@ -1612,6 +1625,32 @@ namespace Core
             long waitCounter = 0;
             do
             {
+                //今回のループで演奏が完了する予定のパート数を数える
+                if (isLoopEx && loopExStep == enmLoopExStep.Playing)
+                {
+                    unusePartEndCount = 0;
+                    foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+                    {
+                        foreach (ClsChip chip in kvp.Value)
+                        {
+                            partWork pw;
+                            for (int i = 0; i < chip.lstPartWork.Count; i++)
+                            {
+                                pw = chip.lstPartWork[i];
+                                if (pw.clockCounter == pw.inspectedClockCounter)
+                                {
+                                    if (!pw.loopInfo.use && pw.mmlData != null && pw.mmlData.Count > 0)
+                                    {
+                                        unusePartEndCount++;
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                    //Console.WriteLine("{0}", unusePartEndCount);
+                }
+
                 foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
                 {
                     foreach (ClsChip chip in kvp.Value)
@@ -1799,7 +1838,8 @@ namespace Core
 
                 log.Write("終了パートのカウント");
                 endChannel = 0;
-                unusePartEndCount = 0;
+                //今回のループで完了したパートの数
+                unusePartEndCountTrue = 0;
                 foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
                 {
                     foreach (ClsChip chip in kvp.Value)
@@ -1817,7 +1857,7 @@ namespace Core
 
                             if (!pw.loopInfo.use && pw.mmlData!=null && pw.mmlData.Count>0)
                             {
-                                unusePartEndCount++;
+                                unusePartEndCountTrue++;
                             }
 
                             if (loopOffset != -1 && pw.envIndex == 3)
@@ -1856,6 +1896,29 @@ namespace Core
                     }
                 }
 
+                //if (isLoopEx)
+                //{
+                //    if (unusePartEndCount == loopUnusePartCount)
+                //    {
+                //        //check kusabi flag
+                //        if (loopKusabi)
+                //        {
+                //            loopOffset = loopKusabiOffset;
+                //            loopClock = loopKusabiClock;
+                //            loopSamples = loopKusabiSamples;
+                //            //OutInsertData(loopKusabiXGM0x7ePtr, 0x7e);//XGM専用処理の為不要
+
+                //            loopKusabi = false;
+                //            loopKusabiOffset = -1;
+                //            loopKusabiClock = -1;
+                //            loopKusabiSamples = -1;
+                //            loopKusabiXGM0x7ePtr = -1;
+                //        }
+
+                //        //check part data end flag
+                //    }
+                //}
+
             } while (endChannel < totalChannel);
 
             //残カット
@@ -1889,6 +1952,7 @@ namespace Core
                             OutData(pw.GetData());
                         }
                         pw.Flash();
+
                     }
                 }
             }
@@ -1945,6 +2009,32 @@ namespace Core
             long waitCounter;
             do
             {
+                //今回のループで演奏が完了する予定のパート数を数える
+                if (isLoopEx && loopExStep == enmLoopExStep.Playing)
+                {
+                    unusePartEndCount = 0;
+                    foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+                    {
+                        foreach (ClsChip chip in kvp.Value)
+                        {
+                            partWork pw;
+                            for (int i = 0; i < chip.lstPartWork.Count; i++)
+                            {
+                                pw = chip.lstPartWork[i];
+                                if (pw.clockCounter == pw.inspectedClockCounter)
+                                {
+                                    if (!pw.loopInfo.use && pw.mmlData != null && pw.mmlData.Count > 0)
+                                    {
+                                        unusePartEndCount++;
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                    //Console.WriteLine("{0}", unusePartEndCount);
+                }
+
                 //KeyOnリストをクリア
                 xgmKeyOnData = new List<byte>();
 
@@ -2003,7 +2093,7 @@ namespace Core
 
                 log.Write("終了パートのカウント");
                 endChannel = 0;
-                unusePartEndCount = 0;
+                unusePartEndCountTrue = 0;
                 foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
                 {
                     foreach (ClsChip chip in kvp.Value)
@@ -2023,7 +2113,7 @@ namespace Core
 
                             if (!pw.loopInfo.use && pw.mmlData != null && pw.mmlData.Count > 0)
                             {
-                                unusePartEndCount++;
+                                unusePartEndCountTrue++;
                             }
 
                             if (loopOffset != -1 && pw.envIndex == 3)
@@ -2060,6 +2150,29 @@ namespace Core
                         }
                     }
                 }
+
+                //if (isLoopEx)
+                //{
+                //    if (unusePartEndCount == loopUnusePartCount)
+                //    {
+                //        //check kusabi flag
+                //        if (loopKusabi)
+                //        {
+                //            loopOffset = loopKusabiOffset;
+                //            loopClock = loopKusabiClock;
+                //            loopSamples = loopKusabiSamples;
+                //            OutInsertData(loopKusabiXGM0x7ePtr, 0x7e);
+
+                //            loopKusabi = false;
+                //            loopKusabiOffset = -1;
+                //            loopKusabiClock = -1;
+                //            loopKusabiSamples = -1;
+                //            loopKusabiXGM0x7ePtr = -1;
+                //        }
+
+                //        //check part data end flag
+                //    }
+                //}
 
             } while (endChannel < totalChannel);//全てのチャンネルが終了していない場合はループする
 
@@ -2282,7 +2395,7 @@ namespace Core
                                 else if (pw.loopInfo.isLongMml)
                                 {
                                     pw.loopInfo.loopCount--;
-                                    if (pw.loopInfo.loopCount == 0)
+                                    if (pw.loopInfo.loopCount < 1)
                                     {
                                         if (unusePartEndCount == loopUnusePartCount)
                                         {
@@ -2798,7 +2911,7 @@ namespace Core
                             else if (pw.loopInfo.isLongMml)
                             {
                                 pw.loopInfo.loopCount--;
-                                if (pw.loopInfo.loopCount == 0)
+                                if (pw.loopInfo.loopCount < 1)
                                 {
                                     //
                                     if (unusePartEndCount == loopUnusePartCount)
@@ -3369,7 +3482,7 @@ namespace Core
                     pw.chip.CmdY(pw, mml);
                     pw.mmlPos++;
 
-                    if(pw.chip is YM2612)
+                    if (pw.chip is YM2612 || pw.chip is YM2612X)
                     {
                         if (mml.args[0] is byte && (byte)mml.args[0] == 0x26)
                         {
@@ -3556,6 +3669,15 @@ namespace Core
         public void OutData(params byte[] data)
         {
             dat.AddRange(data);
+        }
+
+        public void OutInsertData(int ptr,params byte[] data)
+        {
+            dat.InsertRange(ptr, data);
+        }
+        public int OutDataLength()
+        {
+            return dat.Count;
         }
 
         private void OutWaitNSamples(long n)

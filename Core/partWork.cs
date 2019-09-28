@@ -83,6 +83,7 @@ namespace Core
         /// いままで演奏した総クロック数
         /// </summary>
         public long clockCounter = 0L;
+        public long inspectedClockCounter = -1;
 
         ///// <summary>
         ///// Lコマンド使用フラグ
@@ -644,6 +645,7 @@ namespace Core
         internal int beforeTLOP3 = -1;
         internal int beforeTLOP2 = -1;
         internal int beforeTLOP4 = -1;
+        public bool beforeKeyOff=false;
 
         public void MakeLstPos()
         {
@@ -919,7 +921,7 @@ namespace Core
             return true;
         }
 
-        public bool getNumNoteLength(out int num, out bool flg)
+        public bool getNumNoteLength(out int num, out bool flg)//,bool tieflg=false)
         {
 
             flg = false;
@@ -934,6 +936,12 @@ namespace Core
             //クロック直接指定
             if (getChar() == '%')
             {
+                //if (tieflg)
+                //{
+                //    num = -2;
+                //    flg = false;
+                //    return false;
+                //}
                 if (sptab)
                 {
                     num = -1;
