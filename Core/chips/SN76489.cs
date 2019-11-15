@@ -353,8 +353,13 @@ namespace Core
         public override void CmdNoise(partWork pw, MML mml)
         {
             int n = (int)mml.args[0];
-            n = Common.CheckRange(n, 0, 7);
-            pw.noise = n;
+            n = Common.CheckRange(n, 0, 0x3ff);
+
+            byte data = (byte)(0xc0 + (n & 0xf));
+            OutPsgPort(pw, data);
+
+            data = (byte)(n >> 4);
+            OutPsgPort(pw, data);
         }
 
 
