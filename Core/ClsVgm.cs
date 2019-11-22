@@ -549,6 +549,9 @@ namespace Core
                     case 'I':
                         definePCMInstrumentSet(srcFn, lineNumber, vs);
                         break;
+                    case 'M':
+                        definePCMMapModeSet(srcFn, lineNumber, vs);
+                        break;
                     default:
                         definePCMInstrumentEasy(srcFn, lineNumber, vs);
                         break;
@@ -559,6 +562,41 @@ namespace Core
             catch
             {
                 msgBox.setWrnMsg(msg.get("E01003"), srcFn, lineNumber);
+            }
+        }
+
+        private void definePCMMapModeSet(string srcFn, int lineNumber, string[] vs)
+        {
+            int map = Common.ParseNumber(vs[0].Substring(1));
+            map = Math.Min(Math.Max(map, 0), 255);
+            int oct = Common.ParseNumber(vs[1]);
+            oct = Math.Min(Math.Max(oct, 1), 8);
+            int note = Common.ParseNumber(vs[2]);
+            note = Math.Min(Math.Max(note, 0), 11);
+
+            if (!instPCMMap.ContainsKey(map))
+            {
+                instPCMMap.Add(map, new Dictionary<int, int>());
+            }
+
+            int i = 0;
+            while (i < vs.Length - 3)
+            {
+                int no;
+                if (string.IsNullOrEmpty(vs[3 + i]))
+                {
+                    i++;
+                    continue;
+                }
+                no = Common.ParseNumber(vs[3 + i]);
+                no = Math.Min(Math.Max(no, 0), 255);
+
+                if (instPCMMap[map].ContainsKey(oct * 12 + note + i))
+                {
+                    instPCMMap[map].Remove(oct * 12 + note + i);
+                }
+                instPCMMap[map].Add(oct * 12 + note + i, no);
+                i++;
             }
         }
 
@@ -3469,6 +3507,11 @@ namespace Core
                 case enmMMLType.PcmMode:
                     log.Write("PcmMode");
                     pw.chip.CmdMode(pw, mml);
+                    pw.mmlPos++;
+                    break;
+                case enmMMLType.PcmMap:
+                    log.Write("PcmMap");
+                    pw.chip.CmdPcmMapSw(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Bend:

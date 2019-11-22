@@ -237,10 +237,10 @@ namespace Core
                 //    log.Write("SSG Hard Env");
                 //    CmdSlotDetune(pw, mml);
                 //    break;
-                //case 'm': // SSG Hard Env
-                //    log.Write("Slot Detune");
-                //    CmdSlotDetune(pw, mml);
-                //    break;
+                case 'm': // mode
+                    log.Write("Mode PCMMap");
+                    CmdMode(pw, mml);
+                    break;
                 case 'y': // y
                     log.Write("y");
                     CmdY(pw, mml);
@@ -641,14 +641,41 @@ namespace Core
         {
             int n;
             pw.incPos();
-            if (!pw.getNum(out n))
+
+            if (pw.getChar() == 'o')
             {
-                msgBox.setErrMsg(msg.get("E05012"), pw.getSrcFn(), pw.getLineNumber());
-                n = 0;
+                //pcm mapMode ?
+                pw.incPos();
+                if (pw.getChar() == 'n')
+                {
+                    mml.type = enmMMLType.PcmMap;
+                    mml.args = new List<object>();
+                    mml.args.Add(true);
+                    pw.incPos();
+                }
+                else if (pw.getChar() == 'f')
+                {
+                    mml.type = enmMMLType.PcmMap;
+                    mml.args = new List<object>();
+                    mml.args.Add(false);
+                    pw.incPos();
+                }
+                else
+                {
+                    msgBox.setErrMsg(msg.get("E05055"), pw.getSrcFn(), pw.getLineNumber());
+                }
             }
-            mml.type = enmMMLType.PcmMode;
-            mml.args = new List<object>();
-            mml.args.Add(n);
+            else
+            {
+                if (!pw.getNum(out n))
+                {
+                    msgBox.setErrMsg(msg.get("E05012"), pw.getSrcFn(), pw.getLineNumber());
+                    n = 0;
+                }
+                mml.type = enmMMLType.PcmMode;
+                mml.args = new List<object>();
+                mml.args.Add(n);
+            }
         }
 
         private void CmdGatetime(partWork pw, MML mml)

@@ -717,6 +717,29 @@ namespace Core
 
             //以下vgm pcmCh処理
 
+            if (pw.isPcmMap)
+            {
+                int nt = Const.NOTE.IndexOf(pw.noteCmd);
+                int f = pw.octaveNow * 12 + nt + pw.shift + pw.keyShift;
+                if (parent.instPCMMap.ContainsKey(pw.pcmMapNo))
+                {
+                    if (parent.instPCMMap[pw.pcmMapNo].ContainsKey(f))
+                    {
+                        pw.instrument = parent.instPCMMap[pw.pcmMapNo][f];
+                    }
+                    else
+                    {
+                        msgBox.setErrMsg(string.Format(msg.get("E10025"), pw.octaveNow, pw.noteCmd, pw.shift + pw.keyShift) );
+                        return;
+                    }
+                }
+                else
+                {
+                    msgBox.setErrMsg(string.Format(msg.get("E10024"), pw.pcmMapNo));
+                    return;
+                }
+            }
+
             if (!parent.instPCM.ContainsKey(pw.instrument)) return;
 
             if (!parent.PCMmode)

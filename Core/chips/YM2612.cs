@@ -401,6 +401,16 @@ namespace Core
             {
                 if (pw.Type == enmChannelType.FMPCM || pw.Type == enmChannelType.FMPCMex)
                 {
+                    if (pw.isPcmMap)
+                    {
+                        pw.pcmMapNo = n;
+                        if (!parent.instPCMMap.ContainsKey(n))
+                        {
+                            msgBox.setErrMsg(string.Format(msg.get("E10024"), n));
+                        }
+                        return;
+                    }
+
                     pw.instrument = n;
                     if (!parent.instPCM.ContainsKey(n))
                     {
