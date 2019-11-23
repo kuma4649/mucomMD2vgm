@@ -642,6 +642,7 @@ namespace Core
                         {
                             desVGM.instPCM.Remove(pds.No);
                         }
+                        int fFreq = desVGM.info.format == enmFormat.VGM ? 8000 : 14000;
                         v = new clsPcm(
                             pds.No
                             , pcmDataSeqNum++
@@ -655,7 +656,7 @@ namespace Core
                             , 0
                             , pds.DatLoopAdr
                             , false
-                            , desVGM.info.format == enmFormat.VGM ? 8000 : 14000);
+                            , fFreq);
                         desVGM.instPCM.Add(pds.No, v);
 
                         //ファイルの読み込み
@@ -666,6 +667,15 @@ namespace Core
                             //    msg.get("E04007")
                             //    , v.fileName));
                             continue;
+                        }
+
+                        //samplerate変換
+                        if (fFreq != pds.BaseFreq)
+                        {
+                            //SOXで変換する
+                            ConvertFreq(path, ref buf, pds.BaseFreq, fFreq);
+                            pds.BaseFreq = fFreq;
+                            v.freq = fFreq;
                         }
 
                         if (desVGM.info.format == enmFormat.XGM && v.isSecondary)
@@ -798,6 +808,43 @@ namespace Core
 
             desVGM.instPCM = newDic;
 
+        }
+
+        private void ConvertFreq(string srcPath,ref byte[] buf, int srcFreq, int dstFreq)
+        {
+            try
+            {
+                Disp(string.Format("SoXを使用し、ピッチの変換を行います。{0}Hz", srcFreq));
+                string path = Path.Combine(stPath, "sox\\sox.exe");
+                if (!File.Exists(path))
+                {
+                    msgBox.setWrnMsg(string.Format("soxが見つかりませんでした.(検索場所:{0})", path));
+                    return;
+                }
+
+                string tempPath = Path.Combine(srcPath, "soxTemp.raw");
+                File.Delete(tempPath);
+                File.WriteAllBytes(tempPath, buf);
+                string destPath = Path.Combine(srcPath, "soxTempDest.raw");
+                File.Delete(destPath);
+                
+                System.Diagnostics.ProcessStartInfo psi =
+                    new System.Diagnostics.ProcessStartInfo();
+                psi.FileName = string.Format("\"{0}\"",path);
+                psi.Arguments = string.Format("-e unsigned -b 8 -c 1 -r {0} \"{1}\" -r {2} \"{3}\"", srcFreq, tempPath, dstFreq, destPath);
+                psi.CreateNoWindow = true;
+                System.Diagnostics.Process p = System.Diagnostics.Process.Start(psi);
+                p.WaitForExit();
+
+                buf = File.ReadAllBytes(destPath);
+            }
+            catch(Exception e)
+            {
+                msgBox.setWrnMsg(string.Format(
+                    "soxを使用した周波数変換処理で例外が発生しました.\r\nMessage:\r\n{0}\r\nStackTrace:\r\n{1}\r\n"
+                    ,e.Message
+                    ,e.StackTrace));
+            }
         }
 
         private void Result()

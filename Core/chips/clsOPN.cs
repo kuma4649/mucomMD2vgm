@@ -751,6 +751,7 @@ namespace Core
             }
 
             float m = Const.pcmMTbl[pw.pcmNote] * (float)Math.Pow(2, (pw.pcmOctave - 4));
+            m = 1;
             pw.pcmBaseFreqPerFreq = Information.VGM_SAMPLE_PER_SECOND / ((float)parent.instPCM[pw.instrument].freq * m);
             pw.pcmFreqCountBuffer = 0.0f;
             long p = parent.instPCM[pw.instrument].stAdr;

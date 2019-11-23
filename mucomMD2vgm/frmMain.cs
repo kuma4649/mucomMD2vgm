@@ -123,13 +123,20 @@ namespace mucomMD2vgm
 
                             DataGridViewRow row = new DataGridViewRow();
                             row.Cells.Add(new DataGridViewTextBoxCell());
+                            row.Cells.Add(new DataGridViewTextBoxCell());
+                            row.Cells.Add(new DataGridViewTextBoxCell());
+                            row.Cells.Add(new DataGridViewTextBoxCell());
                             row.Cells[0].Value = pw[i].PartName;
-                            row.Cells.Add(new DataGridViewTextBoxCell());
                             row.Cells[1].Value = pw[i].chip.Name.ToUpper();
-                            row.Cells.Add(new DataGridViewTextBoxCell());
                             row.Cells[2].Value = pw[i].loopInfo.use ? pw[i].loopInfo.totalCounter : pw[i].clockCounter;
-                            row.Cells.Add(new DataGridViewTextBoxCell());
-                            row.Cells[3].Value = pw[i].loopInfo.use ? pw[i].loopInfo.loopCounter.ToString() : "-";
+                            if (mv.desVGM.isLoopEx)
+                            {
+                                row.Cells[3].Value = pw[i].loopInfo.use ? pw[i].loopInfo.loopCounter.ToString() : "-";
+                            }
+                            else
+                            {
+                                row.Cells[3].Value = "not in use(LoopEx mode only.)";
+                            }
                             //row.Cells.Add(new DataGridViewTextBoxCell());
                             //row.Cells[4].Value = pw[i].totalSamples;
                             //row.Cells.Add(new DataGridViewTextBoxCell());

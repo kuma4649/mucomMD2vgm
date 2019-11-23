@@ -613,42 +613,52 @@ namespace Core
             {
                 enmChip = enmChipType.YM2612;
                 fq = 8000;
+                try
+                {
+                    if (vs.Length > 2 && vs[2] != null)
+                        fq = Common.ParseNumber(vs[2]);
+                }
+                catch
+                {
+                    fq = 8000;
+                }
             }
             else
             {
                 enmChip = enmChipType.YM2612X;
                 fq = 14000;
+                try
+                {
+                    if (vs.Length > 2 && vs[2] != null)
+                        fq = Common.ParseNumber(vs[2]);
+                }
+                catch
+                {
+                    fq = 14000;
+                }
             }
 
             int num = Common.ParseNumber(vs[0]);
             string fn = vs[1].Trim().Trim('"');
 
-            //try
-            //{
-            //    fq = Common.ParseNumber(vs[2]);
-            //}
-            //catch
-            //{
-            //    fq = -1;
-            //}
-
             int vol = 100;
-            //try
-            //{
-            //    vol = Common.ParseNumber(vs[3]);
-            //}
-            //catch
-            //{
-            //    vol = 100;
-            //}
+            try
+            {
+                if (vs.Length > 3 && vs[3] != null)
+                    vol = Common.ParseNumber(vs[3]);
+            }
+            catch
+            {
+                vol = 100;
+            }
 
             bool isSecondary = false;
 
-            if (vs.Length > 4)
-            {
-                enmChip = GetChipTypeForPCM(srcFn, lineNumber, vs[4], out isSecondary);
-                if (enmChip == enmChipType.None) return;
-            }
+            //if (vs.Length > 4)
+            //{
+            //    enmChip = GetChipTypeForPCM(srcFn, lineNumber, vs[4], out isSecondary);
+            //    if (enmChip == enmChipType.None) return;
+            //}
 
             //if (info.format == enmFormat.XGM)
             //{
@@ -1746,19 +1756,23 @@ namespace Core
                             //lfoとenvelopeは音長によるウエイトカウントが存在する場合のみ対象にする。(さもないと、曲のループ直前の効果を出せない)
                             if (waitCounter > 0)
                             {
-                                //lfo
-                                for (int lfo = 0; lfo < 1; lfo++)
+                                if (!isLoopEx && !cpw.dataEnd && loopClock != 0)
                                 {
-                                    if (!cpw.lfo[lfo].sw) continue;
-                                    if (cpw.lfo[lfo].waitCounter <= 0) continue;
+                                    //lfo
+                                    for (int lfo = 0; lfo < 1; lfo++)
+                                    {
+                                        if (!cpw.lfo[lfo].sw) continue;
+                                        if (cpw.lfo[lfo].waitCounter <= 0) continue;
 
-                                    waitCounter = Math.Min(waitCounter, cpw.lfo[lfo].waitCounter);
-                                }
+                                        waitCounter = Math.Min(waitCounter, cpw.lfo[lfo].waitCounter);
+                                    }
 
-                                //envelope
-                                if (cpw.envelopeMode && cpw.envIndex != -1)
-                                {
-                                    waitCounter = Math.Min(waitCounter, GetWaitCounter(1));
+                                    //envelope
+                                    if (cpw.envelopeMode && cpw.envIndex != -1)
+                                    {
+                                        waitCounter = Math.Min(waitCounter, GetWaitCounter(1));
+                                    }
+
                                 }
                             }
 
@@ -1972,7 +1986,7 @@ namespace Core
                 //    {
                 //        foreach (partWork pw in chip.lstPartWork)
                 //        {
-                //            if (pw.LSwitch) pw.LLength -= waitCounter;
+                //            //if (pw.LSwitch) pw.LLength -= waitCounter;
                 //            pw.totalSamples -= waitSample;
                 //        }
                 //    }
@@ -2492,18 +2506,21 @@ namespace Core
                         //lfoとenvelopeは音長によるウエイトカウントが存在する場合のみ対象にする。(さもないと、曲のループ直前の効果を出せない)
                         if (cnt < 1) continue;
 
-                        //lfo
-                        for (int lfo = 0; lfo < 1; lfo++)
+                        if (!isLoopEx && !pw.dataEnd && loopClock != 0)
                         {
-                            if (!pw.lfo[lfo].sw) continue;
-                            if (pw.lfo[lfo].waitCounter == -1) continue;
+                            //lfo
+                            for (int lfo = 0; lfo < 1; lfo++)
+                            {
+                                if (!pw.lfo[lfo].sw) continue;
+                                if (pw.lfo[lfo].waitCounter == -1) continue;
 
-                            cnt = Math.Min(cnt, pw.lfo[lfo].waitCounter);
+                                cnt = Math.Min(cnt, pw.lfo[lfo].waitCounter);
+                            }
+
+                            //envelope
+                            if (!(pw.chip is SN76489)) continue;
+                            if (pw.envelopeMode && pw.envIndex != -1) cnt = Math.Min(cnt, GetWaitCounter(1));
                         }
-
-                        //envelope
-                        if (!(pw.chip is SN76489)) continue;
-                        if (pw.envelopeMode && pw.envIndex != -1) cnt = Math.Min(cnt, GetWaitCounter(1));
                     }
                 }
             }
