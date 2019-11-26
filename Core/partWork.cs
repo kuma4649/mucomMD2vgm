@@ -469,7 +469,11 @@ namespace Core
 
         public void OutData(params byte[] data)
         {
-            foreach (byte b in data) dataBuf.Add(b);
+            foreach (byte b in data)
+            {
+                log.Write(string.Format("name:{0} channel:{1} data:{2:x2}", chip.Name, ch, b));
+                dataBuf.Add(b);
+            }
         }
         public byte[] GetData()
         {

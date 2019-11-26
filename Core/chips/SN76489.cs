@@ -284,7 +284,7 @@ namespace Core
             if (pw.beforeVolume != vol)
             {
                 data = (byte)(0x80 + (pw.ch << 5) + 0x10 + (15 - VolTbl[vol]));
-                log.Write(string.Format("vol:{0} volTbl:{1}", vol, VolTbl[vol]));
+                log.Write(string.Format("name:{0} channel:{1} vol:{2} volTbl:{3}", pw.chip.Name, pw.ch, vol, VolTbl[vol]));
                 OutPsgPort(pw, data);
                 pw.beforeVolume = vol;
             }
