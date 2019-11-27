@@ -148,11 +148,11 @@ namespace Core
 
         }
 
-        public void OutYM2612XPcmKeyOFF(MML mml, partWork pw)
+        public void OutYM2612XPcmKeyOFF(partWork pw)
         {
 
             int id = 0;
-            int ch = Math.Max(0, pw.ch - 8);
+            int ch = Common.CheckRange(pw.ch == 6 ? 0 : Math.Max(0, pw.ch - 9), 0, 3);
             int priority = 0;
 
             parent.OutData(

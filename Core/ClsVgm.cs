@@ -181,7 +181,7 @@ namespace Core
             }
         }
         
-        public void LoadAdpcmdat()
+        public int LoadAdpcmdat()
         {
             //mucファイルのある位置にあるfn
             string mucPathPcm = Path.Combine(Path.GetDirectoryName(srcFn), info.Pcm);
@@ -194,7 +194,7 @@ namespace Core
             {
                 if (!File.Exists(mdpPathPcm))
                 {
-                    return;
+                    return -1;
                 }
                 decidePcm = mdpPathPcm;
             }
@@ -206,6 +206,7 @@ namespace Core
             byte[] pcmdat = File.ReadAllBytes(decidePcm);
             mucomADPCM2PCM.initial(pcmdat, info.format);
             List<mucomADPCM2PCM.mucomPCMInfo> lstInfo = mucomADPCM2PCM.lstMucomPCMInfo;
+            int index = 0;
 
             foreach (mucomADPCM2PCM.mucomPCMInfo pinfo in lstInfo)
             {
@@ -220,9 +221,10 @@ namespace Core
                     , -1
                     );
 
-                instPCMDatSeq.Add(pds);
+                instPCMDatSeq.Insert(index++, pds);
             }
 
+            return lstInfo.Count;
         }
 
         #region analyze

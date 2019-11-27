@@ -83,7 +83,11 @@ namespace Core
                 desVGM.LoadSSGdat();
 
                 Disp(msg.get("I04023"));
-                desVGM.LoadAdpcmdat();
+                int i = desVGM.LoadAdpcmdat();
+                if (i > 0)
+                {
+                    Disp(string.Format("ADPCM読み込まれ、PCM番号 1 から {0} まで使用されます。", i));
+                }
 
                 Disp(msg.get("I04004"));
                 if (desVGM.instPCMDatSeq.Count > 0) GetPCMData(path);
@@ -673,7 +677,7 @@ namespace Core
                         if (fFreq != pds.BaseFreq)
                         {
                             //SOXで変換する
-                            ConvertFreq(path, ref buf, pds.BaseFreq, fFreq);
+                            ConvertFreq(path, ref buf,  pds.BaseFreq, fFreq);
                             pds.BaseFreq = fFreq;
                             v.freq = fFreq;
                         }
