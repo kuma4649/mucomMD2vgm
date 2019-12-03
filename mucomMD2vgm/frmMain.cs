@@ -28,6 +28,7 @@ namespace mucomMD2vgm
 
         private void frmMain_Shown(object sender, EventArgs e)
         {
+            Core.Common.CheckSoXVersion(System.Windows.Forms.Application.StartupPath, Disp);
             string[] args = Environment.GetCommandLineArgs();
             if (args != null && args.Length > 1)
             {

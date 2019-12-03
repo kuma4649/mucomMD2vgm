@@ -349,25 +349,40 @@ mucomMD2vgm MMLコマンドメモ
 
 			   volume は100で通常の音量になります。100以上も指定できますが音が割れます。
 			   
-			   freqを指定すると、8KHz/14KHzを基準に、異なるピッチのPCMデータとして登録ができます。
+			   freqを指定すると、36をo4cとして0～72の範囲で音程を変換し定義します。
+	           73以上を指定すると8KHz/14KHzを基準に、異なるピッチのPCMデータとして登録ができます。
 			   但し、この機能を利用するにはsoxが必要になります。
 			   SoXはコマンドラインによるPCMデータ変換ツールです。
 			   SoX
 			    ホームページ
  			      http://sox.sourceforge.net/
 				プログラムのアーカイブへのリンク
-			      https://sourceforge.net/projects/sox/files/sox/12.17.5/sox12175.zip/download?use_mirror=jaist&download=
+				  https://sourceforge.net/projects/sox/files/sox/14.4.2/sox-14.4.2-win32.zip/download
 			    LICENSE
 				  GPL
 			   解凍したら、mucomMD2vgmのプログラムがあるフォルダーに「sox」フォルダーを作成しその中にファイルをコピーしてください。
-			   尚、SoX起動時にフォーカスが移る為、場合によってはウィンドウが点滅するような症状がでますが仕様です。
-			   また、.muMがある場所に以下のファイル名を作業用として使用します。上書きが行われ作業完了するとファイルを残します。(TBD)
+			   また、.muM/.mucがある場所に以下のファイル名を作業用として使用します。上書きが行われ作業完了するとファイルを削除します。
 			     soxTemp.raw
 				 soxTempDest.raw
 
 			   周波数変更機能仕様例)
 			   8KHzのGuitarがo4cの音の時、以下のように定義すると１オクターブ分のPCMが変換されながら定義される。
 			   (後述のPCMマッピングモード併用)
+                '@ P  1,"Guitar.wav" , 36 , 100
+                '@ P  2,"Guitar.wav" , 37 , 100
+                '@ P  3,"Guitar.wav" , 38 , 100
+                '@ P  4,"Guitar.wav" , 39 , 100
+                '@ P  5,"Guitar.wav" , 40 , 100
+                '@ P  6,"Guitar.wav" , 41 , 100
+                '@ P  7,"Guitar.wav" , 42 , 100
+                '@ P  8,"Guitar.wav" , 43 , 100
+                '@ P  9,"Guitar.wav" , 44 , 100
+                '@ P 10,"Guitar.wav" , 45 , 100
+                '@ P 11,"Guitar.wav" , 46 , 100
+                '@ P 12,"Guitar.wav" , 47 , 100
+                '@ P 13,"Guitar.wav" , 48 , 100
+                '@ PM 0 , 4,0 , 1,2,3,4,5,6,7,8,9,10,11,12,13
+			   または
                 '@ P  1,"Guitar.wav" ,  8000 , 100
                 '@ P  2,"Guitar.wav" ,  8476 , 100
                 '@ P  3,"Guitar.wav" ,  8979 , 100

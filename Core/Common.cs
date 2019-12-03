@@ -30,6 +30,37 @@ namespace Core
             return GetPCMDataFromFile(path, instPCM.fileName, instPCM.vol, out isRaw, out is16bit, out samplerate);
         }
 
+        public static bool CheckSoXVersion(string srcpath, Action<string> Disp)
+        {
+            try
+            {
+                string path = Path.Combine(srcpath, "sox\\sox.exe");
+                if (!File.Exists(path))
+                {
+                    return false;
+                }
+
+                //SoXの起動
+                System.Diagnostics.ProcessStartInfo psi =
+                    new System.Diagnostics.ProcessStartInfo();
+                psi.FileName = string.Format("\"{0}\"", path);
+                psi.Arguments = "--version";
+                psi.CreateNoWindow = true;
+                psi.UseShellExecute = false;
+                psi.RedirectStandardOutput = true;
+                System.Diagnostics.Process p = System.Diagnostics.Process.Start(psi);
+                p.WaitForExit();
+                Disp(p.StandardOutput.ReadToEnd().Replace("\r\r\n", "\n"));
+
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public static byte[] GetPCMDataFromFile(string path, string fileName, int vol, out bool isRaw, out bool is16bit, out int samplerate)
         {
             string fnPcm = Path.Combine(path, fileName);

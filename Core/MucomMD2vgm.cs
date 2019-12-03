@@ -831,24 +831,49 @@ namespace Core
                 File.WriteAllBytes(tempPath, buf);
                 string destPath = Path.Combine(srcPath, "soxTempDest.raw");
                 File.Delete(destPath);
-                
+
+                if (srcFreq < 73)
+                {
+                    srcFreq = GetNoteNumToFreq(dstFreq, srcFreq);
+                }
+
                 System.Diagnostics.ProcessStartInfo psi =
                     new System.Diagnostics.ProcessStartInfo();
                 psi.FileName = string.Format("\"{0}\"",path);
                 psi.Arguments = string.Format("-e unsigned -b 8 -c 1 -r {0} \"{1}\" -r {2} \"{3}\"", srcFreq, tempPath, dstFreq, destPath);
                 psi.CreateNoWindow = true;
+                psi.UseShellExecute = false;
+                psi.RedirectStandardOutput = true;
+#if DEBUG
+                Disp(string.Format("{0} {1}", psi.FileName, psi.Arguments));
+#endif
                 System.Diagnostics.Process p = System.Diagnostics.Process.Start(psi);
                 p.WaitForExit();
 
                 buf = File.ReadAllBytes(destPath);
+
+                //元ファイルと出力先ファイルの削除
+                File.Delete(tempPath);
+                File.Delete(destPath);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 msgBox.setWrnMsg(string.Format(
                     "soxを使用した周波数変換処理で例外が発生しました.\r\nMessage:\r\n{0}\r\nStackTrace:\r\n{1}\r\n"
                     ,e.Message
                     ,e.StackTrace));
             }
+        }
+
+        private int GetNoteNumToFreq(int srcFreq, int dstFreq)
+        {
+            if (dstFreq == 36) return srcFreq;
+
+            int oct = dstFreq / 12 - 3;
+            int n = dstFreq % 12;
+            double f = srcFreq * Const.pcmMTbl[n] * Math.Pow(2, oct);
+
+            return (int)f;
         }
 
         private void Result()
