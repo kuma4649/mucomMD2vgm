@@ -1218,9 +1218,10 @@ namespace Core
 
         public override void CmdVolume(partWork pw, MML mml)
         {
-            int n = (int)mml.args[0];
-            n = Common.CheckRange(n, 0, 15);
+            int n;
+            n = (mml.args != null && mml.args.Count > 0) ? (int)mml.args[0] : pw.latestVolume;
             pw.volumeEasy = n;
+            pw.latestVolume = n;
             if (pw.Type == enmChannelType.FMOPN || pw.Type == enmChannelType.FMOPNex)
             {
                 n = FMVDAT[n + 4];

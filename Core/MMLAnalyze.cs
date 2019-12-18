@@ -434,17 +434,18 @@ namespace Core
                 mml.type = enmMMLType.Volume;
                 mml.args = new List<object>();
 
-                if (!pw.getNum(out n))
+                if (pw.getNum(out n))
                 {
-                    msgBox.setErrMsg(msg.get("E05003"), pw.getSrcFn(), pw.getLineNumber());
-                    n = (int)(pw.MaxVolumeEasy * 0.9);
+                    //相対音量調整
+                    n = n + pw.RelVolume;
+
+                    n = Common.CheckRange(n, 0, pw.MaxVolumeEasy);
+                    mml.args.Add(n);
                 }
-
-                //相対音量調整
-                n = n + pw.RelVolume;
-
-                n = Common.CheckRange(n, 0, pw.MaxVolumeEasy);
-                mml.args.Add(n);
+                else
+                {
+                    mml.args = null;
+                }
             }
         }
 
@@ -478,17 +479,21 @@ namespace Core
         private void CmdOctave(partWork pw, MML mml)
         {
             pw.incPos();
-            if (!pw.getNum(out int n))
+            if (pw.getNum(out int n))
             {
-                msgBox.setErrMsg(msg.get("E05005"), pw.getSrcFn(), pw.getLineNumber());
-                n = 4;
-            }
-            n = Common.CheckRange(n, 1, 8);
+                n = Common.CheckRange(n, 1, 8);
 
-            mml.type = enmMMLType.Octave;
-            mml.args = new List<object>();
-            mml.args.Add(n);
-            pw.octaveNow = n;
+                mml.type = enmMMLType.Octave;
+                mml.args = new List<object>();
+                mml.args.Add(n);
+                pw.octaveNow = n;
+                pw.latestOctave = n;
+            }
+            else
+            {
+                mml.args = null;
+                pw.octaveNow = pw.latestOctave;
+            }
         }
 
         private void CmdOctaveUp(partWork pw, MML mml)

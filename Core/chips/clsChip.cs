@@ -900,8 +900,11 @@ namespace Core
 
         public virtual void CmdVolume(partWork pw, MML mml)
         {
-            int n = (int)mml.args[0];
+            int n;
+            n = (mml.args != null && mml.args.Count > 0) ? (int)mml.args[0] : pw.latestVolume;
             pw.volume = Common.CheckRange(n, 0, pw.MaxVolume);
+            pw.latestVolume = n;
+
             SetVolume(pw);
         }
 
