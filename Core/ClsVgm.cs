@@ -1764,7 +1764,7 @@ namespace Core
                                     for (int lfo = 0; lfo < 1; lfo++)
                                     {
                                         if (!cpw.lfo[lfo].sw) continue;
-                                        if (cpw.lfo[lfo].waitCounter <= 0) continue;
+                                        if (cpw.lfo[lfo].waitCounter < 0) continue;
 
                                         waitCounter = Math.Min(waitCounter, cpw.lfo[lfo].waitCounter);
                                     }
