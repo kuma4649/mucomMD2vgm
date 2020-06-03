@@ -1657,7 +1657,7 @@ namespace Core
             }
 
             //workの初期化
-            useJumpCommand = 0;
+            //useJumpCommand = 0;
             PCMmode = false;
             dSample = 0.0;
             lClock = 0L;
@@ -2046,7 +2046,7 @@ namespace Core
             }
 
             //workの初期化
-            useJumpCommand = 0;
+            //useJumpCommand = 0;
             PCMmode = false;
             dSample = 0.0;
             lClock = 0L;

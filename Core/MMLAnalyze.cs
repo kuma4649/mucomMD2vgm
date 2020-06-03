@@ -37,6 +37,8 @@ namespace Core
                 foreach (ClsChip chip in kvp.Value)
                 {
                     if (!chip.use) continue;
+                    if (chip.chipType == enmChipType.YM2612X && info.format == enmFormat.VGM) continue;
+                    if (chip.chipType == enmChipType.YM2612 && info.format == enmFormat.XGM) continue;
 
                     foreach (partWork pw in chip.lstPartWork)
                     {
