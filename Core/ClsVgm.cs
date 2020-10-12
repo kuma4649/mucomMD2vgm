@@ -1831,7 +1831,15 @@ namespace Core
                                 //{
                                 //    pw.envCounter -= (int)waitCounter;
                                 //}
-                                long sample = (long)(waitCounter * (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * 44100.0);
+                                long sample;
+                                if (info.vgmVsync == -1)
+                                {
+                                    sample = (long)(waitCounter * (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * 44100.0);
+                                }
+                                else
+                                {
+                                    sample = waitCounter * (44100 / info.vgmVsync);
+                                }
 
                                 if (pw.chip.use && !pw.dataEnd)
                                 {
@@ -1861,7 +1869,15 @@ namespace Core
                     // wait発行
 
                     lClock += waitCounter;
-                    dSample += (long)(waitCounter * (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * 44100.0);
+                    //dSample += (long)(waitCounter * (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * 44100.0);
+                    if (info.vgmVsync == -1)
+                    {
+                        dSample += (long)(waitCounter * (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * 44100.0);
+                    }
+                    else
+                    {
+                        dSample += waitCounter * (44100 / info.vgmVsync);
+                    }
                     if (useJumpCommand == 0)
                     {
                         long w = waitCounter;
@@ -1869,7 +1885,15 @@ namespace Core
                         //1152.0          : TimerBDelta(From OPNA application manual)
                         //7987200.0 / 2.0 : MasterClock / Div
                         //44100.0         : VGMfile freq
-                        w = (long)(w * (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * 44100.0);
+                        //w = (long)(w * (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * 44100.0);
+                        if (info.vgmVsync == -1)
+                        {
+                            w = (long)(w * (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * 44100.0);
+                        }
+                        else
+                        {
+                            w = w * (44100 / info.vgmVsync);
+                        }
 
                         if (ym2612[0].lstPartWork[5].pcmWaitKeyOnCounter <= 0)//== -1)
                         {

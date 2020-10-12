@@ -26,6 +26,7 @@ namespace Core
         public const string VERSION = "MUCOM88";
         public const string FORMAT = "FILEFORMAT";
         public const string XGMBASEFRAME = "XGMBASEFRAME";
+        public const string VSYNCRATE = "VSYNC";
         public const string OCTAVEREV = "OCTAVE-REV";
         //public const string ISK052539 = "ISK052539";
         public const string PRIMARY = "PRIMARY";
@@ -65,6 +66,7 @@ namespace Core
         public long clockCount = DEFAULT_CLOCK_COUNT;
         public double samplesPerClock = DEFAULT_SAMPLES_PER_CLOCK;
         public long xgmSamplesPerSecond = 60L;
+        public int vgmVsync = -1;
         public int timerB = 198;//198(default)
         public bool octaveRev = false;
         //public bool isK052539 = false;
@@ -123,6 +125,7 @@ namespace Core
                     //else if (wrd == CLOCKCOUNT) userClockCount = int.Parse(val);
                     else if (wrd == FORMAT) SetFormat(val);
                     else if (wrd == XGMBASEFRAME) SetXgmBaseFrame(val);
+                    else if (wrd == VSYNCRATE) SetVsyncRate(val);
                     else if (wrd == OCTAVEREV) SetOctaveRev(val);
                     //else if (wrd == ISK052539) SetIsK052539(val);
                     else if (wrd == FORCEDMONOPARTYM2612) SetMonoPart(val, chips);
@@ -187,6 +190,15 @@ namespace Core
                 case "PAL":
                     xgmSamplesPerSecond = 50;
                     break;
+            }
+        }
+        
+        private void SetVsyncRate(string val)
+        {
+            vgmVsync = -1;
+            if(!int.TryParse(val,out vgmVsync))
+            {
+                vgmVsync = -1;
             }
         }
 
