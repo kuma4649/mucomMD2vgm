@@ -8,6 +8,7 @@ copy /Y .\CHANGE.txt .\output
 copy /Y .\LICENSE.txt .\output
 copy /Y .\mucomMD2vgm_MMLCommandMemo.txt .\output
 copy /Y .\README.md .\output
+copy /Y .\removeZoneIdent.bat .\output
 del /Q .\output\*.pdb
 del /Q .\output\*.config
 del /Q .\output\*.wav

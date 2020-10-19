@@ -2256,7 +2256,15 @@ namespace Core
 
             if (loopClock != -1 && waitCounter > 0 && waitCounter != long.MaxValue)
             {
-                long waitSample = (long)(waitCounter * (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * info.xgmSamplesPerSecond);
+                long waitSample;
+                if (info.vgmVsync == -1)
+                {
+                    waitSample = (long)(waitCounter * (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * info.xgmSamplesPerSecond);
+                }
+                else
+                {
+                    waitSample = waitCounter * (44100 / info.vgmVsync);
+                }
                 lClock -= waitCounter;
                 dSample -= waitSample;
             }
@@ -2586,7 +2594,15 @@ namespace Core
                             pw.pcmWaitKeyOnCounter -= cnt;
                         }
 
-                        long sample = (long)(cnt * (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * info.xgmSamplesPerSecond);
+                        long sample;
+                        if (info.vgmVsync == -1)
+                        {
+                            sample = (long)(cnt * (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * info.xgmSamplesPerSecond);
+                        }
+                        else
+                        {
+                            sample = cnt * (44100 / info.vgmVsync);
+                        }
 
                         if (pw.chip.use && !pw.dataEnd)
                         {
@@ -2618,7 +2634,14 @@ namespace Core
 
             if (useJumpCommand == 0)
             {
-                info.samplesPerClock = (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * info.xgmSamplesPerSecond;// info.xgmSamplesPerSecond * 60.0 * 4.0 / (info.tempo * info.clockCount);
+                if (info.vgmVsync == -1)
+                {
+                    info.samplesPerClock = (256 - info.timerB) * 1152.0 / (7987200.0 / 2.0) * info.xgmSamplesPerSecond;// info.xgmSamplesPerSecond * 60.0 * 4.0 / (info.tempo * info.clockCount);
+                }
+                else
+                {
+                    info.samplesPerClock = 44100 / info.vgmVsync;
+                }
                 // wait発行
                 lClock += cnt;
                 dSample += (long)(info.samplesPerClock * cnt);
