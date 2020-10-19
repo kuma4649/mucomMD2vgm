@@ -151,6 +151,9 @@ namespace Core
                     msgBox.setWrnMsg(string.Format(msg.get("E03000"), s), fn, lineNumber);
                 }
             }
+            
+            SetTimers();
+
             return 0;
         }
 
@@ -166,15 +169,15 @@ namespace Core
                 case "VGM":
                 default:
                     format = enmFormat.VGM;
-                    tempo = DEFAULT_TEMPO;
-                    clockCount = DEFAULT_CLOCK_COUNT;
-                    samplesPerClock = DEFAULT_SAMPLES_PER_CLOCK;
+                    //tempo = DEFAULT_TEMPO;
+                    //clockCount = DEFAULT_CLOCK_COUNT;
+                    //samplesPerClock = DEFAULT_SAMPLES_PER_CLOCK;
                     break;
                 case "XGM":
                     format = enmFormat.XGM;
-                    tempo = DEFAULT_TEMPO;
-                    clockCount = XGM_DEFAULT_CLOCK_COUNT;
-                    samplesPerClock = XGM_DEFAULT_SAMPLES_PER_CLOCK;
+                    //tempo = DEFAULT_TEMPO;
+                    //clockCount = XGM_DEFAULT_CLOCK_COUNT;
+                    //samplesPerClock = XGM_DEFAULT_SAMPLES_PER_CLOCK;
                     break;
             }
         }
@@ -199,6 +202,39 @@ namespace Core
             if(!int.TryParse(val,out vgmVsync))
             {
                 vgmVsync = -1;
+            }
+        }
+
+        public void SetTimers()
+        {
+            if (vgmVsync == -1)
+            {
+                tempo = DEFAULT_TEMPO;
+                clockCount = DEFAULT_CLOCK_COUNT;
+                switch (format)
+                {
+                    case enmFormat.VGM:
+                    default:
+                        samplesPerClock = Information.VGM_SAMPLE_PER_SECOND * 60.0 * 4.0 / (tempo * clockCount);
+                        break;
+                    case enmFormat.XGM:
+                        samplesPerClock = xgmSamplesPerSecond * 60.0 * 4.0 / (tempo * clockCount);
+                        break;
+                }
+            }
+            else
+            {
+                switch (format)
+                {
+                    case enmFormat.VGM:
+                    default:
+                        samplesPerClock = 44100 / vgmVsync;
+                        break;
+                    case enmFormat.XGM:
+                        vgmVsync = (int)xgmSamplesPerSecond;
+                        samplesPerClock = 1;
+                        break;
+                }
             }
         }
 

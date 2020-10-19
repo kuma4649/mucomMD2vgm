@@ -2263,7 +2263,7 @@ namespace Core
                 }
                 else
                 {
-                    waitSample = waitCounter * (44100 / info.vgmVsync);
+                    waitSample = waitCounter * (info.xgmSamplesPerSecond / info.vgmVsync);
                 }
                 lClock -= waitCounter;
                 dSample -= waitSample;
@@ -2601,7 +2601,7 @@ namespace Core
                         }
                         else
                         {
-                            sample = cnt * (44100 / info.vgmVsync);
+                            sample = cnt * (info.xgmSamplesPerSecond / info.vgmVsync);
                         }
 
                         if (pw.chip.use && !pw.dataEnd)
@@ -2640,7 +2640,7 @@ namespace Core
                 }
                 else
                 {
-                    info.samplesPerClock = 44100 / info.vgmVsync;
+                    info.samplesPerClock = info.xgmSamplesPerSecond / info.vgmVsync;
                 }
                 // wait発行
                 lClock += cnt;
