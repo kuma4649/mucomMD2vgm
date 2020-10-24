@@ -34,6 +34,7 @@ namespace Core
         public const string VOICE = "VOICE";
         public const string PCM = "PCM";
         public const string PCMVOLUME = "PCMVOLUME";
+        public const string PCMRAW = "PCMRAW";
         readonly public static string[] IDName = new string[] { PRIMARY, SECONDARY };
         public const long DEFAULT_TEMPO = 120L;
 
@@ -69,6 +70,7 @@ namespace Core
         public int vgmVsync = -1;
         public int timerB = 198;//198(default)
         public bool octaveRev = false;
+        public bool pcmRawMode = false;
         //public bool isK052539 = false;
 
         public string Voice = "";
@@ -127,6 +129,7 @@ namespace Core
                     else if (wrd == XGMBASEFRAME) SetXgmBaseFrame(val);
                     else if (wrd == VSYNCRATE) SetVsyncRate(val);
                     else if (wrd == OCTAVEREV) SetOctaveRev(val);
+                    else if (wrd == PCMRAW) SetPcmRawMode(val);
                     //else if (wrd == ISK052539) SetIsK052539(val);
                     else if (wrd == FORCEDMONOPARTYM2612) SetMonoPart(val, chips);
                     else
@@ -254,6 +257,26 @@ namespace Core
                 case "N":
                 default:
                     octaveRev = false;
+                    break;
+            }
+        }
+        
+        private void SetPcmRawMode(string val)
+        {
+            switch (val.ToUpper())
+            {
+                case "TRUE":
+                case "1":
+                case "YES":
+                case "Y":
+                    pcmRawMode = true;
+                    break;
+                case "FALSE":
+                case "0":
+                case "NO":
+                case "N":
+                default:
+                    pcmRawMode = false;
                     break;
             }
         }

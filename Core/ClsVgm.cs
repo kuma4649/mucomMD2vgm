@@ -1895,13 +1895,13 @@ namespace Core
                             w = w * (44100 / info.vgmVsync);
                         }
 
-                        if (ym2612[0].lstPartWork[5].pcmWaitKeyOnCounter <= 0)//== -1)
+                        if (ym2612[0].lstPartWork[6].pcmSizeCounter == 0)//== -1)
                         {
                             OutWaitNSamples((long)(w));
                         }
                         else
                         {
-                            OutWaitNSamplesWithPCMSending(ym2612[0].lstPartWork[5], w);
+                            OutWaitNSamplesWithPCMSending(ym2612[0].lstPartWork[6], w);
                         }
                     }
                 }
@@ -3833,32 +3833,32 @@ namespace Core
 
         private void OutWaitNSamplesWithPCMSending(partWork cpw, long cnt)
         {
-            //for (int i = 0; i < cpw.samplesPerClock * cnt;)
-            //{
+            for (int i = 0; i < cnt;)
+            {
 
-            //    int f = (int)cpw.pcmBaseFreqPerFreq;
-            //    cpw.pcmFreqCountBuffer += cpw.pcmBaseFreqPerFreq - (int)cpw.pcmBaseFreqPerFreq;
-            //    while (cpw.pcmFreqCountBuffer > 1.0f)
-            //    {
-            //        f++;
-            //        cpw.pcmFreqCountBuffer -= 1.0f;
-            //    }
-            //    if (i + f >= cpw.samplesPerClock * cnt)
-            //    {
-            //        cpw.pcmFreqCountBuffer += (int)(i + f - cpw.samplesPerClock * cnt);
-            //        f = (int)(cpw.samplesPerClock * cnt - i);
-            //    }
-            //    if (cpw.pcmSizeCounter > 0)
-            //    {
-            //        cpw.pcmSizeCounter--;
-            //        OutData((byte)(0x80 + f));
-            //    }
-            //    else
-            //    {
-            //        OutWaitNSamples(f);
-            //    }
-            //    i += f;
-            //}
+                int f = (int)cpw.pcmBaseFreqPerFreq;
+                cpw.pcmFreqCountBuffer += cpw.pcmBaseFreqPerFreq - (int)cpw.pcmBaseFreqPerFreq;
+                while (cpw.pcmFreqCountBuffer > 1.0f)
+                {
+                    f++;
+                    cpw.pcmFreqCountBuffer -= 1.0f;
+                }
+                if (i + f >= cnt)
+                {
+                    cpw.pcmFreqCountBuffer += (int)(i + f - cnt);
+                    f = (int)(cnt - i);
+                }
+                if (cpw.pcmSizeCounter > 0)
+                {
+                    cpw.pcmSizeCounter--;
+                    OutData((byte)(0x80 + f));
+                }
+                else
+                {
+                    OutWaitNSamples(f);
+                }
+                i += f;
+            }
         }
 
 

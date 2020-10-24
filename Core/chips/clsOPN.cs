@@ -537,20 +537,25 @@ namespace Core
                 return;
             }
 
-
-            if (parent.info.Version == 1.51f)
+            if (parent.info.pcmRawMode)
             {
-
+                pw.pcmSizeCounter = 0;
             }
             else
             {
-                if (pw.pcmWaitKeyOnCounter != -1)
+                if (parent.info.Version == 1.51f)
                 {
-                    //Stop Stream
-                    pw.OutData(
-                        0x94
-                        , (byte)pw.streamID
-                        );
+                }
+                else
+                {
+                    if (pw.pcmWaitKeyOnCounter != -1)
+                    {
+                        //Stop Stream
+                        pw.OutData(
+                            0x94
+                            , (byte)pw.streamID
+                            );
+                    }
                 }
             }
             pw.pcmWaitKeyOnCounter = -1;
@@ -761,85 +766,121 @@ namespace Core
             pw.pcmBaseFreqPerFreq = Information.VGM_SAMPLE_PER_SECOND / ((float)parent.instPCM[pw.instrument].freq * m);
             pw.pcmFreqCountBuffer = 0.0f;
             long p = parent.instPCM[pw.instrument].stAdr;
-            if (parent.info.Version == 1.51f)
+
+            if (parent.info.pcmRawMode)
             {
-                pw.OutData(
-                    0xe0
-                    , (byte)(p & 0xff)
-                    , (byte)((p & 0xff00) / 0x100)
-                    , (byte)((p & 0xff0000) / 0x10000)
-                    , (byte)((p & 0xff000000) / 0x10000)
-                    );
+                pw.pcmWaitKeyOnCounter = -1;
+                if (parent.info.Version >= 1.51f)
+                {
+                    pw.OutData(
+                        0xe0
+                        , (byte)(p & 0xff)
+                        , (byte)((p & 0xff00) / 0x100)
+                        , (byte)((p & 0xff0000) / 0x10000)
+                        , (byte)((p & 0xff000000) / 0x10000)
+                        );
+
+                    if (pw.gatetimePmode)
+                        pw.waitKeyOnCounter = pw.waitCounter * pw.gatetime / 8L;
+                    else
+                        pw.waitKeyOnCounter = pw.waitCounter - parent.GetWaitCounter(pw.gatetime);
+                    if (pw.waitKeyOnCounter < 1)
+                    {
+                        if ((pw.chip is YM2612) || (pw.chip is YM2612X)) pw.waitKeyOnCounter = 1;
+                        else pw.waitKeyOnCounter = pw.waitCounter;
+                    }
+
+                    pw.pcmWaitKeyOnCounter = pw.waitKeyOnCounter;
+                }
+
+                pw.pcmSizeCounter = 0;
+                if (parent.instPCM != null && parent.instPCM.ContainsKey(pw.instrument))
+                {
+                    pw.pcmSizeCounter = parent.instPCM[pw.instrument].size;
+                }
             }
             else
             {
-                long s = parent.instPCM[pw.instrument].size;
-                long f = parent.instPCM[pw.instrument].freq;
-                long w = 0;
-                if (pw.gatetimePmode)
+                if (parent.info.Version == 1.51f)
                 {
-                    w = pw.waitCounter * parent.GetWaitCounter(pw.gatetime) / 8L;
+                    pw.OutData(
+                        0xe0
+                        , (byte)(p & 0xff)
+                        , (byte)((p & 0xff00) / 0x100)
+                        , (byte)((p & 0xff0000) / 0x10000)
+                        , (byte)((p & 0xff000000) / 0x10000)
+                        );
                 }
                 else
                 {
-                    w = pw.waitCounter - pw.gatetime;
-                }
-                if (w < 1) w = 1;
+                    long s = parent.instPCM[pw.instrument].size;
+                    long f = parent.instPCM[pw.instrument].freq;
+                    long w = 0;
+                    if (pw.gatetimePmode)
+                    {
+                        w = pw.waitCounter * parent.GetWaitCounter(pw.gatetime) / 8L;
+                    }
+                    else
+                    {
+                        w = pw.waitCounter - pw.gatetime;
+                    }
+                    if (w < 1) w = 1;
 
-                //s = Math.Min(s, (long)(w * pw.samplesPerClock * f / 44100.0));
+                    //s = Math.Min(s, (long)(w * pw.samplesPerClock * f / 44100.0));
 
-                if (!pw.streamSetup)
-                {
-                    parent.newStreamID++;
-                    pw.streamID = parent.newStreamID;
+                    if (!pw.streamSetup)
+                    {
+                        parent.newStreamID++;
+                        pw.streamID = parent.newStreamID;
 
+                        pw.OutData(
+                            // setup stream control
+                            0x90
+                            , (byte)pw.streamID
+                            , (byte)(0x02 + (pw.isSecondary ? 0x80 : 0x00))
+                            , 0x00
+                            , 0x2a
+                            // set stream data
+                            , 0x91
+                            , (byte)pw.streamID
+                            , 0x00
+                            , 0x01
+                            , 0x00
+                            );
+
+                        pw.streamSetup = true;
+                    }
+
+                    if (pw.streamFreq != f)
+                    {
+                        //Set Stream Frequency
+                        pw.OutData(
+                            0x92
+                            , (byte)pw.streamID
+                            , (byte)f
+                            , (byte)(f >> 8)
+                            , (byte)(f >> 16)
+                            , (byte)(f >> 24)
+                            );
+
+                        pw.streamFreq = f;
+                    }
+
+                    //Start Stream
                     pw.OutData(
-                        // setup stream control
-                        0x90
+                        0x93
                         , (byte)pw.streamID
-                        , (byte)(0x02 + (pw.isSecondary ? 0x80 : 0x00))
-                        , 0x00
-                        , 0x2a
-                        // set stream data
-                        , 0x91
-                        , (byte)pw.streamID
-                        , 0x00
+                        , (byte)p
+                        , (byte)(p >> 8)
+                        , (byte)(p >> 16)
+                        , (byte)(p >> 24)
                         , 0x01
-                        , 0x00
+                        , (byte)s
+                        , (byte)(s >> 8)
+                        , (byte)(s >> 16)
+                        , (byte)(s >> 24)
                         );
-
-                    pw.streamSetup = true;
                 }
-
-                if (pw.streamFreq != f)
-                {
-                    //Set Stream Frequency
-                    pw.OutData(
-                        0x92
-                        , (byte)pw.streamID
-                        , (byte)f
-                        , (byte)(f >> 8)
-                        , (byte)(f >> 16)
-                        , (byte)(f >> 24)
-                        );
-
-                    pw.streamFreq = f;
-                }
-
-                //Start Stream
-                pw.OutData(
-                    0x93
-                    , (byte)pw.streamID
-                    , (byte)p
-                    , (byte)(p >> 8)
-                    , (byte)(p >> 16)
-                    , (byte)(p >> 24)
-                    , 0x01
-                    , (byte)s
-                    , (byte)(s >> 8)
-                    , (byte)(s >> 16)
-                    , (byte)(s >> 24)
-                    );
             }
 
             if (parent.instPCM[pw.instrument].status != enmPCMSTATUS.ERROR)
