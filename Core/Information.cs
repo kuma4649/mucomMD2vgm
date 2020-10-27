@@ -35,6 +35,7 @@ namespace Core
         public const string PCM = "PCM";
         public const string PCMVOLUME = "PCMVOLUME";
         public const string PCMRAW = "PCMRAW";
+        public const string USECHIP = "CHIP";
         readonly public static string[] IDName = new string[] { PRIMARY, SECONDARY };
         public const long DEFAULT_TEMPO = 120L;
 
@@ -77,6 +78,10 @@ namespace Core
         public string Pcm = "";
         public int PcmVolume = 255;
 
+        public bool useOPN2 = true;
+        public bool useDCSG = true;
+        public bool useOPL = false;
+        public bool useOPM = false;
 
         public int AddInformation(string buf, int lineNumber, string fn, Dictionary<enmChipType, ClsChip[]> chips)
         {
@@ -130,6 +135,7 @@ namespace Core
                     else if (wrd == VSYNCRATE) SetVsyncRate(val);
                     else if (wrd == OCTAVEREV) SetOctaveRev(val);
                     else if (wrd == PCMRAW) SetPcmRawMode(val);
+                    else if (wrd == USECHIP) SetUseCHIP(val);
                     //else if (wrd == ISK052539) SetIsK052539(val);
                     else if (wrd == FORCEDMONOPARTYM2612) SetMonoPart(val, chips);
                     else
@@ -278,6 +284,30 @@ namespace Core
                 default:
                     pcmRawMode = false;
                     break;
+            }
+        }
+
+        private void SetUseCHIP(string val)
+        {
+            string[] chips = val.Split('|');
+            useOPN2 = false;
+            useOPL = false;
+            useOPM = false;
+            useDCSG = false;
+
+            foreach (string chip in chips)
+            {
+                string ch = chip.Trim().ToUpper().Replace("-", "").Replace(" ", "");
+
+                if (ch == "YM2612" || ch == "OPN2") useOPN2 = true;
+                if (ch == "YM3526" || ch == "OPL") useOPL = true;
+                if (ch == "YM2151" || ch == "OPM") useOPM = true;
+                if (ch == "SN76489" || ch == "DCSG") useDCSG = true;
+                if (ch == "MD" || ch == "MD2" || ch == "MEGADRIVE" || ch == "MEGADRIVE2" || ch == "GENESIS")
+                {
+                    useOPN2 = true;
+                    useDCSG = true;
+                }
             }
         }
 

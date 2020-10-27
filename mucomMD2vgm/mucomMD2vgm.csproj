@@ -113,6 +113,9 @@
     <Content Include="FNUM_YM2612X.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="FNUM_YM3526.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="mm2v48.ico" />
     <Content Include="Resources\icon1.png" />
     <Content Include="Resources\icon2.png" />

@@ -93,6 +93,12 @@ namespace Core
                 _IsSecondary = value;
             }
         }
+        public byte rhythmStatus { get; internal set; } = 0;
+        public byte beforeRhythmStatus { get; internal set; } = 0xff;
+        public int connectionSel { get; internal set; } = 0;
+        public int beforeConnectionSel { get; internal set; } = -1;
+        public byte[] port;
+
 
         public bool SupportReversePartWork = false;
         public bool ReversePartWork = false;
@@ -1423,7 +1429,8 @@ namespace Core
         }
 
         public virtual void MultiChannelCommand()
-        { }
+        {
+        }
 
 
         public virtual string DispRegion(clsPcm pcm)

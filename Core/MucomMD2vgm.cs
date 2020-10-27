@@ -76,21 +76,24 @@ namespace Core
                     return -1;
                 }
 
-                Disp(msg.get("I04021"));
-                desVGM.LoadVoicedat();
-
-                Disp(msg.get("I04022"));
-                desVGM.LoadSSGdat();
-
-                Disp(msg.get("I04023"));
-                int i = desVGM.LoadAdpcmdat();
-                if (i > 0)
+                if (desVGM.info.useOPN2)
                 {
-                    Disp(string.Format("ADPCM読み込まれ、PCM番号 1 から {0} まで使用されます。", i));
-                }
+                    Disp(msg.get("I04021"));
+                    desVGM.LoadVoicedat();
 
-                Disp(msg.get("I04004"));
-                if (desVGM.instPCMDatSeq.Count > 0) GetPCMData(path);
+                    Disp(msg.get("I04022"));
+                    desVGM.LoadSSGdat();
+
+                    Disp(msg.get("I04023"));
+                    int i = desVGM.LoadAdpcmdat();
+                    if (i > 0)
+                    {
+                        Disp(string.Format("ADPCM読み込まれ、PCM番号 1 から {0} まで使用されます。", i));
+                    }
+
+                    Disp(msg.get("I04004"));
+                    if (desVGM.instPCMDatSeq.Count > 0) GetPCMData(path);
+                }
 
                 byte[] desBuf = null;
 
@@ -750,7 +753,9 @@ namespace Core
                             continue;
                         }
 
-                        desVGM.chips[v.chip][v.isSecondary ? 1 : 0]
+                        if (desVGM.chips.ContainsKey(v.chip))
+                        {
+                            desVGM.chips[v.chip][v.isSecondary ? 1 : 0]
                             .StorePcm(
                             newDic
                             , new KeyValuePair<int, clsPcm>(pds.No, v)
@@ -758,6 +763,7 @@ namespace Core
                             , false
                             , desVGM.info.format == enmFormat.VGM ? 8000 : 14000
                             );
+                        }
 
                         break;
                     case enmPcmDefineType.RawData:

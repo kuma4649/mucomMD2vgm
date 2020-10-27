@@ -15,6 +15,8 @@ namespace Core
         public YM2612[] ym2612 = null;
         public SN76489[] sn76489 = null;
         public YM2612X[] ym2612x = null;
+        public YM3526[] ym3526 = null;
+        //public YM2151[] ym2151 = null;
 
         public Dictionary<enmChipType, ClsChip[]> chips;
 
@@ -64,11 +66,13 @@ namespace Core
             ym2612 = new YM2612[] { new YM2612(this, 0, "F", stPath, false) };
             ym2612x = new YM2612X[] { new YM2612X(this, 0, "E", stPath, false) };
             sn76489 = new SN76489[] { new SN76489(this, 0, "S", stPath, false) };
+            ym3526 = new YM3526[] { new YM3526(this, 0, "O", stPath, false) };
 
             chips.Add(enmChipType.CONDUCTOR, conductor);
             chips.Add(enmChipType.YM2612, ym2612);
             chips.Add(enmChipType.YM2612X, ym2612x);
             chips.Add(enmChipType.SN76489, sn76489);
+            chips.Add(enmChipType.YM3526, ym3526);
 
             List<clsTD> lstTD = new List<clsTD>
             {
@@ -104,19 +108,44 @@ namespace Core
         /// </summary>
         public void CutYM2612()
         {
-            if(info.format== enmFormat.VGM)
-            {
-                foreach(KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
-                    if(kvp.Key== enmChipType.YM2612X)
-                        foreach (ClsChip c in kvp.Value)
-                            c.use = false;
-            }
-            else
+            if (info.format == enmFormat.XGM)
             {
                 foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
                     if (kvp.Key == enmChipType.YM2612)
                         foreach (ClsChip c in kvp.Value)
                             c.use = false;
+                return;
+            }
+
+            //一旦すべて未使用にする
+            foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+            {
+                foreach (ClsChip c in kvp.Value)
+                    c.use = false;
+            }
+
+            //使用するchipのみuseを立てる
+            foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
+            {
+                if (kvp.Key == enmChipType.CONDUCTOR)
+                    foreach (ClsChip c in kvp.Value)
+                        c.use = true;
+
+                if (kvp.Key == enmChipType.YM2612 && info.useOPN2)
+                    foreach (ClsChip c in kvp.Value)
+                        c.use = true;
+
+                if (kvp.Key == enmChipType.YM3526 && info.useOPL)
+                    foreach (ClsChip c in kvp.Value)
+                        c.use = true;
+
+                if (kvp.Key == enmChipType.YM2151 && info.useOPM)
+                    foreach (ClsChip c in kvp.Value)
+                        c.use = true;
+
+                if (kvp.Key == enmChipType.SN76489 && info.useDCSG)
+                    foreach (ClsChip c in kvp.Value)
+                        c.use = true;
             }
         }
 
@@ -311,7 +340,12 @@ namespace Core
                     voiceSetmode = true;
                     voiceTemp.Clear();
                     voiceTemp.Add(s);
-                    voiceRow = s.IndexOf("  @%") == 0 ? 8 : 6;
+                    voiceRow = s.IndexOf("  @%") == 0
+                        ? 8
+                        : (s.IndexOf("  @L") == 0
+                        ? 3
+                        : 6
+                        );
                     continue;
                 }
 
@@ -1077,6 +1111,10 @@ namespace Core
                     voi.type = 1;
                 else if (vals[0].IndexOf("@N") >= 0)
                     voi.type = 2;
+                else if (vals[0].IndexOf("@L") >= 0)
+                    voi.type = 3;
+                else if (vals[0].IndexOf("@M") >= 0)
+                    voi.type = 4;
                 else voi.type = 0;
 
                 int[] inst = null;
@@ -1149,6 +1187,44 @@ namespace Core
                         ok = GetNums(inst, 35, 11, vals[5], 2);
                         if (!ok) throw new ArgumentException();
                         voi.data = new byte[46];
+                        for (int i = 0; i < voi.data.Length; i++) voi.data[i] = (byte)inst[i];
+                        break;
+                    case 3:
+                        voi.Name = "";
+                        inst = new int[3 + 2 * 12];
+                        //inst[0]に音色番号をセット
+                        ok = GetNums(inst, 0, 3, vals[0], vals[0].IndexOf("L") + 1);
+                        voi.No = inst[0];
+                        if (!ok) throw new ArgumentException();
+                        //inst[3]から[12]に音色番号をセット
+                        ok = GetNums(inst, 3, 12, vals[1], 2);
+                        if (!ok) throw new ArgumentException();
+                        ok = GetNums(inst, 15, 12, vals[2], 2);
+                        if (!ok) throw new ArgumentException();
+
+                        voi.data = new byte[27];
+                        for (int i = 0; i < voi.data.Length; i++) voi.data[i] = (byte)inst[i];
+                        break;
+                    case 4:
+                        voi.Name = "";
+                        inst = new int[2 + 4 * 9];
+                        //inst[0]に音色番号をセット
+                        ok = GetNums(inst, 0, 1, vals[0], vals[0].IndexOf("M") + 1);
+                        voi.No = inst[0];
+                        if (!ok) throw new ArgumentException();
+                        //inst[1],[2]に音色番号をセット
+                        ok = GetNums(inst, 0, 2, vals[1], 2);
+                        if (!ok) throw new ArgumentException();
+                        //inst[3]から[12]に音色番号をセット
+                        ok = GetNums(inst, 2, 9, vals[2], 2);
+                        if (!ok) throw new ArgumentException();
+                        ok = GetNums(inst, 11, 9, vals[3], 2);
+                        if (!ok) throw new ArgumentException();
+                        ok = GetNums(inst, 20, 9, vals[4], 2);
+                        if (!ok) throw new ArgumentException();
+                        ok = GetNums(inst, 29, 9, vals[5], 2);
+                        if (!ok) throw new ArgumentException();
+                        voi.data = new byte[38];
                         for (int i = 0; i < voi.data.Length; i++) voi.data[i] = (byte)inst[i];
                         break;
                 }
@@ -3126,6 +3202,7 @@ namespace Core
             long useYM2608 = 0;
             long useYM2610B = 0;
             long useYM2612 = 0;
+            long useYM3526 = 0;
             long useSN76489 = 0;
             long useRf5c164 = 0;
             long useSegaPcm = 0;
@@ -3135,10 +3212,14 @@ namespace Core
             long useYM2413 = 0;
             long useK051649 = 0;
 
-                foreach (partWork pw in ym2612[0].lstPartWork)
-                { useYM2612 += pw.clockCounter; }
-                foreach (partWork pw in sn76489[0].lstPartWork)
-                { useSN76489 += pw.clockCounter; }
+            foreach (partWork pw in ym2612[0].lstPartWork)
+            { useYM2612 += pw.clockCounter; }
+            foreach (partWork pw in sn76489[0].lstPartWork)
+            { useSN76489 += pw.clockCounter; }
+            foreach (partWork pw in ym3526[0].lstPartWork)
+            { useYM3526 += pw.clockCounter; }
+            //foreach (partWork pw in ym2151[0].lstPartWork)
+            //{ useYM2151 += pw.clockCounter; }
 
             if (useSN76489 == 0)
             { dat[0x0c] = 0; dat[0x0d] = 0; dat[0x0e] = 0; dat[0x0f] = 0; }
@@ -3176,7 +3257,16 @@ namespace Core
             { dat[0x08] = 0x60; dat[0x09] = 0x01; }
             else
             { dat[0x08] = 0x61; dat[0x09] = 0x01; }
-
+            if (info.Version >= 1.51f && useYM3526 != 0)
+            {
+                YM3526 u = ym3526[0] != null ? ym3526[0] : ym3526[1];
+                Common.SetLE32(dat, 0x54, (uint)u.Frequency);//| (uint)(useYM3526_S == 0 ? 0 : 0x40000000));
+            }
+            if (useYM2151 != 0)
+            {
+//                YM3526 u = ym2151[0] != null ? ym2151[0] : ym2151[1];
+//                Common.SetLE32(dat, 0x30, (uint)u.Frequency);//| (uint)(useYM2151_S == 0 ? 0 : 0x40000000));
+            }
         }
 
         private void ProcKeyOff(partWork pw)

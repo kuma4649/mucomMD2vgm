@@ -235,6 +235,13 @@ namespace Core
             buf[ptr + 3] = (byte)((value & 0x7f000000) >> 24);
             if (sw) buf[ptr + 3] |= 0x80;
         }
+        public static void SetLE32(List<byte> desBuf, uint adr, uint val)
+        {
+            desBuf[(int)adr] = (byte)val;
+            desBuf[(int)adr + 1] = (byte)(val >> 8);
+            desBuf[(int)adr + 2] = (byte)(val >> 16);
+            desBuf[(int)adr + 3] = (byte)(val >> 24);
+        }
 
         public static byte[] PcmPadding(ref byte[] buf, ref long size, byte paddingData, int paddingSize)
         {

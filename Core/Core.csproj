@@ -65,11 +65,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="chips\clsChip.cs" />
+    <Compile Include="chips\clsOPL.cs" />
     <Compile Include="chips\clsOPN.cs" />
     <Compile Include="chips\Conductor.cs" />
     <Compile Include="chips\SN76489.cs" />
     <Compile Include="chips\YM2612.cs" />
     <Compile Include="chips\YM2612X.cs" />
+    <Compile Include="chips\YM3526.cs" />
     <Compile Include="ClsVgm.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="Const.cs" />

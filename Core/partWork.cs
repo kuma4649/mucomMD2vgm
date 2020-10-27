@@ -468,8 +468,8 @@ namespace Core
         private List<byte> dataBuf = new List<byte>();
 
         public int pcmMapNo { get; set; } = 0;
-
-
+        public int ipan { get; internal set; }
+        public bool isOp4Mode { get; internal set; }
 
         public void OutData(params byte[] data)
         {
