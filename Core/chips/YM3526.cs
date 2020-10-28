@@ -37,11 +37,13 @@ namespace Core
             //Ch = new ClsChannel[ChMax];
             //SetPartToCh(Ch, initialPartName);
             Ch = new ClsChannel[ChMax];
-            char[] PART_OPL = new char[] { 'A', 'B', 'C', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R' };
+            char[] PART_OPL = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N' };
             for (int i = 0; i < Ch.Length; i++)
             {
                 if (Ch[i] == null) Ch[i] = new ClsChannel();
                 Ch[i].Name = PART_OPL[i].ToString();
+                Ch[i].Type = enmChannelType.FMOPL;
+                Ch[i].isSecondary = IsSecondary;
             }
 
         }

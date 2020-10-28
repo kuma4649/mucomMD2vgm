@@ -317,7 +317,7 @@ namespace Core
             int[] ope = null;
             switch (parent.instFM[n].type)
             {
-                case 0:
+                case 0:// @
                     alg = parent.instFM[n].data[1] & 0x7;
                     ope = new int[4] {
                         parent.instFM[n].data[0*Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
@@ -326,7 +326,7 @@ namespace Core
                         , parent.instFM[n].data[3 * Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
                     };
                     break;
-                case 1:
+                case 1:// @%
                     alg = parent.instFM[n].data[24] & 0x7;
                     ope = new int[4] {
                         parent.instFM[n].data[4]
@@ -335,7 +335,7 @@ namespace Core
                         , parent.instFM[n].data[7]
                     };
                     break;
-                case 2:
+                case 2:// @N
                     alg = parent.instFM[n].data[1] & 0x7;
                     ope = new int[4] {
                         parent.instFM[n].data[0 * 11 + 5+2]
@@ -344,6 +344,18 @@ namespace Core
                         , parent.instFM[n].data[3 * 11 + 5+2]
                     };
                     break;
+                case 3:// @L OPL
+                    msgBox.setErrMsg(string.Format(msg.get("E11000"), n), pw.getSrcFn(), pw.getLineNumber());
+                    return;
+                case 4:// @M OPM
+                    alg = parent.instFM[n].data[1] & 0x7;
+                    ope = new int[4] {
+                        parent.instFM[n].data[0 * Const.INSTRUMENT_M_OPERATOR_SIZE + 5 + 3]
+                        , parent.instFM[n].data[1 * Const.INSTRUMENT_M_OPERATOR_SIZE + 5 + 3]
+                        , parent.instFM[n].data[2 * Const.INSTRUMENT_M_OPERATOR_SIZE + 5 + 3]
+                        , parent.instFM[n].data[3 * Const.INSTRUMENT_M_OPERATOR_SIZE + 5 + 3]
+                    };
+                    return;
             }
 
             int[][] algs = new int[8][]
@@ -416,7 +428,7 @@ namespace Core
 
             switch (parent.instFM[n].type)
             {
-                case 0:
+                case 0:// @
                     for (int ope = 0; ope < 4; ope++) ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, 0, 15);
 
                     for (int ope = 0; ope < 4; ope++)
@@ -441,7 +453,7 @@ namespace Core
 
                     ((ClsOPN)pw.chip).OutFmSetFeedbackAlgorithm(pw, parent.instFM[n].data[0], parent.instFM[n].data[1]);
                     break;
-                case 1:
+                case 1: // @%
                     int vch = pw.ch;
                     byte port = vch > 2 ? pw.port1 : pw.port0;
                     vch = (byte)(vch > 2 ? vch - 3 : vch);
@@ -459,7 +471,7 @@ namespace Core
                     }
                     pw.OutData(port, (byte)(0xb0 + vch), parent.instFM[n].data[24]); //FB/AL
                     break;
-                case 2:
+                case 2: //@N
                     for (int ope = 0; ope < 4; ope++) ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, 0, 15);
 
                     for (int ope = 0; ope < 4; ope++)
@@ -484,6 +496,33 @@ namespace Core
 
                     ((ClsOPN)pw.chip).OutFmSetFeedbackAlgorithm(pw, parent.instFM[n].data[0], parent.instFM[n].data[1]);
                     break;
+                case 3://@L OPL
+                    msgBox.setErrMsg(msg.get("E11001"), pw.getSrcFn(), pw.getLineNumber());
+                    return;
+                case 4://@M OPM
+
+                    for (int ope = 0; ope < 4; ope++)
+                    {
+                        ((ClsOPN)pw.chip).OutFmSetDtMl(pw, ope, parent.instFM[n].data[ope * 11 + 8 + 3], parent.instFM[n].data[ope * 11 + 7 + 3]);
+                        ((ClsOPN)pw.chip).OutFmSetKsAr(pw, ope, parent.instFM[n].data[ope * 11 + 6 + 3], parent.instFM[n].data[ope * 11 + 0 + 3]);
+                        ((ClsOPN)pw.chip).OutFmSetAmDr(pw, ope, parent.instFM[n].data[ope * 11 + 10 + 3], parent.instFM[n].data[ope * 11 + 1 + 3]);
+                        ((ClsOPN)pw.chip).OutFmSetSr(pw, ope, parent.instFM[n].data[ope * 11 + 2 + 3]);
+                        ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, parent.instFM[n].data[ope * 11 + 4 + 3], parent.instFM[n].data[ope * 11 + 3 + 3]);
+                        ((ClsOPN)pw.chip).OutFmSetSSGEG(pw, ope, 0);
+                        ((ClsOPN)pw.chip).OutFmSetTl(pw, ope, parent.instFM[n].data[ope * 11 + 5 + 3]);
+                    }
+
+                    pw.op1ml = parent.instFM[n].data[0 * 11 + 7 + 3];
+                    pw.op2ml = parent.instFM[n].data[1 * 11 + 7 + 3];
+                    pw.op3ml = parent.instFM[n].data[2 * 11 + 7 + 3];
+                    pw.op4ml = parent.instFM[n].data[3 * 11 + 7 + 3];
+                    pw.op1dt2 = 0;
+                    pw.op2dt2 = 0;
+                    pw.op3dt2 = 0;
+                    pw.op4dt2 = 0;
+
+                    ((ClsOPN)pw.chip).OutFmSetFeedbackAlgorithm(pw, parent.instFM[n].data[2], parent.instFM[n].data[1]);
+                    return;
             }
 
             pw.beforeTLOP1 = -1;
@@ -1100,7 +1139,7 @@ namespace Core
             //}
         }
 
-        public override void SetToneDoubler(partWork pw)
+        public override void SetToneDoubler(partWork pw,MML mml)
         {
         }
 

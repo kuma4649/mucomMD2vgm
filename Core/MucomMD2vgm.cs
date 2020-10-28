@@ -76,14 +76,19 @@ namespace Core
                     return -1;
                 }
 
-                if (desVGM.info.useOPN2)
+                if (desVGM.info.useOPN2 || desVGM.info.useOPM)
                 {
                     Disp(msg.get("I04021"));
                     desVGM.LoadVoicedat();
+                }
 
+                if (desVGM.info.useDCSG) {
                     Disp(msg.get("I04022"));
                     desVGM.LoadSSGdat();
+                }
 
+                if (desVGM.info.useOPN2)
+                {
                     Disp(msg.get("I04023"));
                     int i = desVGM.LoadAdpcmdat();
                     if (i > 0)

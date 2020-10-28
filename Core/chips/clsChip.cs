@@ -513,7 +513,7 @@ namespace Core
             throw new NotImplementedException("継承先で要実装");
         }
 
-        public virtual void SetToneDoubler(partWork pw)
+        public virtual void SetToneDoubler(partWork pw,MML mml)
         {
             throw new NotImplementedException("継承先で要実装");
         }
@@ -1273,7 +1273,7 @@ namespace Core
             pw.tie = note.tieSw;
 
             //Tone Doubler
-            SetToneDoubler(pw);
+            SetToneDoubler(pw, mml);
 
             //発音周波数
             if (pw.bendWaitCounter != -1)

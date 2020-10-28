@@ -16,7 +16,7 @@ namespace Core
         public SN76489[] sn76489 = null;
         public YM2612X[] ym2612x = null;
         public YM3526[] ym3526 = null;
-        //public YM2151[] ym2151 = null;
+        public YM2151[] ym2151 = null;
 
         public Dictionary<enmChipType, ClsChip[]> chips;
 
@@ -63,12 +63,14 @@ namespace Core
             info = new Information();
 
             conductor = new Conductor[] { new Conductor(this, 0, "Cn", stPath, false) };
+            ym2151 = new YM2151[] { new YM2151(this, 0, "M", stPath, false) };
             ym2612 = new YM2612[] { new YM2612(this, 0, "F", stPath, false) };
             ym2612x = new YM2612X[] { new YM2612X(this, 0, "E", stPath, false) };
             sn76489 = new SN76489[] { new SN76489(this, 0, "S", stPath, false) };
             ym3526 = new YM3526[] { new YM3526(this, 0, "O", stPath, false) };
 
             chips.Add(enmChipType.CONDUCTOR, conductor);
+            chips.Add(enmChipType.YM2151, ym2151);
             chips.Add(enmChipType.YM2612, ym2612);
             chips.Add(enmChipType.YM2612X, ym2612x);
             chips.Add(enmChipType.SN76489, sn76489);
@@ -1207,24 +1209,24 @@ namespace Core
                         break;
                     case 4:
                         voi.Name = "";
-                        inst = new int[2 + 4 * 9];
+                        inst = new int[3 + 4 * 11];
                         //inst[0]に音色番号をセット
                         ok = GetNums(inst, 0, 1, vals[0], vals[0].IndexOf("M") + 1);
                         voi.No = inst[0];
                         if (!ok) throw new ArgumentException();
                         //inst[1],[2]に音色番号をセット
-                        ok = GetNums(inst, 0, 2, vals[1], 2);
+                        ok = GetNums(inst, 1, 2, vals[1], 2);
                         if (!ok) throw new ArgumentException();
                         //inst[3]から[12]に音色番号をセット
-                        ok = GetNums(inst, 2, 9, vals[2], 2);
+                        ok = GetNums(inst, 3, 11, vals[2], 2);
                         if (!ok) throw new ArgumentException();
-                        ok = GetNums(inst, 11, 9, vals[3], 2);
+                        ok = GetNums(inst, 14, 11, vals[3], 2);
                         if (!ok) throw new ArgumentException();
-                        ok = GetNums(inst, 20, 9, vals[4], 2);
+                        ok = GetNums(inst, 25, 11, vals[4], 2);
                         if (!ok) throw new ArgumentException();
-                        ok = GetNums(inst, 29, 9, vals[5], 2);
+                        ok = GetNums(inst, 36, 11, vals[5], 2);
                         if (!ok) throw new ArgumentException();
-                        voi.data = new byte[38];
+                        voi.data = new byte[47];
                         for (int i = 0; i < voi.data.Length; i++) voi.data[i] = (byte)inst[i];
                         break;
                 }
@@ -3218,8 +3220,8 @@ namespace Core
             { useSN76489 += pw.clockCounter; }
             foreach (partWork pw in ym3526[0].lstPartWork)
             { useYM3526 += pw.clockCounter; }
-            //foreach (partWork pw in ym2151[0].lstPartWork)
-            //{ useYM2151 += pw.clockCounter; }
+            foreach (partWork pw in ym2151[0].lstPartWork)
+            { useYM2151 += pw.clockCounter; }
 
             if (useSN76489 == 0)
             { dat[0x0c] = 0; dat[0x0d] = 0; dat[0x0e] = 0; dat[0x0f] = 0; }
@@ -3264,8 +3266,8 @@ namespace Core
             }
             if (useYM2151 != 0)
             {
-//                YM3526 u = ym2151[0] != null ? ym2151[0] : ym2151[1];
-//                Common.SetLE32(dat, 0x30, (uint)u.Frequency);//| (uint)(useYM2151_S == 0 ? 0 : 0x40000000));
+                YM2151 u = ym2151[0] != null ? ym2151[0] : ym2151[1];
+                Common.SetLE32(dat, 0x30, (uint)u.Frequency);//| (uint)(useYM2151_S == 0 ? 0 : 0x40000000));
             }
         }
 

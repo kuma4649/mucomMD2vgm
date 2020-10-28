@@ -85,7 +85,7 @@ namespace Core
         {
             pw.instrument = n;
 
-            if (!parent.instFM.ContainsKey(n))
+            if (!parent.instFM.ContainsKey(n) || parent.instFM[n].type != 3)
             {
                 msgBox.setWrnMsg(string.Format(msg.get("E17000"), n));//, mml.line.Lp);
                 return;
@@ -606,7 +606,7 @@ namespace Core
         {
         }
 
-        public override void SetToneDoubler(partWork pw)
+        public override void SetToneDoubler(partWork pw,MML mml)
         {
             //実装不要
         }
