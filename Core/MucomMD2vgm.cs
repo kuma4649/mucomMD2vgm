@@ -106,13 +106,14 @@ namespace Core
                 {
                     Disp(msg.get("I04005"));
                     MMLAnalyze mmlAnalyze = new MMLAnalyze(desVGM);
+                    desVGM.CutYM2612();
                     if (mmlAnalyze.Start() != 0)
                     {
                         msgBox.setErrMsg(string.Format(msg.get("E04003"), mmlAnalyze.lineNumber));
                         return -1;
                     }
 
-                    desVGM.CutYM2612();
+                    //desVGM.CutYM2612();
 
                     switch (desVGM.info.format)
                     {
