@@ -566,13 +566,27 @@ namespace Core
                 return;
             }
 
-            log.Write("VGZファイル出力");
+            log.Write("VGZ/XGZファイル出力");
+
+            string dFn = desFn;
+            if (desVGM.info.format == enmFormat.VGM)
+            {
+                dFn = Path.Combine(
+                            Path.GetDirectoryName(desFn)
+                            , Path.GetFileNameWithoutExtension(desFn) + ".vgz");
+            }
+            else
+            {
+                dFn = Path.Combine(
+                            Path.GetDirectoryName(desFn)
+                            , Path.GetFileNameWithoutExtension(desFn) + ".xgz");
+            }
 
             int num;
             byte[] buf = new byte[1024];
 
             MemoryStream inStream = new MemoryStream(desBuf);
-            FileStream outStream = new FileStream(desFn, FileMode.Create);
+            FileStream outStream = new FileStream(dFn, FileMode.Create);
             GZipStream compStream = new GZipStream(outStream, CompressionMode.Compress);
 
             try

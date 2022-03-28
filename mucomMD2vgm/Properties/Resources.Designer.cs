@@ -88,6 +88,15 @@ namespace mucomMD2vgm.Properties {
         }
         
         /// <summary>
+        ///   .xgz に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ExtensionXGZ {
+            get {
+                return ResourceManager.GetString("ExtensionXGZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
         /// </summary>
         internal static System.Drawing.Bitmap icon1 {

@@ -190,9 +190,19 @@ namespace mucomMD2vgm
                     try
                     {
                         if (mv.desVGM.info.format == enmFormat.VGM)
-                            Process.Start(Path.ChangeExtension(args[1], Properties.Resources.ExtensionVGM));
+                        {
+                            if (!tsbToVGZ.Checked)
+                                Process.Start(Path.ChangeExtension(args[1], Properties.Resources.ExtensionVGM));
+                            else
+                                Process.Start(Path.ChangeExtension(args[1], Properties.Resources.ExtensionVGZ));
+                        }
                         else
-                            Process.Start(Path.ChangeExtension(args[1], Properties.Resources.ExtensionXGM));
+                        {
+                            if (!tsbToVGZ.Checked)
+                                Process.Start(Path.ChangeExtension(args[1], Properties.Resources.ExtensionXGM));
+                            else
+                                Process.Start(Path.ChangeExtension(args[1], Properties.Resources.ExtensionXGZ));
+                        }
                     }
                     catch (Exception)
                     {
