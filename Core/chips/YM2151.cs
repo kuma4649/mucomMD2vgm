@@ -8,7 +8,7 @@ namespace Core
     {
         public YM2151(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary) : base(parent, chipID, initialPartName, stPath, isSecondary)
         {
-
+            _chipType = enmChipType.YM2151;
             _Name = "YM2151";
             _ShortName = "OPM";
             _ChMax = 8;

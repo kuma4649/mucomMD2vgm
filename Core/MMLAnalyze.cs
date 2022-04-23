@@ -39,6 +39,8 @@ namespace Core
                     if (!chip.use) continue;
                     if (chip.chipType == enmChipType.YM2612X && info.format == enmFormat.VGM) continue;
                     if (chip.chipType == enmChipType.YM2612 && info.format == enmFormat.XGM) continue;
+                    if (chip.chipType == enmChipType.YM3526 && !info.useOPL) continue;
+                    if (chip.chipType == enmChipType.YM2151 && !info.useOPM) continue;
 
                     foreach (partWork pw in chip.lstPartWork)
                     {

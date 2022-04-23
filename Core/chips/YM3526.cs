@@ -6,7 +6,7 @@ namespace Core
     {
         public YM3526(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary) : base(parent, chipID, initialPartName, stPath, isSecondary)
         {
-
+            _chipType = enmChipType.YM3526;
             _Name = "YM3526";
             _ShortName = "OPL";
             _ChMax = 9 + 5;//FM 9ch Rhythm 5ch
