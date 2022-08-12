@@ -982,6 +982,7 @@ namespace Core
 
             f = Common.CheckRange(f, 0, 0x7ff);
             OutFmSetFnum(pw, o, f);
+            //Console.WriteLine("{0:x} {1:x}", o, f);
         }
 
         public int GetFmFNum(int[] ftbl, int octave, char noteCmd, int shift)

@@ -339,7 +339,7 @@ namespace Core
                     , pw.octaveNow
                     , note.cmd
                     , note.shift);
-                for (int i = 0; i < Math.Abs(delta); i++)
+                for (int i = note.shift; i < Math.Abs(delta)+ note.shift; i++)
                 {
                     bf += wait;
                     tl += wait;
