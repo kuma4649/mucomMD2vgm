@@ -339,7 +339,7 @@ namespace Core
                     , pw.octaveNow
                     , note.cmd
                     , note.shift);
-                for (int i = note.shift; i < Math.Abs(delta)+ note.shift; i++)
+                for (int i = 0; i < Math.Abs(delta == 0 ? 1 : delta); i++)
                 {
                     bf += wait;
                     tl += wait;
@@ -348,15 +348,11 @@ namespace Core
                         , out int a
                         , pw.octaveNow
                         , note.cmd
-                        //, note.shift + (i + 0) * Math.Sign(delta)
-                        //, pw.keyShift + pw.relKeyShift + (i + 0) * Math.Sign(delta)
-                        , (i + 0) * Math.Sign(delta)
+                        , note.shift + (i + 0) * Math.Sign(delta)
                         , out int b
                         , pw.octaveNow
                         , note.cmd
-                        //, note.shift + (i + 1) * Math.Sign(delta)
-                        //, pw.keyShift + pw.relKeyShift + (i + 1) * Math.Sign(delta)
-                        , (i + 1) * Math.Sign(delta)
+                        , note.shift + (i + 1) * Math.Sign(delta)
                         , delta
                         );
 
