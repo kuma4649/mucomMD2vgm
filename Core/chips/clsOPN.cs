@@ -143,7 +143,6 @@ namespace Core
 
         public void OutOPNSetPanAMSPMS(partWork pw, int pan, int ams, int pms)
         {
-            //TODO: 効果音パートで指定されている場合の考慮不足
             partWork ppw = pw;
             if (pw.PartName == "K")
             {
@@ -153,11 +152,17 @@ namespace Core
             }
             int vch = ppw.ch;
             byte port = ppw.ch > 2 ? ppw.port1 : ppw.port0;
+            if ("LMN".IndexOf(pw.PartName)>=0)
+            {
+                //効果音モードパートの場合はch3に補正
+                vch = 2;
+                port = ppw.port0;
+            }
             vch = (byte)(vch > 2 ? vch - 3 : vch);
 
-            pan = pan & 3;
-            ams = ams & 3;
-            pms = pms & 7;
+            pan &= 3;
+            ams &= 3;
+            pms &= 7;
 
             ppw.OutData(port, (byte)(0xb4 + vch), (byte)((pan << 6) | (ams << 4) | pms));
         }
