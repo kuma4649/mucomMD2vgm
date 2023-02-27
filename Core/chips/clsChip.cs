@@ -1349,8 +1349,10 @@ namespace Core
                 pw.tie = false;
                 //SetKeyOff(pw);
             }
-
-            SetKeyOff(pw);
+            if(!pw.ReverbSwitch)
+            {
+                SetKeyOff(pw);
+            }
 
             //WaitClockの決定
             pw.waitCounter = parent.GetWaitCounter(ml); 
