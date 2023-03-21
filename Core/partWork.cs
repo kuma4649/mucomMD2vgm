@@ -655,6 +655,22 @@ namespace Core
         internal int beforeTLOP4 = -1;
         public bool beforeKeyOff=false;
 
+        //音色グラデーション
+        public bool instrumentGradationSwitch = false;
+        public int instrumentGradationWait = 0;
+        public long instrumentGradationWaitCounter = 0;
+        public int instrumentGradationPointer = 0;
+        public int[] instrumentGradationSt = new int[50];
+        public int[] instrumentGradationEd = new int[50];
+        public int instrumentGradationStNum = 0;
+        public int instrumentGradationEdNum = 0;
+        public int[] instrumentGradationWk = new int[50];
+        public bool[] instrumentGradationFlg = new bool[50];
+        public bool instrumentGradationReset = true;
+        public int feedback;
+        public int algo;
+        public byte[] v_tl = new byte[] { 0, 0, 0, 0 };
+
         public void MakeLstPos()
         {
             if (pData == null)
@@ -986,6 +1002,16 @@ namespace Core
             }
 
             return wrd;
+        }
+
+        public void skipSpaceOrTab()
+        {
+            while (true)
+            {
+                char c = getChar();
+                if ((c != ' ' && c != '\t') || c == 0) break;
+                incPos();
+            }
         }
     }
 

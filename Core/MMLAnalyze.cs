@@ -413,6 +413,62 @@ namespace Core
                 mml.args.Add(n);
             }
 
+            //音色グラデーション（モーフィング）機能向け解析
+            pw.skipSpaceOrTab();
+            if (pw.getChar() == ',')
+            {
+                pw.incPos();
+                if (pw.getChar() == '"')
+                {
+                    //名称指定
+                    mml.args.Add('"');
+                    string name = pw.getString();
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        msgBox.setErrMsg(msg.get("E05903"), pw.getSrcFn(), pw.getLineNumber());
+                    }
+                    mml.args.Add(name.PadRight(6));//trg inst
+                }
+                else
+                {
+                    //normal
+                    mml.args.Add('N');
+
+                    if (!pw.getNum(out n))
+                    {
+                        msgBox.setErrMsg(msg.get("E05002"), pw.getSrcFn(), pw.getLineNumber());
+                        n = 0;
+                    }
+                    n = Common.CheckRange(n, 0, 255);
+                    mml.args.Add(n);//trg inst
+                }
+
+                pw.skipSpaceOrTab();
+                if (pw.getChar() == ',')
+                {
+                    pw.incPos();
+                    if (!pw.getNum(out n))
+                    {
+                        msgBox.setErrMsg(msg.get("E05002"), pw.getSrcFn(), pw.getLineNumber());
+                        n = 0;
+                    }
+                    n = Common.CheckRange(n, 1, 255);//wait
+                    mml.args.Add(n);
+
+                    pw.skipSpaceOrTab();
+                    if (pw.getChar() == ',')
+                    {
+                        pw.incPos();
+                        if (!pw.getNum(out n))
+                        {
+                            msgBox.setErrMsg(msg.get("E05002"), pw.getSrcFn(), pw.getLineNumber());
+                            n = 0;
+                        }
+                        n = Common.CheckRange(n, 0, 1);//reset sw
+                        mml.args.Add(n);
+                    }
+                }
+            }
 
         }
 

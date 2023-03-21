@@ -1833,6 +1833,11 @@ namespace Core
                                 waitCounter = Math.Min(waitCounter, cpw.bendWaitCounter);
                             }
 
+                            if (cpw.instrumentGradationSwitch)
+                            {
+                                waitCounter = Math.Min(waitCounter, cpw.instrumentGradationWaitCounter);
+                            }
+
                             //lfoとenvelopeは音長によるウエイトカウントが存在する場合のみ対象にする。(さもないと、曲のループ直前の効果を出せない)
                             if (waitCounter > 0)
                             {
@@ -1887,6 +1892,8 @@ namespace Core
                                 if (pw.waitCounter > 0) pw.waitCounter -= waitCounter;
 
                                 if (pw.bendWaitCounter > 0) pw.bendWaitCounter -= waitCounter;
+                                
+                                if (pw.instrumentGradationWaitCounter > 0) pw.instrumentGradationWaitCounter -= waitCounter;
 
                                 for (int lfo = 0; lfo < 1; lfo++)
                                 {
@@ -2518,6 +2525,9 @@ namespace Core
                 log.Write("Envelope");
                 ProcEnvelope(pw);
 
+                log.Write("InstGrad");
+                ProcGrad(pw);
+
                 pw.chip.SetFNum(pw);
                 //pw.chip.SetVolume(pw);
 
@@ -2615,6 +2625,8 @@ namespace Core
                         //bend
                         if (pw.bendWaitCounter != -1) cnt = Math.Min(cnt, pw.bendWaitCounter);
 
+                        if (pw.instrumentGradationSwitch) cnt = Math.Min(cnt, pw.instrumentGradationWaitCounter);
+
                         //lfoとenvelopeは音長によるウエイトカウントが存在する場合のみ対象にする。(さもないと、曲のループ直前の効果を出せない)
                         if (cnt < 1) continue;
 
@@ -2654,6 +2666,7 @@ namespace Core
                         if (pw.waitKeyOnCounter > 0) pw.waitKeyOnCounter -= cnt;
                         if (pw.waitCounter > 0) pw.waitCounter -= cnt;
                         if (pw.bendWaitCounter > 0) pw.bendWaitCounter -= cnt;
+                        if (pw.instrumentGradationWaitCounter > 0) pw.instrumentGradationWaitCounter -= cnt;
 
                         for (int lfo = 0; lfo < 1; lfo++)
                         {
@@ -3046,6 +3059,9 @@ namespace Core
 
             log.Write("Envelope");
             ProcEnvelope(pw);
+
+            log.Write("InstGrad");
+            ProcGrad(pw);
 
             pw.chip.SetFNum(pw);
             //pw.chip.SetVolume(pw);
@@ -3472,6 +3488,12 @@ namespace Core
             pw.chip.SetVolume(pw);
         }
 
+        private void ProcGrad(partWork pw)
+        {
+            if (!pw.instrumentGradationSwitch) return;
+            ((ClsOPN)pw.chip).prcInstrumentGradation(pw);
+        }
+
         private void Commander(partWork pw, MML mml)
         {
 
@@ -3498,7 +3520,7 @@ namespace Core
                     pw.waitCounter = -1;
                     break;
                 case enmMMLType.Instrument:
-                    log.Write("Instrument");
+                    log.Write("Instrument&Gradation");
                     pw.chip.CmdInstrument(pw, mml);
                     pw.mmlPos++;
                     break;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -37,7 +38,7 @@ namespace Core
 
         public void OutSsgKeyOff(partWork pw)
         {
-            int m =3;
+            int m = 3;
             byte pch = (byte)(pw.ch - (m + 6));
             int n = 9;
             byte data = 0;
@@ -116,7 +117,7 @@ namespace Core
             pw.freq = f;
 
             byte data = 0;
-            int n =  9;
+            int n = 9;
 
             data = (byte)(f & 0xff);
             pw.OutData(pw.port0, (byte)(0 + (pw.ch - n) * 2), data);
@@ -152,7 +153,7 @@ namespace Core
             }
             int vch = ppw.ch;
             byte port = ppw.ch > 2 ? ppw.port1 : ppw.port0;
-            if ("LMN".IndexOf(pw.PartName)>=0)
+            if ("LMN".IndexOf(pw.PartName) >= 0)
             {
                 //効果音モードパートの場合はch3に補正
                 vch = 2;
@@ -309,59 +310,83 @@ namespace Core
         /// </summary>
         /// <param name="ch">チャンネル</param>
         /// <param name="vol">ボリューム値</param>
-        /// <param name="n">音色番号</param>
-        public void OutFmSetVolume(partWork pw, int vol, int n)
+        public void OutFmSetVolume(partWork pw, int vol)//, int n)
         {
-            if (!parent.instFM.ContainsKey(n))
-            {
-                msgBox.setWrnMsg(string.Format(msg.get("E11000"), n), pw.getSrcFn(), pw.getLineNumber());
-                return;
-            }
+            //if (!parent.instFM.ContainsKey(n))
+            //{
+            //    msgBox.setWrnMsg(string.Format(msg.get("E11000"), n), pw.getSrcFn(), pw.getLineNumber());
+            //    return;
+            //}
 
             int alg = 0;
             int[] ope = null;
-            switch (parent.instFM[n].type)
-            {
-                case 0:// @
-                    alg = parent.instFM[n].data[1] & 0x7;
-                    ope = new int[4] {
-                        parent.instFM[n].data[0*Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
-                        , parent.instFM[n].data[1 * Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
-                        , parent.instFM[n].data[2 * Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
-                        , parent.instFM[n].data[3 * Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
+
+            alg = pw.algo;
+            ope = new int[4] {
+                        pw.v_tl[0]
+                        ,pw.v_tl[1]
+                        ,pw.v_tl[2]
+                        ,pw.v_tl[3]
                     };
-                    break;
-                case 1:// @%
-                    alg = parent.instFM[n].data[24] & 0x7;
-                    ope = new int[4] {
-                        parent.instFM[n].data[4]
-                        , parent.instFM[n].data[6]
-                        , parent.instFM[n].data[5]
-                        , parent.instFM[n].data[7]
-                    };
-                    break;
-                case 2:// @N
-                    alg = parent.instFM[n].data[1] & 0x7;
-                    ope = new int[4] {
-                        parent.instFM[n].data[0 * 11 + 5+2]
-                        , parent.instFM[n].data[1 * 11 + 5+2]
-                        , parent.instFM[n].data[2 * 11 + 5+2]
-                        , parent.instFM[n].data[3 * 11 + 5+2]
-                    };
-                    break;
-                case 3:// @L OPL
-                    msgBox.setErrMsg(string.Format(msg.get("E11000"), n), pw.getSrcFn(), pw.getLineNumber());
-                    return;
-                case 4:// @M OPM
-                    alg = parent.instFM[n].data[1] & 0x7;
-                    ope = new int[4] {
-                        parent.instFM[n].data[0 * Const.INSTRUMENT_M_OPERATOR_SIZE + 5 + 3]
-                        , parent.instFM[n].data[1 * Const.INSTRUMENT_M_OPERATOR_SIZE + 5 + 3]
-                        , parent.instFM[n].data[2 * Const.INSTRUMENT_M_OPERATOR_SIZE + 5 + 3]
-                        , parent.instFM[n].data[3 * Const.INSTRUMENT_M_OPERATOR_SIZE + 5 + 3]
-                    };
-                    return;
-            }
+
+            //switch (parent.instFM[n].type)
+            //{
+            //    case 0:// @
+            //        alg = pw.algo;// parent.instFM[n].data[1] & 0x7;
+            //        ope = new int[4] {
+            //            //parent.instFM[n].data[0*Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
+            //            //, parent.instFM[n].data[1 * Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
+            //            //, parent.instFM[n].data[2 * Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
+            //            //, parent.instFM[n].data[3 * Const.INSTRUMENT_OPERATOR_SIZE + 5+2]
+            //            pw.v_tl[0]
+            //            ,pw.v_tl[1]
+            //            ,pw.v_tl[2]
+            //            ,pw.v_tl[3]
+            //        };
+            //        break;
+            //    case 1:// @%
+            //        alg = pw.algo;// parent.instFM[n].data[24] & 0x7;
+            //        ope = new int[4] {
+            //            //parent.instFM[n].data[4]
+            //            //, parent.instFM[n].data[6]
+            //            //, parent.instFM[n].data[5]
+            //            //, parent.instFM[n].data[7]
+            //            pw.v_tl[0]
+            //            ,pw.v_tl[1]
+            //            ,pw.v_tl[2]
+            //            ,pw.v_tl[3]
+            //        };
+            //        break;
+            //    case 2:// @N
+            //        alg = pw.algo;// parent.instFM[n].data[1] & 0x7;
+            //        ope = new int[4] {
+            //            //parent.instFM[n].data[0 * 11 + 5+2]
+            //            //, parent.instFM[n].data[1 * 11 + 5+2]
+            //            //, parent.instFM[n].data[2 * 11 + 5+2]
+            //            //, parent.instFM[n].data[3 * 11 + 5+2]
+            //            pw.v_tl[0]
+            //            ,pw.v_tl[1]
+            //            ,pw.v_tl[2]
+            //            ,pw.v_tl[3]
+            //        };
+            //        break;
+            //    case 3:// @L OPL
+            //        msgBox.setErrMsg(string.Format(msg.get("E11000"), n), pw.getSrcFn(), pw.getLineNumber());
+            //        return;
+            //    case 4:// @M OPM
+            //        alg = pw.algo;// parent.instFM[n].data[1] & 0x7;
+            //        ope = new int[4] {
+            //            //parent.instFM[n].data[0 * Const.INSTRUMENT_M_OPERATOR_SIZE + 5 + 3]
+            //            //, parent.instFM[n].data[1 * Const.INSTRUMENT_M_OPERATOR_SIZE + 5 + 3]
+            //            //, parent.instFM[n].data[2 * Const.INSTRUMENT_M_OPERATOR_SIZE + 5 + 3]
+            //            //, parent.instFM[n].data[3 * Const.INSTRUMENT_M_OPERATOR_SIZE + 5 + 3]
+            //            pw.v_tl[0]
+            //            ,pw.v_tl[1]
+            //            ,pw.v_tl[2]
+            //            ,pw.v_tl[3]
+            //        };
+            //        break;
+            //}
 
             int[][] algs = new int[8][]
             {
@@ -423,7 +448,7 @@ namespace Core
                 return;
             }
 
-            int m =  3;
+            int m = 3;
 
             if (pw.ch >= m + 3 && pw.ch < m + 6)
             {
@@ -445,18 +470,21 @@ namespace Core
                         ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 4 + 2], parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 3 + 2]);
                         ((ClsOPN)pw.chip).OutFmSetSSGEG(pw, ope, 0);
                         ((ClsOPN)pw.chip).OutFmSetTl(pw, ope, parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 5 + 2]);
+                        pw.v_tl[ope] = parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 5 + 2];
                     }
 
-                    pw.op1ml = parent.instFM[n].data[0 * Const.INSTRUMENT_OPERATOR_SIZE + 7];
-                    pw.op2ml = parent.instFM[n].data[1 * Const.INSTRUMENT_OPERATOR_SIZE + 7];
-                    pw.op3ml = parent.instFM[n].data[2 * Const.INSTRUMENT_OPERATOR_SIZE + 7];
-                    pw.op4ml = parent.instFM[n].data[3 * Const.INSTRUMENT_OPERATOR_SIZE + 7];
+                    pw.op1ml = parent.instFM[n].data[0 * Const.INSTRUMENT_OPERATOR_SIZE + 7 + 2];
+                    pw.op2ml = parent.instFM[n].data[1 * Const.INSTRUMENT_OPERATOR_SIZE + 7 + 2];
+                    pw.op3ml = parent.instFM[n].data[2 * Const.INSTRUMENT_OPERATOR_SIZE + 7 + 2];
+                    pw.op4ml = parent.instFM[n].data[3 * Const.INSTRUMENT_OPERATOR_SIZE + 7 + 2];
                     pw.op1dt2 = 0;
                     pw.op2dt2 = 0;
                     pw.op3dt2 = 0;
                     pw.op4dt2 = 0;
 
                     ((ClsOPN)pw.chip).OutFmSetFeedbackAlgorithm(pw, parent.instFM[n].data[0], parent.instFM[n].data[1]);
+                    pw.feedback = parent.instFM[n].data[0];
+                    pw.algo = parent.instFM[n].data[1];
                     break;
                 case 1: // @%
                     int vch = pw.ch;
@@ -473,8 +501,11 @@ namespace Core
                         pw.OutData(port, (byte)(0x60 + vch + ope * 4), (byte)(parent.instFM[n].data[ope + 12] | 0x80)); //AMON/DR
                         pw.OutData(port, (byte)(0x70 + vch + ope * 4), parent.instFM[n].data[ope + 16]); //SR
                         pw.OutData(port, (byte)(0x80 + vch + ope * 4), parent.instFM[n].data[ope + 20]); //SL/RR
+                        pw.v_tl[ope] = parent.instFM[n].data[ope + 4];
                     }
                     pw.OutData(port, (byte)(0xb0 + vch), parent.instFM[n].data[24]); //FB/AL
+                    pw.feedback = (parent.instFM[n].data[24] & 0x38) >> 3;
+                    pw.algo = parent.instFM[n].data[24] & 0x7;
                     break;
                 case 2: //@N
                     for (int ope = 0; ope < 4; ope++) ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, 0, 15);
@@ -488,18 +519,21 @@ namespace Core
                         ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, parent.instFM[n].data[ope * 11 + 4 + 2], parent.instFM[n].data[ope * 11 + 3 + 2]);
                         ((ClsOPN)pw.chip).OutFmSetSSGEG(pw, ope, parent.instFM[n].data[ope * 11 + 10 + 2]);
                         ((ClsOPN)pw.chip).OutFmSetTl(pw, ope, parent.instFM[n].data[ope * 11 + 5 + 2]);
+                        pw.v_tl[ope] = parent.instFM[n].data[ope * 11 + 5 + 2];
                     }
 
-                    pw.op1ml = parent.instFM[n].data[0 * 11 + 7];
-                    pw.op2ml = parent.instFM[n].data[1 * 11 + 7];
-                    pw.op3ml = parent.instFM[n].data[2 * 11 + 7];
-                    pw.op4ml = parent.instFM[n].data[3 * 11 + 7];
+                    pw.op1ml = parent.instFM[n].data[0 * 11 + 7 + 2];
+                    pw.op2ml = parent.instFM[n].data[1 * 11 + 7 + 2];
+                    pw.op3ml = parent.instFM[n].data[2 * 11 + 7 + 2];
+                    pw.op4ml = parent.instFM[n].data[3 * 11 + 7 + 2];
                     pw.op1dt2 = 0;
                     pw.op2dt2 = 0;
                     pw.op3dt2 = 0;
                     pw.op4dt2 = 0;
 
                     ((ClsOPN)pw.chip).OutFmSetFeedbackAlgorithm(pw, parent.instFM[n].data[0], parent.instFM[n].data[1]);
+                    pw.feedback = parent.instFM[n].data[0];
+                    pw.algo = parent.instFM[n].data[1];
                     break;
                 case 3://@L OPL
                     msgBox.setErrMsg(msg.get("E11001"), pw.getSrcFn(), pw.getLineNumber());
@@ -515,6 +549,7 @@ namespace Core
                         ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, parent.instFM[n].data[ope * 11 + 4 + 3], parent.instFM[n].data[ope * 11 + 3 + 3]);
                         ((ClsOPN)pw.chip).OutFmSetSSGEG(pw, ope, 0);
                         ((ClsOPN)pw.chip).OutFmSetTl(pw, ope, parent.instFM[n].data[ope * 11 + 5 + 3]);
+                        pw.v_tl[ope] = parent.instFM[n].data[ope * 11 + 5 + 3];
                     }
 
                     pw.op1ml = parent.instFM[n].data[0 * 11 + 7 + 3];
@@ -527,6 +562,8 @@ namespace Core
                     pw.op4dt2 = 0;
 
                     ((ClsOPN)pw.chip).OutFmSetFeedbackAlgorithm(pw, parent.instFM[n].data[2], parent.instFM[n].data[1]);
+                    pw.feedback = parent.instFM[n].data[2];
+                    pw.algo = parent.instFM[n].data[1];
                     return;
             }
 
@@ -534,7 +571,7 @@ namespace Core
             pw.beforeTLOP3 = -1;
             pw.beforeTLOP2 = -1;
             pw.beforeTLOP4 = -1;
-            OutFmSetVolume(pw, vol, n);
+            OutFmSetVolume(pw, vol);//, n);
             //SetFmVolume(pw);
         }
 
@@ -571,7 +608,7 @@ namespace Core
                         byte vch = (byte)((pw.ch > 2) ? pw.ch + 1 : pw.ch);
                         //key off
 
-                        if (parent.xgmKeyOnData!=null && pw.chip is YM2612X)
+                        if (parent.xgmKeyOnData != null && pw.chip is YM2612X)
                             parent.xgmKeyOnData.Add((byte)(0x00 + (vch & 7)));
                         else
                             pw.OutData(pw.port0, 0x28, (byte)(0x00 + (vch & 7)));
@@ -710,6 +747,12 @@ namespace Core
                 return;
             }
 
+            if (pw.instrumentGradationSwitch)
+            {
+                if (pw.instrumentGradationReset)
+                    InstrumentGradationReset(pw);
+            }
+
             //Jパート(FM Ch.5)が発音時はpcmModeを解除する
             if (((pw.chip is YM2612) || (pw.chip is YM2612X)) && pw.ch == 5)
             {
@@ -721,7 +764,7 @@ namespace Core
                 }
             }
 
-            int n =  3;
+            int n = 3;
 
             if (pw.ch != 6)// || pw.Type != enmChannelType.FMPCM || pw.Type != enmChannelType.FMPCMex)
             {
@@ -784,7 +827,7 @@ namespace Core
                     }
                     else
                     {
-                        msgBox.setErrMsg(string.Format(msg.get("E10025"), pw.octaveNow, pw.noteCmd, pw.shift + pw.keyShift) );
+                        msgBox.setErrMsg(string.Format(msg.get("E10025"), pw.octaveNow, pw.noteCmd, pw.shift + pw.keyShift));
                         return;
                     }
                 }
@@ -1081,7 +1124,7 @@ namespace Core
             {
                 if (parent.instFM.ContainsKey(pw.instrument))
                 {
-                    OutFmSetVolume(pw, vol, pw.instrument);
+                    OutFmSetVolume(pw, vol);//, pw.instrument);
                     pw.beforeVolume = vol;
                 }
             }
@@ -1114,8 +1157,8 @@ namespace Core
             //    if (!pl.sw)
             //        continue;
 
-                //if (pl.param[5] != 1)
-                    //continue;
+            //if (pl.param[5] != 1)
+            //continue;
 
             //    pl.isEnd = false;
             //    pl.value = (pl.param[0] == 0) ? pl.param[6] : 0;//ディレイ中は振幅補正は適用されない
@@ -1145,7 +1188,7 @@ namespace Core
             //}
         }
 
-        public override void SetToneDoubler(partWork pw,MML mml)
+        public override void SetToneDoubler(partWork pw, MML mml)
         {
         }
 
@@ -1168,7 +1211,7 @@ namespace Core
             op = (byte)Common.CheckRange(op, 1, 4);
             op = (byte)(op == 2 ? 3 : (op == 3 ? 2 : op));
 
-            adr += (byte)(vch + ((op-1) << 2));
+            adr += (byte)(vch + ((op - 1) << 2));
 
             pw.OutData(port, adr, dat);
         }
@@ -1210,6 +1253,8 @@ namespace Core
 
         public override void CmdInstrument(partWork pw, MML mml)
         {
+            if (mml.args.Count > 2) InstrumentGrad(pw, mml);
+
             char type = (char)mml.args[0];
             int n = 0;
             if (mml.args[1].GetType() == typeof(int))
@@ -1255,7 +1300,7 @@ namespace Core
 
             n = Common.CheckRange(n, 0, 255);
             pw.instrument = n;
-            if(pw.Type== enmChannelType.FMOPNex)
+            if (pw.Type == enmChannelType.FMOPNex)
             {
                 pw.chip.lstPartWork[2].instrument = n;
                 pw.chip.lstPartWork[7].instrument = n;
@@ -1319,7 +1364,7 @@ namespace Core
         public override void CmdVolumeUp(partWork pw, MML mml)
         {
             int n = (int)mml.args[0];
-            n = pw.volumeEasy+n;
+            n = pw.volumeEasy + n;
             n = Common.CheckRange(n, 0, pw.MaxVolumeEasy);
             pw.volumeEasy = n;
             if (pw.Type == enmChannelType.FMOPN || pw.Type == enmChannelType.FMOPNex)
@@ -1333,7 +1378,7 @@ namespace Core
         public override void CmdVolumeDown(partWork pw, MML mml)
         {
             int n = (int)mml.args[0];
-            n = pw.volumeEasy-n;
+            n = pw.volumeEasy - n;
             n = Common.CheckRange(n, 0, pw.MaxVolumeEasy);
             pw.volumeEasy = n;
             if (pw.Type == enmChannelType.FMOPN || pw.Type == enmChannelType.FMOPNex)
@@ -1557,13 +1602,344 @@ namespace Core
                         }
                     }
                     break;
-                //case "EXD":
-                //    pw.slotDetune[0] = (int)mml.args[1];
-                //    pw.slotDetune[1] = (int)mml.args[2];
-                //    pw.slotDetune[2] = (int)mml.args[3];
-                //    pw.slotDetune[3] = (int)mml.args[4];
-                //    break;
+                    //case "EXD":
+                    //    pw.slotDetune[0] = (int)mml.args[1];
+                    //    pw.slotDetune[1] = (int)mml.args[2];
+                    //    pw.slotDetune[2] = (int)mml.args[3];
+                    //    pw.slotDetune[3] = (int)mml.args[4];
+                    //    break;
             }
+        }
+
+
+
+        private void InstrumentGrad(partWork pw, MML mml)
+        {
+
+            //パラメータの読み込み
+
+            int n1 = 0;//src Inst
+            int n2 = 0;//trg Inst
+            int n3 = 1;//wait tick
+            int n4 = 1;//reset mode
+
+            char type1 = (char)mml.args[0];
+            if (mml.args[1].GetType() == typeof(int))
+            {
+                n1 = (int)mml.args[1];
+            }
+            else
+            {
+                string name = (string)mml.args[1];
+                foreach (KeyValuePair<int, mucomVoice> voi in parent.instFM)
+                {
+                    if (voi.Value.Name == name)
+                    {
+                        n1 = voi.Value.No;
+                    }
+                }
+            }
+
+            char type2 = (char)mml.args[2];
+            if (mml.args[3].GetType() == typeof(int))
+            {
+                n2 = (int)mml.args[3];
+            }
+            else
+            {
+                string name = (string)mml.args[3];
+                foreach (KeyValuePair<int, mucomVoice> voi in parent.instFM)
+                {
+                    if (voi.Value.Name == name)
+                    {
+                        n1 = voi.Value.No;
+                    }
+                }
+            }
+
+            if (mml.args.Count > 4)
+            {
+                n3 = (int)mml.args[4];
+            }
+
+            if (mml.args.Count > 5)
+            {
+                n4 = (int)mml.args[5];
+            }
+
+            pw.instrumentGradationSwitch = true;
+            pw.instrumentGradationWait = n3;
+            InstrumentGradationGetParamsFromVoice(pw, ref pw.instrumentGradationSt, n1);
+            InstrumentGradationGetParamsFromVoice(pw, ref pw.instrumentGradationEd, n2);
+            pw.instrumentGradationStNum = n1;
+            pw.instrumentGradationEdNum = n2;
+            pw.instrumentGradationReset = n4 == 1;
+
+            InstrumentGradationReset(pw);
+
+        }
+
+        private static int instrumentGradParam = 50;
+
+        private void InstrumentGradationReset(partWork pw)
+        {
+            pw.instrument = pw.instrumentGradationStNum;
+            pw.beforeInstrument = -1;
+            pw.instrumentGradationWaitCounter = pw.instrumentGradationWait;
+            pw.instrumentGradationPointer = 0;
+            for (int i = 0; i < instrumentGradParam; i++) pw.instrumentGradationWk[i] = pw.instrumentGradationSt[i];
+
+            ((ClsOPN)pw.chip).OutFmSetInstrument(pw, pw.instrumentGradationStNum, pw.volume);
+        }
+
+        private void InstrumentGradationGetParamsFromVoice(partWork pw, ref int[] param, int n)
+        {
+            if (!parent.instFM.ContainsKey(n))
+            {
+                msgBox.setWrnMsg(string.Format(msg.get("E11001"), n), pw.getSrcFn(), pw.getLineNumber());
+                return;
+            }
+
+            switch (parent.instFM[n].type)
+            {
+                case 0:// @
+                    for (int ope = 0; ope < 4; ope++)
+                    {
+                        param[ope * 2] = parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 8 + 2];//      Det
+                        param[ope * 2 + 1] = parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 7 + 2];//  Mul
+
+                        param[ope + 8] = parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 5 + 2];//      TL
+
+                        param[ope * 2 + 12] = parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 6 + 2];// KS
+                        param[ope * 2 + 13] = parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 0 + 2];// AR
+
+                        param[ope + 42] = 1;// AM
+                        param[ope + 20] = parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 1 + 2];//     DR
+
+                        param[ope + 24] = parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 2 + 2];//     SR
+
+                        param[ope * 2 + 28] = parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 4 + 2];// SL
+                        param[ope * 2 + 29] = parent.instFM[n].data[ope * Const.INSTRUMENT_OPERATOR_SIZE + 3 + 2];// RR
+
+                        param[ope + 36] = 0;// DT2
+
+                        param[ope + 46] = 0;// SSGEG
+                    }
+                    param[40] = parent.instFM[n].data[0];//FB
+                    param[41] = parent.instFM[n].data[1];//ALG
+                    break;
+                case 1: // @%
+                    for (int ope = 0; ope < 4; ope++)
+                    {
+                        param[ope * 2] = (parent.instFM[n].data[ope] & 0x70) >> 4;// Det
+                        param[ope * 2 + 1] = parent.instFM[n].data[ope] & 0xf;//     Mul
+
+                        param[ope + 8] = parent.instFM[n].data[ope + 4] & 0x7f;// TL
+
+                        param[ope * 2 + 12] = (parent.instFM[n].data[ope + 8] & 0xc0) >> 6;// KS
+                        param[ope * 2 + 13] = parent.instFM[n].data[ope + 8] & 0x1f;//        AR
+
+                        param[ope + 42] = 1;// AM
+                        param[ope + 20] = parent.instFM[n].data[ope + 12] & 0x1f;// DR
+
+                        param[ope + 24] = parent.instFM[n].data[ope + 16] & 0x1f;// SR
+
+                        param[ope * 2 + 28] = (parent.instFM[n].data[ope + 20] & 0xf0) >> 4;// SL
+                        param[ope * 2 + 29] = parent.instFM[n].data[ope + 20] & 0x0f;//        RR
+
+                        param[ope + 36] = (parent.instFM[n].data[ope + 16] & 0xc0) >> 6;// DT2
+
+                        param[ope + 46] = 0;// SSGEG
+                    }
+                    param[40] = (parent.instFM[n].data[24] & 0x38) >> 3;//FB
+                    param[41] = parent.instFM[n].data[24] & 0x07;//ALG
+                    break;
+                case 2: //@N
+                    for (int ope = 0; ope < 4; ope++)
+                    {
+                        param[ope * 2] = parent.instFM[n].data[ope * 11 + 8 + 2];//      Det
+                        param[ope * 2 + 1] = parent.instFM[n].data[ope * 11 + 7 + 2];//  Mul
+
+                        param[ope + 8] = parent.instFM[n].data[ope * 11 + 5 + 2];//      TL
+
+                        param[ope * 2 + 12] = parent.instFM[n].data[ope * 11 + 6 + 2];// KS
+                        param[ope * 2 + 13] = parent.instFM[n].data[ope * 11 + 0 + 2];// AR
+
+                        param[ope + 42] = parent.instFM[n].data[ope * 11 + 9 + 2];//     AM
+                        param[ope + 20] = parent.instFM[n].data[ope * 11 + 1 + 2];//     DR
+
+                        param[ope + 24] = parent.instFM[n].data[ope * 11 + 2 + 2];//     SR
+
+                        param[ope * 2 + 28] = parent.instFM[n].data[ope * 11 + 4 + 2];// SL
+                        param[ope * 2 + 29] = parent.instFM[n].data[ope * 11 + 3 + 2];// RR
+
+                        param[ope + 36] = 0;// DT2
+
+                        param[ope + 46] = parent.instFM[n].data[ope * 11 + 10 + 2];//    SSGEG
+                    }
+                    param[40] = parent.instFM[n].data[0];//FB
+                    param[41] = parent.instFM[n].data[1];//ALG
+                    break;
+                case 3://@L OPL
+                    msgBox.setErrMsg(msg.get("E11001"), pw.getSrcFn(), pw.getLineNumber());
+                    break;
+                case 4://@M OPM
+
+                    for (int ope = 0; ope < 4; ope++)
+                    {
+                        param[ope * 2] = parent.instFM[n].data[ope * 11 + 8 + 3];//      Det
+                        param[ope * 2 + 1] = parent.instFM[n].data[ope * 11 + 7 + 3];//  Mul
+
+                        param[ope + 8] = parent.instFM[n].data[ope * 11 + 5 + 3];//      TL
+
+                        param[ope * 2 + 12] = parent.instFM[n].data[ope * 11 + 6 + 3];// KS
+                        param[ope * 2 + 13] = parent.instFM[n].data[ope * 11 + 0 + 3];// AR
+
+                        param[ope + 42] = parent.instFM[n].data[ope * 11 + 10 + 3];//    AM
+                        param[ope + 20] = parent.instFM[n].data[ope * 11 + 1 + 3];//     DR
+
+                        param[ope + 24] = parent.instFM[n].data[ope * 11 + 2 + 3];//     SR
+
+                        param[ope * 2 + 28] = parent.instFM[n].data[ope * 11 + 4 + 3];// SL
+                        param[ope * 2 + 29] = parent.instFM[n].data[ope * 11 + 3 + 3];// RR
+
+                        param[ope + 36] = 0;// DT2
+
+                        param[ope + 46] = 0;// SSGEG
+                    }
+                    param[40] = parent.instFM[n].data[2];//FB
+                    param[41] = parent.instFM[n].data[1];//ALG
+                    break;
+            }
+
+        }
+
+        public void prcInstrumentGradation(partWork pw)
+        {
+            //if (!CheckCh3SpecialMode() && pw.pageNo != work.cd.currentPageNo) return;
+
+            if (!pw.instrumentGradationSwitch) return;
+
+            //pw.instrumentGradationWaitCounter--;
+            if (pw.instrumentGradationWaitCounter > 0) return;
+            pw.instrumentGradationWaitCounter = pw.instrumentGradationWait;
+
+            InstrumentGradationUpdate(pw);
+
+            STENVGradation(pw);//KEYオフ、リリースカット無しの音色セット
+            OutFmSetVolume(pw, pw.volume);
+        }
+
+        private void InstrumentGradationUpdate(partWork pw)
+        {
+            for (int i = 0; i < instrumentGradParam; i++)
+            {
+                if (pw.instrumentGradationWk[i] == pw.instrumentGradationEd[i])
+                {
+                    pw.instrumentGradationFlg[i] = false;
+                    continue;
+                }
+
+                pw.instrumentGradationFlg[i] = true;
+                if (pw.instrumentGradationWk[i] < pw.instrumentGradationEd[i])
+                    pw.instrumentGradationWk[i]++;
+                else
+                    pw.instrumentGradationWk[i]--;
+            }
+        }
+
+        private static byte[] GraSlot = new byte[4] { 1, 4, 2, 8 };
+
+        private void STENVGradation(partWork pw)
+        {
+            bool CH3 = pw.Ch3SpecialMode;
+
+            if (pw.instrumentGradationFlg[40] || pw.instrumentGradationFlg[41])
+            {
+                pw.feedback = pw.instrumentGradationWk[40];
+                pw.algo = pw.instrumentGradationWk[41];
+
+                ((ClsOPN)pw.chip).OutFmSetFeedbackAlgorithm(pw, pw.instrumentGradationWk[40], pw.instrumentGradationWk[41]);
+            }
+
+            // 6 PARAMATER(Det/Mul, Total, KS/AR, DR, SR, SL/RR)
+
+            //Det/Mul
+            for (int o = 0; o < 4; o++)
+            {
+                if (CH3 && (pw.slots & GraSlot[o]) == 0) continue;
+                if (pw.instrumentGradationFlg[o * 2] || pw.instrumentGradationFlg[o * 2 + 1])
+                    ((ClsOPN)pw.chip).OutFmSetDtMl(
+                        pw,
+                        o,
+                        pw.instrumentGradationWk[o * 2],
+                        pw.instrumentGradationWk[o * 2 + 1]);
+            }
+
+            //TL
+            byte[] alg = new byte[] { 0x8, 0x8, 0x8, 0x8, 0xc, 0xe, 0xe, 0xf };
+            byte c = alg[pw.algo];
+            int[] op = new int[4] { 0, 2, 1, 3 };
+            for (int o = 0; o < 4; o++)
+            {
+                if (CH3 && (pw.slots & GraSlot[o]) == 0) continue;
+                if (pw.instrumentGradationFlg[8 + o])//TL
+                {
+                    if ((c & (1 << o)) == 0)
+                        ((ClsOPN)pw.chip).OutFmSetTl(
+                            pw,
+                            op[o],
+                            pw.instrumentGradationWk[o + 8]);
+                    pw.v_tl[o] = (byte)pw.instrumentGradationWk[8 + o];
+                }
+            }
+
+            //KS/AR
+            for (int o = 0; o < 4; o++)
+            {
+                if (CH3 && (pw.slots & GraSlot[o]) == 0) continue;
+                if (pw.instrumentGradationFlg[12 + o * 2] || pw.instrumentGradationFlg[12 + o * 2 + 1])
+                    ((ClsOPN)pw.chip).OutFmSetKsAr(
+                        pw,
+                            op[o],
+                        pw.instrumentGradationWk[12 + o * 2],
+                        pw.instrumentGradationWk[12 + o * 2 + 1]);
+            }
+
+            //AM/DR
+            for (int o = 0; o < 4; o++)
+            {
+                if (CH3 && (pw.slots & GraSlot[o]) == 0) continue;
+                if (pw.instrumentGradationFlg[42 + o] || pw.instrumentGradationFlg[20 + o])
+                    ((ClsOPN)pw.chip).OutFmSetAmDr(
+                        pw,
+                            op[o],
+                        pw.instrumentGradationWk[42 + o],
+                        pw.instrumentGradationWk[20 + o]);
+            }
+
+            //Dt2/SR
+            for (int o = 0; o < 4; o++)
+            {
+                if (CH3 && (pw.slots & GraSlot[o]) == 0) continue;
+                if (pw.instrumentGradationFlg[24 + o])
+                    ((ClsOPN)pw.chip).OutFmSetSr(pw,
+                            op[o],
+                        pw.instrumentGradationWk[24 + o]);
+            }
+
+            //SL/RR
+            for (int o = 0; o < 4; o++)
+            {
+                if (CH3 && (pw.slots & GraSlot[o]) == 0) continue;
+                if (pw.instrumentGradationFlg[28 + o * 2] || pw.instrumentGradationFlg[28 + o * 2 + 1])
+                    ((ClsOPN)pw.chip).OutFmSetSlRr(
+                        pw,
+                            op[o],
+                        pw.instrumentGradationWk[28 + o * 2],
+                        pw.instrumentGradationWk[28 + o * 2 + 1]);
+            }
+
         }
 
     }
