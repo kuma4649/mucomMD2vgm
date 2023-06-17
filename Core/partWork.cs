@@ -475,7 +475,7 @@ namespace Core
         {
             foreach (byte b in data)
             {
-                log.Write(string.Format("name:{0} channel:{1} data:{2:x2}", chip.Name, ch, b));
+                Log.Write(string.Format("name:{0} channel:{1} data:{2:x2}", chip.Name, ch, b));
                 dataBuf.Add(b);
             }
         }

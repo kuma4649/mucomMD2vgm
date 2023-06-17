@@ -265,7 +265,7 @@ namespace Core
         /// </summary>
         public int Analyze(List<Line> src)
         {
-            log.Write("テキスト解析開始");
+            Log.Write("テキスト解析開始");
             lineNumber = 0;
 
             bool voiceSetmode = false;
@@ -425,7 +425,7 @@ namespace Core
 
             //if (info.userClockCount != 0) info.clockCount = info.userClockCount;
 
-            log.Write("テキスト解析完了");
+            Log.Write("テキスト解析完了");
             return 0;
 
         }
@@ -1720,7 +1720,7 @@ namespace Core
 
             dat = new List<byte>();
 
-            log.Write("ヘッダー情報作成");
+            Log.Write("ヘッダー情報作成");
             MakeHeader();
 
             int endChannel = 0;
@@ -1749,7 +1749,7 @@ namespace Core
             loopSamples = -1L;
 
 
-            log.Write("MML解析開始");
+            Log.Write("MML解析開始");
             long waitCounter = 0;
             do
             {
@@ -1783,7 +1783,7 @@ namespace Core
                 {
                     foreach (ClsChip chip in kvp.Value)
                     {
-                        log.Write(string.Format("Chip [{0}]", chip.Name));
+                        Log.Write(string.Format("Chip [{0}]", chip.Name));
 
                         partWork pw;
                         for (int i = 0; i < chip.lstPartWork.Count; i++)
@@ -1797,14 +1797,14 @@ namespace Core
                         }
                         if (chip.SupportReversePartWork) chip.ReversePartWork = !chip.ReversePartWork;
 
-                        log.Write("channelを跨ぐコマンド向け処理");
+                        Log.Write("channelを跨ぐコマンド向け処理");
                         //未使用のパートの場合は処理を行わない
                         if (!chip.use) continue;
                         chip.MultiChannelCommand();
                     }
                 }
 
-                log.Write("全パートのうち次のコマンドまで一番近い値を求める");
+                Log.Write("全パートのうち次のコマンドまで一番近い値を求める");
                 waitCounter = long.MaxValue;
                 foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
                 {
@@ -1874,7 +1874,7 @@ namespace Core
 
                 if (isLoopEx && lastRendFinished) waitCounter = 0;
 
-                log.Write("全パートのwaitcounterを減らす");
+                Log.Write("全パートのwaitcounterを減らす");
                 if (waitCounter != long.MaxValue)
                 {
 
@@ -1999,7 +1999,7 @@ namespace Core
                     }
                 }
 
-                log.Write("終了パートのカウント");
+                Log.Write("終了パートのカウント");
                 endChannel = 0;
                 //今回のループで完了したパートの数
                 unusePartEndCountTrue = 0;
@@ -2120,7 +2120,7 @@ namespace Core
                 }
             }
 
-            log.Write("フッター情報の作成");
+            Log.Write("フッター情報の作成");
             MakeFooter();
 
             return dat.ToArray();
@@ -2136,7 +2136,7 @@ namespace Core
             dat = new List<byte>();
             xdat = new List<byte>();
 
-            log.Write("ヘッダー情報作成(XGM)");
+            Log.Write("ヘッダー情報作成(XGM)");
             Xgm_makeHeader();
 
             int endChannel = 0;
@@ -2168,7 +2168,7 @@ namespace Core
             loopClock = -1L;
             loopSamples = -1L;
 
-            log.Write("MML解析開始(XGM)");
+            Log.Write("MML解析開始(XGM)");
             long waitCounter;
             do
             {
@@ -2206,7 +2206,7 @@ namespace Core
                     foreach (ClsChip chip in kvp.Value)
                     {
                         if (chip == null) continue;
-                        log.Write(string.Format("Chip [{0}]", chip.Name));
+                        Log.Write(string.Format("Chip [{0}]", chip.Name));
 
                         //未使用のchipの場合は処理を行わない
                         if (!chip.use) continue;
@@ -2216,7 +2216,7 @@ namespace Core
                     }
                 }
 
-                log.Write("全パートのうち次のコマンドまで一番近い値を求める");
+                Log.Write("全パートのうち次のコマンドまで一番近い値を求める");
                 waitCounter = Xgm_procCheckMinimumWaitCounter();
 
                 foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
@@ -2233,13 +2233,13 @@ namespace Core
                         }
                     }
                 }
-                log.Write("KeyOn情報をかき出し");
+                Log.Write("KeyOn情報をかき出し");
                 foreach (byte dat in xgmKeyOnData)
                     OutData(0x52, 0x28, dat);
 
                 if (isLoopEx && lastRendFinished) waitCounter = 0;
 
-                log.Write("全パートのwaitcounterを減らす");
+                Log.Write("全パートのwaitcounterを減らす");
                 if (waitCounter != long.MaxValue)
                 {
                     //wait処理
@@ -2254,7 +2254,7 @@ namespace Core
                     }
                 }
 
-                log.Write("終了パートのカウント");
+                Log.Write("終了パートのカウント");
                 endChannel = 0;
                 unusePartEndCountTrue = 0;
                 foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in chips)
@@ -2372,10 +2372,10 @@ namespace Core
             //log.Write("KeyOn情報をかき出し");
             //foreach (byte dat in xgmKeyOnData)
             //    OutData(0x52, 0x28, dat);
-            log.Write("VGMデータをXGMへコンバート");
+            Log.Write("VGMデータをXGMへコンバート");
             dat = ConvertVGMtoXGM(dat);
 
-            log.Write("フッター情報の作成");
+            Log.Write("フッター情報の作成");
             Xgm_makeFooter();
 
             return dat.ToArray();
@@ -2513,38 +2513,38 @@ namespace Core
 
             foreach (partWork pw in chip.lstPartWork)
             {
-                log.Write("KeyOff");
+                Log.Write("KeyOff");
                 ProcKeyOff(pw);
 
-                log.Write("Bend");
+                Log.Write("Bend");
                 ProcBend(pw);
 
-                log.Write("Lfo");
+                Log.Write("Lfo");
                 ProcLfo(pw);
 
-                log.Write("Envelope");
+                Log.Write("Envelope");
                 ProcEnvelope(pw);
 
-                log.Write("InstGrad");
+                Log.Write("InstGrad");
                 ProcGrad(pw);
 
                 pw.chip.SetFNum(pw);
                 //pw.chip.SetVolume(pw);
 
-                log.Write("wait消化待ち");
+                Log.Write("wait消化待ち");
                 if (pw.waitCounter > 0) continue;
 
-                log.Write("データは最後まで実施されたか");
+                Log.Write("データは最後まで実施されたか");
                 if (pw.dataEnd) continue;
 
-                log.Write("パートのデータがない場合は何もしないで次へ");
+                Log.Write("パートのデータがない場合は何もしないで次へ");
                 if (pw.mmlData == null || pw.mmlData.Count < 1)
                 {
                     pw.dataEnd = true;
                     continue;
                 }
 
-                log.Write("コマンド毎の処理を実施");
+                Log.Write("コマンド毎の処理を実施");
                 while (pw.waitCounter == 0 && !pw.dataEnd)
                 {
                     if (pw.mmlPos >= pw.mmlData.Count)
@@ -3044,48 +3044,48 @@ namespace Core
             if (!pw.chip.use) return;
             if (pw.mmlData == null) return;
 
-            log.Write("MD stream pcm sound off");
+            Log.Write("MD stream pcm sound off");
             if (pw.pcmWaitKeyOnCounter == 0)
                 pw.pcmWaitKeyOnCounter = -1;
 
-            log.Write("KeyOff");
+            Log.Write("KeyOff");
             ProcKeyOff(pw);
 
-            log.Write("Bend");
+            Log.Write("Bend");
             ProcBend(pw);
 
-            log.Write("Lfo");
+            Log.Write("Lfo");
             ProcLfo(pw);
 
-            log.Write("Envelope");
+            Log.Write("Envelope");
             ProcEnvelope(pw);
 
-            log.Write("InstGrad");
+            Log.Write("InstGrad");
             ProcGrad(pw);
 
             pw.chip.SetFNum(pw);
             //pw.chip.SetVolume(pw);
 
-            log.Write("wait消化待ち");
+            Log.Write("wait消化待ち");
             if (pw.waitCounter > 0)
             {
                 return;
             }
 
-            log.Write("データは最後まで実施されたか");
+            Log.Write("データは最後まで実施されたか");
             if (pw.dataEnd)
             {
                 return;
             }
 
-            log.Write("パートのデータがない場合は何もしないで次へ");
+            Log.Write("パートのデータがない場合は何もしないで次へ");
             if (pw.mmlData == null || pw.mmlData.Count < 1)
             {
                 pw.dataEnd = true;
                 return;
             }
 
-            log.Write("コマンド毎の処理を実施");
+            Log.Write("コマンド毎の処理を実施");
             while (pw.waitCounter == 0 && !pw.dataEnd)
             {
                 if (pw.mmlPos >= pw.mmlData.Count)
@@ -3500,207 +3500,207 @@ namespace Core
             switch (mml.type)
             {
                 case enmMMLType.Clock:
-                    log.Write("Clock (C)");
+                    Log.Write("Clock (C)");
                     pw.chip.CmdClock(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.TimerB:
-                    log.Write("TimerB (t)");
+                    Log.Write("TimerB (t)");
                     pw.chip.CmdTimerB(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Tempo:
-                    log.Write("Tempo (T)");
+                    Log.Write("Tempo (T)");
                     pw.chip.CmdTempo(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.CompileSkip:
-                    log.Write("CompileSkip");
+                    Log.Write("CompileSkip");
                     pw.dataEnd = true;
                     pw.waitCounter = -1;
                     break;
                 case enmMMLType.Instrument:
-                    log.Write("Instrument&Gradation");
+                    Log.Write("Instrument&Gradation");
                     pw.chip.CmdInstrument(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Octave:
-                    log.Write("Octave");
+                    Log.Write("Octave");
                     pw.chip.CmdOctave(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.OctaveUp:
-                    log.Write("OctaveUp");
+                    Log.Write("OctaveUp");
                     pw.chip.CmdOctaveUp(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.OctaveDown:
-                    log.Write("OctaveDown");
+                    Log.Write("OctaveDown");
                     pw.chip.CmdOctaveDown(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Length:
-                    log.Write("Length");
+                    Log.Write("Length");
                     pw.chip.CmdLength(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.LengthClock:
-                    log.Write("LengthClock");
+                    Log.Write("LengthClock");
                     pw.chip.CmdClockLength(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.TotalVolume:
-                    log.Write("TotalVolume");
+                    Log.Write("TotalVolume");
                     pw.chip.CmdTotalVolume(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Volume:
-                    log.Write("Volume");
+                    Log.Write("Volume");
                     pw.chip.CmdVolume(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.VolumeDown:
-                    log.Write("VolumeDown");
+                    Log.Write("VolumeDown");
                     pw.chip.CmdVolumeDown(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.VolumeUp:
-                    log.Write("VolumeUp");
+                    Log.Write("VolumeUp");
                     pw.chip.CmdVolumeUp(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Pan:
-                    log.Write("Pan");
+                    Log.Write("Pan");
                     pw.chip.CmdPan(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Gatetime:
-                    log.Write("Gatetime");
+                    Log.Write("Gatetime");
                     pw.chip.CmdGatetime(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.GatetimeDiv:
-                    log.Write("GatetimeDiv");
+                    Log.Write("GatetimeDiv");
                     pw.chip.CmdGatetime2(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Detune:
-                    log.Write("Detune");
+                    Log.Write("Detune");
                     pw.chip.CmdDetune(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Renpu:
-                    log.Write("Renpu");
+                    Log.Write("Renpu");
                     pw.chip.CmdRenpuStart(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.RenpuEnd:
-                    log.Write("RenpuEnd");
+                    Log.Write("RenpuEnd");
                     pw.chip.CmdRenpuEnd(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Repeat:
-                    log.Write("Repeat");
+                    Log.Write("Repeat");
                     pw.chip.CmdRepeatStart(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.RepeatEnd:
-                    log.Write("RepeatEnd");
+                    Log.Write("RepeatEnd");
                     pw.chip.CmdRepeatEnd(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.RepertExit:
-                    log.Write("RepertExit");
+                    Log.Write("RepertExit");
                     pw.chip.CmdRepeatExit(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Note:
-                    log.Write("Note");
+                    Log.Write("Note");
                     pw.chip.CmdNote(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Rest:
-                    log.Write("Rest");
+                    Log.Write("Rest");
                     pw.chip.CmdRest(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Lyric:
-                    log.Write("Lyric");
+                    Log.Write("Lyric");
                     pw.chip.CmdLyric(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Envelope:
-                    log.Write("Envelope");
+                    Log.Write("Envelope");
                     pw.chip.CmdEnvelope(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.HardEnvelope:
-                    log.Write("HardEnvelope");
+                    Log.Write("HardEnvelope");
                     pw.chip.CmdHardEnvelope(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.SoftLfo:
-                    log.Write("SoftLfo");
+                    Log.Write("SoftLfo");
                     pw.chip.CmdSoftLfo(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.SoftLfoOnOff:
-                    log.Write("SoftLfoOnOff");
+                    Log.Write("SoftLfoOnOff");
                     pw.chip.CmdSoftLfoOnOff(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.SoftLfoDelay:
-                    log.Write("SoftLfoDelay");
+                    Log.Write("SoftLfoDelay");
                     pw.chip.CmdSoftLfoDelay(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.SoftLfoClock:
-                    log.Write("SoftLfoClock");
+                    Log.Write("SoftLfoClock");
                     pw.chip.CmdSoftLfoClock(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.SoftLfoDepth:
-                    log.Write("SoftLfoDepth");
+                    Log.Write("SoftLfoDepth");
                     pw.chip.CmdSoftLfoDepth(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.SoftLfoLength:
-                    log.Write("SoftLfoLength");
+                    Log.Write("SoftLfoLength");
                     pw.chip.CmdSoftLfoLength(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Lfo:
-                    log.Write("Lfo");
+                    Log.Write("Lfo");
                     pw.chip.CmdLfo(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.LfoSwitch:
-                    log.Write("LfoSwitch");
+                    Log.Write("LfoSwitch");
                     pw.chip.CmdLfoSwitch(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.HardLfo:
-                    log.Write("HardLfo");
+                    Log.Write("HardLfo");
                     pw.chip.CmdHardLfo(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.PcmMode:
-                    log.Write("PcmMode");
+                    Log.Write("PcmMode");
                     pw.chip.CmdMode(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.PcmMap:
-                    log.Write("PcmMap");
+                    Log.Write("PcmMap");
                     pw.chip.CmdPcmMapSw(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Bend:
-                    log.Write("Bend");
+                    Log.Write("Bend");
                     pw.chip.CmdBend(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Y:
-                    log.Write("Y");
+                    Log.Write("Y");
                     pw.chip.CmdY(pw, mml);
                     pw.mmlPos++;
 
@@ -3713,7 +3713,7 @@ namespace Core
                     }
                     break;
                 case enmMMLType.LoopPoint:
-                    log.Write("LoopPoint");
+                    Log.Write("LoopPoint");
                     pw.chip.CmdLoop(pw, mml);
                     pw.mmlPos++;
                     break;
@@ -3723,70 +3723,70 @@ namespace Core
                     pw.mmlPos++;
                     break;
                 case enmMMLType.MixerMode:
-                    log.Write("NoiseToneMixer");
+                    Log.Write("NoiseToneMixer");
                     pw.chip.CmdNoiseToneMixer(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Noise:
-                    log.Write("Noise");
+                    Log.Write("Noise");
                     pw.chip.CmdNoise(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.KeyShift:
-                    log.Write("KeyShift");
+                    Log.Write("KeyShift");
                     pw.chip.CmdKeyShift(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.RelativeKeyShift:
-                    log.Write("RelativeKeyShift");
+                    Log.Write("RelativeKeyShift");
                     pw.chip.CmdRelKeyShift(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.RelativeVolume:
-                    log.Write("RelativeVolume");
+                    Log.Write("RelativeVolume");
                     pw.chip.CmdRelativeVolume(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.SusOnOff:
-                    log.Write("SusOnOff");
+                    Log.Write("SusOnOff");
                     pw.chip.CmdSusOnOff(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Porta:
-                    log.Write("Porta");
+                    Log.Write("Porta");
                     pw.mmlPos++;
                     break;
                 case enmMMLType.PortaEnd:
-                    log.Write("PortaEnd");
+                    Log.Write("PortaEnd");
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Reverb:
-                    log.Write("Reverb");
+                    Log.Write("Reverb");
                     pw.chip.CmdReverb(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.ReverbONOF:
-                    log.Write("ReverbONOF");
+                    Log.Write("ReverbONOF");
                     pw.chip.CmdReverbONOF(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.ReverbMode:
-                    log.Write("ReverbMode");
+                    Log.Write("ReverbMode");
                     pw.chip.CmdReverbMode(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.SlotDetune:
-                    log.Write("SlotDetune");
+                    Log.Write("SlotDetune");
                     pw.chip.CmdSlotDetune(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.ExtendChannel:
-                    log.Write("ExtendChannel");
+                    Log.Write("ExtendChannel");
                     pw.chip.CmdExtendChannel(pw, mml);
                     pw.mmlPos++;
                     break;
                 case enmMMLType.Shuffle:
-                    log.Write("Shuffle");
+                    Log.Write("Shuffle");
                     pw.mmlPos++;
                     break;
                 default:

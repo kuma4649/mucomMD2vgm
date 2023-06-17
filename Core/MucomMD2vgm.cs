@@ -34,9 +34,9 @@ namespace Core
             this.isLoopEx = isLoopEx;
             this.rendSecond = rendSecond;
 
-            log.ForcedWrite(srcFn);
-            log.ForcedWrite(desFn);
-            log.ForcedWrite(stPath);
+            Log.ForcedWrite(srcFn);
+            Log.ForcedWrite(desFn);
+            Log.ForcedWrite(stPath);
         }
 
         /// <summary>
@@ -244,7 +244,7 @@ namespace Core
             }
             catch (Exception ex)
             {
-                log.ForcedWrite(ex);
+                Log.ForcedWrite(ex);
                 msgBox.setErrMsg(string.Format(msg.get("E04005")
                     , (desVGM == null) ? -1 : desVGM.lineNumber
                     , ex.Message
@@ -548,14 +548,14 @@ namespace Core
             {
                 if (desVGM.info.format == enmFormat.VGM)
                 {
-                    log.Write("VGMファイル出力");
+                    Log.Write("VGMファイル出力");
                     File.WriteAllBytes(
                         desFn
                         , desBuf);
                 }
                 else
                 {
-                    log.Write("XGMファイル出力");
+                    Log.Write("XGMファイル出力");
                     File.WriteAllBytes(
                         Path.Combine(
                             Path.GetDirectoryName(desFn)
@@ -566,7 +566,7 @@ namespace Core
                 return;
             }
 
-            log.Write("VGZ/XGZファイル出力");
+            Log.Write("VGZ/XGZファイル出力");
 
             string dFn = desFn;
             if (desVGM.info.format == enmFormat.VGM)

@@ -98,143 +98,143 @@ namespace Core
                     pw.incPos();
                     break;
                 case 'C':
-                    log.Write("Clock");
+                    Log.Write("Clock");
                     CmdClock(pw, mml);
                     break;
                 case 't':
-                    log.Write("TimerB");
+                    Log.Write("TimerB");
                     CmdTimerB(pw, mml);
                     break;
                 case 'T': // tempo
-                    log.Write("Tempo");
+                    Log.Write("Tempo");
                     CmdTempo(pw, mml);
                     break;
                 case '@': // instrument
-                    log.Write("instrument");
+                    Log.Write("instrument");
                     CmdInstrument(pw, mml);
                     break;
                 case 'o': // octave
-                    log.Write("octave");
+                    Log.Write("octave");
                     CmdOctave(pw, mml);
                     break;
                 case 'v': // volume
-                    log.Write("volume");
+                    Log.Write("volume");
                     CmdVolume(pw, mml);
                     break;
                 case 'q': // gatetime
-                    log.Write(" gatetime q");
+                    Log.Write(" gatetime q");
                     CmdGatetime(pw, mml);
                     break;
                 case 'p': // pan
-                    log.Write(" pan");
+                    Log.Write(" pan");
                     CmdPan(pw, mml);
                     break;
                 case 'l': // length
-                    log.Write("length");
+                    Log.Write("length");
                     CmdLength(pw, mml);
                     break;
                 case '%': // length(clock)
-                    log.Write("length(clock)");
+                    Log.Write("length(clock)");
                     CmdClockLength(pw, mml);
                     break;
                 case 'D': // Detune
-                    log.Write("Detune");
+                    Log.Write("Detune");
                     CmdDetune(pw, mml);
                     break;
                 case '>': // octave Up
-                    log.Write("octave Up");
+                    Log.Write("octave Up");
                     CmdOctaveUp(pw, mml);
                     break;
                 case '<': // octave Down
-                    log.Write("octave Down");
+                    Log.Write("octave Down");
                     CmdOctaveDown(pw, mml);
                     break;
                 case ')': // volume Up
-                    log.Write(" volume Up");
+                    Log.Write(" volume Up");
                     CmdVolumeUp(pw, mml);
                     break;
                 case '(': // volume Down
-                    log.Write("volume Down");
+                    Log.Write("volume Down");
                     CmdVolumeDown(pw, mml);
                     break;
                 case '&':
-                    log.Write("tie");
+                    Log.Write("tie");
                     CmdTie(pw, mml);
                     break;
                 case '^':
-                    log.Write("tie plus clock");
+                    Log.Write("tie plus clock");
                     CmdTiePC(pw, mml);
                     break;
                 case '{':
-                    log.Write("porta start");
+                    Log.Write("porta start");
                     CmdPortaStart(pw, mml);
                     break;
                 case '}':
-                    log.Write("porta start");
+                    Log.Write("porta start");
                     CmdPortaEnd(pw, mml);
                     break;
                 case '[': // repeat
-                    log.Write("repeat [");
+                    Log.Write("repeat [");
                     CmdRepeatStart(pw, mml);
                     break;
                 case ']': // repeat
-                    log.Write("repeat ]");
+                    Log.Write("repeat ]");
                     CmdRepeatEnd(pw, mml);
                     break;
                 case '/': // repeat
-                    log.Write("repeat /");
+                    Log.Write("repeat /");
                     CmdRepeatExit(pw, mml);
                     break;
                 case 'L': // loop point
-                    log.Write(" loop point");
+                    Log.Write(" loop point");
                     CmdLoop(pw, mml);
                     break;
                 case 'K': // key shift
-                    log.Write("key shift");
+                    Log.Write("key shift");
                     CmdKeyShift(pw, mml);
                     break;
                 case 'V': // Relative volume
-                    log.Write("Relative volume");
+                    Log.Write("Relative volume");
                     CmdRelativeVolume(pw, mml);
                     break;
                 case '\\': // Echo / EchoMacro
-                    log.Write("Echo/EchoMacro");
+                    Log.Write("Echo/EchoMacro");
                     CmdEchoMacro(pw, mml);
                     break;
                 case 'k': // Relative key shift
-                    log.Write("Relative key shift");
+                    Log.Write("Relative key shift");
                     CmdRelativeKeyShift(pw, mml);
                     break;
                 case 's': // Shuffle
-                    log.Write("Shuffle");
+                    Log.Write("Shuffle");
                     CmdShuffle(pw, mml);
                     break;
                 case 'H': // Hard lfo
-                    log.Write("Hard lfo");
+                    Log.Write("Hard lfo");
                     CmdHardLfo(pw, mml);
                     break;
                 case 'R': // Reverb
-                    log.Write("Reverb");
+                    Log.Write("Reverb");
                     CmdReverb(pw, mml);
                     break;
                 case 'M': // Soft Lfo
-                    log.Write("Soft lfo");
+                    Log.Write("Soft lfo");
                     CmdSoftLfo(pw, mml);
                     break;
                 case 'S': // Slot Detune
-                    log.Write("Slot Detune");
+                    Log.Write("Slot Detune");
                     CmdSlotDetune(pw, mml);
                     break;
                 case 'E': // envelope / extendChannel
-                    log.Write("envelope / extendChannel");
+                    Log.Write("envelope / extendChannel");
                     CmdE(pw, mml);
                     break;
                 case 'P': // MixerMode
-                    log.Write("MixerMode");
+                    Log.Write("MixerMode");
                     CmdMixer(pw, mml);
                     break;
                 case 'w': // noise
-                    log.Write("Noise Freq");
+                    Log.Write("Noise Freq");
                     CmdNoise(pw, mml);
                     break;
                 //case 's': // SSG Hard Env
@@ -242,37 +242,37 @@ namespace Core
                 //    CmdSlotDetune(pw, mml);
                 //    break;
                 case 'm': // mode
-                    log.Write("Mode PCMMap");
+                    Log.Write("Mode PCMMap");
                     CmdMode(pw, mml);
                     break;
                 case 'y': // y
-                    log.Write("y");
+                    Log.Write("y");
                     CmdY(pw, mml);
                     break;
                 case '*': // macro
-                    log.Write("macro");
+                    Log.Write("macro");
                     CmdMacro(pw, mml);
                     break;
                 case ';': // comment
-                    log.Write("comment");
+                    Log.Write("comment");
                     CmdComment(pw, mml);
                     break;
                 case ':': // CompileSkip
-                    log.Write("CompileSkip");
+                    Log.Write("CompileSkip");
                     pw.dataEnd = true;
                     mml.type = enmMMLType.CompileSkip;
                     mml.args = null;
                     break;
                 case '!': // fill Rest
-                    log.Write("fill Rest");
+                    Log.Write("fill Rest");
                     CmdFillRest(pw, mml);
                     break;
                 case 'J': // jump
-                    log.Write("jump");
+                    Log.Write("jump");
                     CmdJump(pw, mml);
                     break;
                 case '|': // none
-                    log.Write("none");
+                    Log.Write("none");
                     pw.incPos();
                     break;
                 case 'c':
@@ -282,11 +282,11 @@ namespace Core
                 case 'g':
                 case 'a':
                 case 'b':
-                    log.Write(string.Format("note {0}", cmd));
+                    Log.Write(string.Format("note {0}", cmd));
                     CmdNote(pw, cmd, mml);
                     break;
                 case 'r':
-                    log.Write("rest");
+                    Log.Write("rest");
                     CmdRest(pw, mml);
                     break;
                 default:

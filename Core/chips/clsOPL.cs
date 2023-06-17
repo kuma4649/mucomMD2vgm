@@ -723,7 +723,7 @@ namespace Core
 
             byte adr = (byte)(int)mml.args[0];
             byte dat = (byte)(int)mml.args[1];
-            int p = 0;
+            //int p = 0;
 
             pw.OutData(pw.port0, adr, dat);
         }

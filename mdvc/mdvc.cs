@@ -66,9 +66,9 @@ namespace mdvc
                 desFn = Path.Combine(Path.GetDirectoryName(srcFn), Path.GetFileNameWithoutExtension(srcFn) + ".vgm");
             }
 
-            Core.log.debug = false;
-            Core.log.Open();
-            Core.log.Write("start compile thread");
+            Core.Log.Debug = false;
+            Core.Log.Open();
+            Core.Log.Write("start compile thread");
 
             Assembly myAssembly = Assembly.GetEntryAssembly();
             string path = System.IO.Path.GetDirectoryName(myAssembly.Location);
@@ -137,8 +137,8 @@ namespace mdvc
 
             Console.WriteLine(msg.get("I0050"));
 
-            Core.log.Write("end compile thread");
-            Core.log.Close();
+            Core.Log.Write("end compile thread");
+            Core.Log.Close();
 
 
             Environment.Exit(ret);
@@ -147,7 +147,7 @@ namespace mdvc
         private void Disp(string msg)
         {
             Console.WriteLine(msg);
-            Core.log.Write(msg);
+            Core.Log.Write(msg);
         }
 
     }

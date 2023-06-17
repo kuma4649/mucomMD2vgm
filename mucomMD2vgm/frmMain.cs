@@ -8,7 +8,7 @@ using Core;
 
 namespace mucomMD2vgm
 {
-    public partial class frmMain : Form
+    public partial class FrmMain : Form
     {
         private string[] args;
         private MucomMD2vgm mv = null;
@@ -18,7 +18,7 @@ namespace mucomMD2vgm
         private bool isSuccess = true;
         private bool isLoopEx = false;
 
-        public frmMain()
+        public FrmMain()
         {
             InitializeComponent();
 #if DEBUG
@@ -26,18 +26,18 @@ namespace mucomMD2vgm
 #endif
         }
 
-        private void frmMain_Shown(object sender, EventArgs e)
+        private void FrmMain_Shown(object sender, EventArgs e)
         {
             Core.Common.CheckSoXVersion(System.Windows.Forms.Application.StartupPath, Disp);
             string[] args = Environment.GetCommandLineArgs();
             if (args != null && args.Length > 1)
             {
                 this.args = args;
-                tsbCompile_Click(null, null);
+                TsbCompile_Click(null, null);
             }
         }
 
-        private void tsbCompile_Click(object sender, EventArgs e)
+        private void TsbCompile_Click(object sender, EventArgs e)
         {
             if (args == null || args.Length < 2)
             {
@@ -52,24 +52,28 @@ namespace mucomMD2vgm
             textBox1.AppendText(msg.get("I0102"));
 
             isSuccess = true;
-            Thread trdStartCompile = new Thread(new ThreadStart(startCompile));
+            Thread trdStartCompile = new(new ThreadStart(StartCompile));
             trdStartCompile.Start();
 
         }
 
-        private void tsbOpen_Click(object sender, EventArgs e)
+        private void TsbOpen_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Multiselect = true;
-            ofd.Filter = msg.get("I0103");
-            ofd.Title = msg.get("I0104");
+            OpenFileDialog ofd = new()
+            {
+                Multiselect = true,
+                Filter = msg.get("I0103"),
+                Title = msg.get("I0104")
+            };
             if (ofd.ShowDialog() != DialogResult.OK)
             {
                 return;
             }
             args = null;
-            List<string> a = new List<string>();
-            a.Add("dummy");
+            List<string> a = new()
+            {
+                "dummy"
+            };
             foreach (string fn in ofd.FileNames)
             {
                 a.Add(fn);
@@ -77,18 +81,18 @@ namespace mucomMD2vgm
             args = a.ToArray();
             if (tsbWatcher.Checked)
             {
-                stopWatch();
+                StopWatch();
             }
 
-            tsbCompile_Click(null, null);
+            TsbCompile_Click(null, null);
 
             if (tsbWatcher.Checked)
             {
-                startWatch();
+                StartWatch();
             }
         }
 
-        private void updateTitle()
+        private void UpdateTitle()
         {
             if (title == "")
             {
@@ -100,7 +104,7 @@ namespace mucomMD2vgm
             }
         }
 
-        private void finishedCompile()
+        private void FinishedCompile()
         {
             if (mv == null)
             {
@@ -122,7 +126,7 @@ namespace mucomMD2vgm
                         {
                             if (pw[i].clockCounter == 0) continue;
 
-                            DataGridViewRow row = new DataGridViewRow();
+                            DataGridViewRow row = new();
                             row.Cells.Add(new DataGridViewTextBoxCell());
                             row.Cells.Add(new DataGridViewTextBoxCell());
                             row.Cells.Add(new DataGridViewTextBoxCell());
@@ -212,16 +216,15 @@ namespace mucomMD2vgm
             }
         }
 
-        private void startCompile()
+        private void StartCompile()
         {
             //Core.log.debug = true;
-            Core.log.Open();
-            Core.log.Write("start compile thread");
+            Core.Log.Open();
+            Core.Log.Write("start compile thread");
 
-            Action dmy = updateTitle;
+            Action dmy = UpdateTitle;
             string stPath = System.Windows.Forms.Application.StartupPath;
-            int rendSecond = 600;
-            if(!int.TryParse(tstbMaxRendering.Text,out rendSecond))
+            if (!int.TryParse(tstbMaxRendering.Text, out int rendSecond))
             {
                 rendSecond = 600;
             }
@@ -238,7 +241,7 @@ namespace mucomMD2vgm
                 title = Path.GetFileName(arg);
                 this.Invoke(dmy);
 
-                Core.log.Write(string.Format("  compile at [{0}]", args[i]));
+                Core.Log.Write(string.Format("  compile at [{0}]", args[i]));
 
                 msgBox.clear();
 
@@ -248,7 +251,7 @@ namespace mucomMD2vgm
                     desfn = Path.ChangeExtension(arg, Properties.Resources.ExtensionVGZ);
                 }
 
-                Core.log.Write("Call mucomMD2vgm core");
+                Core.Log.Write("Call mucomMD2vgm core");
 
                 mv = new MucomMD2vgm(arg, desfn, stPath, Disp, isLoopEx, rendSecond);
                 if (mv.Start() != 0)
@@ -257,23 +260,23 @@ namespace mucomMD2vgm
                     break;
                 }
 
-                Core.log.Write("Return mucomMD2vgm core");
+                Core.Log.Write("Return mucomMD2vgm core");
             }
 
-            Core.log.Write("Disp Result");
+            Core.Log.Write("Disp Result");
 
-                dmy = finishedCompile;
+                dmy = FinishedCompile;
                 this.Invoke(dmy);
 
-            Core.log.Write("end compile thread");
-            Core.log.Close();
+            Core.Log.Write("end compile thread");
+            Core.Log.Close();
         }
 
         private void Disp(string msg)
         {
             Action<string> msgDisp = MsgDisp;
             this.Invoke(msgDisp, msg);
-            Core.log.Write(msg);
+            Core.Log.Write(msg);
         }
 
         private void MsgDisp(string msg)
@@ -281,36 +284,38 @@ namespace mucomMD2vgm
             textBox1.AppendText(msg + "\r\n");
         }
 
-        private void startWatch()
+        private void StartWatch()
         {
             if (watcher != null) return;
 
-            watcher = new System.IO.FileSystemWatcher();
-            watcher.Path = Path.GetDirectoryName(args[1]);
-            watcher.NotifyFilter =
+            watcher = new FileSystemWatcher
+            {
+                Path = Path.GetDirectoryName(args[1]),
+                NotifyFilter =
                 (
                 System.IO.NotifyFilters.LastAccess
                 | System.IO.NotifyFilters.LastWrite
                 | System.IO.NotifyFilters.FileName
                 | System.IO.NotifyFilters.DirectoryName
-                );
-            watcher.Filter = Path.GetFileName(args[1]);
-            watcher.SynchronizingObject = this;
+                ),
+                Filter = Path.GetFileName(args[1]),
+                SynchronizingObject = this
+            };
 
-            watcher.Changed += new System.IO.FileSystemEventHandler(watcher_Changed);
-            watcher.Created += new System.IO.FileSystemEventHandler(watcher_Changed);
+            watcher.Changed += new FileSystemEventHandler(Watcher_Changed);
+            watcher.Created += new FileSystemEventHandler(Watcher_Changed);
 
             watcher.EnableRaisingEvents = true;
         }
 
-        private void stopWatch()
+        private void StopWatch()
         {
             watcher.EnableRaisingEvents = false;
             watcher.Dispose();
             watcher = null;
         }
 
-        private void watcher_Changed(System.Object source, System.IO.FileSystemEventArgs e)
+        private void Watcher_Changed(System.Object source, System.IO.FileSystemEventArgs e)
         {
             switch (e.ChangeType)
             {
@@ -320,12 +325,12 @@ namespace mucomMD2vgm
                     long n = DateTime.Now.Ticks / 10000000L;
                     if (now == n) return;
                     now = n;
-                    tsbCompile_Click(null, null);
+                    TsbCompile_Click(null, null);
                     break;
             }
         }
 
-        private void tsbWatcher_CheckedChanged(object sender, EventArgs e)
+        private void TsbWatcher_CheckedChanged(object sender, EventArgs e)
         {
             if (args == null || args.Length < 2)
             {
@@ -335,14 +340,14 @@ namespace mucomMD2vgm
 
             if (tsbWatcher.Checked)
             {
-                startWatch();
+                StartWatch();
                 return;
             }
 
-            stopWatch();
+            StopWatch();
         }
 
-        private void tsbLoopEx_Click(object sender, EventArgs e)
+        private void TsbLoopEx_Click(object sender, EventArgs e)
         {
             isLoopEx = tsbLoopEx.Checked;
             tslMaxRendering.Enabled = tsbLoopEx.Checked;
@@ -350,11 +355,10 @@ namespace mucomMD2vgm
             tstbMaxRendering.Enabled = tsbLoopEx.Checked;
         }
 
-        private void tstbMaxRendering_TextChanged(object sender, EventArgs e)
+        private void TstbMaxRendering_TextChanged(object sender, EventArgs e)
         {
             string s= tstbMaxRendering.Text;
-            int i;
-            if (!int.TryParse(s,out i))
+            if (!int.TryParse(s, out int i))
             {
                 tstbMaxRendering.Text = "600";
                 return;
@@ -404,12 +408,14 @@ namespace mucomMD2vgm
                 return;
             }
 
-            List<string> fs = new List<string>();
-            fs.Add("");//dummy;
+            List<string> fs = new()
+            {
+                ""//dummy;
+            };
             fs.AddRange(fileNames);
             args = fs.ToArray();
 
-            tsbCompile_Click(null, null);
+            TsbCompile_Click(null, null);
         }
 
         private void FrmMain_KeyDown(object sender, KeyEventArgs e)
@@ -417,14 +423,14 @@ namespace mucomMD2vgm
             switch (e.KeyCode)
             {
                 case Keys.F1:
-                    tsbOpen_Click(null, null);
+                    TsbOpen_Click(null, null);
                     break;
                 //case Keys.F2:
                 //break;
                 //case Keys.S:
                 //break;
                 case Keys.F5:
-                    tsbCompile_Click(null, null);
+                    TsbCompile_Click(null, null);
                     break;
                 default:
                     //↓KeyData確認用

@@ -1,6 +1,6 @@
 ﻿namespace mucomMD2vgm
 {
-    partial class frmMain
+    partial class FrmMain
     {
         /// <summary>
         /// 必要なデザイナー変数です。
@@ -30,7 +30,7 @@
         {
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMain));
             this.tsbToVGZ = new System.Windows.Forms.ToolStripButton();
             this.tsbOnPlay = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -101,7 +101,7 @@
             this.tsbCompile.Name = "tsbCompile";
             this.tsbCompile.Size = new System.Drawing.Size(23, 22);
             this.tsbCompile.Text = "Compile";
-            this.tsbCompile.Click += new System.EventHandler(this.tsbCompile_Click);
+            this.tsbCompile.Click += new System.EventHandler(this.TsbCompile_Click);
             // 
             // tsbOpen
             // 
@@ -111,7 +111,7 @@
             this.tsbOpen.Name = "tsbOpen";
             this.tsbOpen.Size = new System.Drawing.Size(23, 22);
             this.tsbOpen.Text = "Open and Compile";
-            this.tsbOpen.Click += new System.EventHandler(this.tsbOpen_Click);
+            this.tsbOpen.Click += new System.EventHandler(this.TsbOpen_Click);
             // 
             // toolStrip1
             // 
@@ -143,7 +143,7 @@
             this.tsbWatcher.Name = "tsbWatcher";
             this.tsbWatcher.Size = new System.Drawing.Size(23, 22);
             this.tsbWatcher.Text = "Watch to gwi file";
-            this.tsbWatcher.CheckedChanged += new System.EventHandler(this.tsbWatcher_CheckedChanged);
+            this.tsbWatcher.CheckedChanged += new System.EventHandler(this.TsbWatcher_CheckedChanged);
             // 
             // toolStripSeparator2
             // 
@@ -159,7 +159,7 @@
             this.tsbLoopEx.Name = "tsbLoopEx";
             this.tsbLoopEx.Size = new System.Drawing.Size(23, 22);
             this.tsbLoopEx.Text = "LoopEX";
-            this.tsbLoopEx.Click += new System.EventHandler(this.tsbLoopEx_Click);
+            this.tsbLoopEx.Click += new System.EventHandler(this.TsbLoopEx_Click);
             // 
             // tslMaxRendering
             // 
@@ -177,7 +177,7 @@
             this.tstbMaxRendering.Size = new System.Drawing.Size(40, 25);
             this.tstbMaxRendering.Text = "600";
             this.tstbMaxRendering.TextBoxTextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.tstbMaxRendering.TextChanged += new System.EventHandler(this.tstbMaxRendering_TextChanged);
+            this.tstbMaxRendering.TextChanged += new System.EventHandler(this.TstbMaxRendering_TextChanged);
             // 
             // tslSecond
             // 
@@ -343,7 +343,7 @@
             this.MinimumSize = new System.Drawing.Size(320, 240);
             this.Name = "frmMain";
             this.Text = "mucomMD2vgm";
-            this.Shown += new System.EventHandler(this.frmMain_Shown);
+            this.Shown += new System.EventHandler(this.FrmMain_Shown);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.FrmMain_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.FrmMain_DragEnter);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.FrmMain_KeyDown);

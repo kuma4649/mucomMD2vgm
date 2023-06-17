@@ -173,7 +173,7 @@ namespace Core
                 n = Common.CheckRange((pw.octaveNow - 1), 0, 7) * 4 + n / 4;
                 f /= (DetuneTbl[n] == 0.0 ? 0.1 : DetuneTbl[n]);
 
-                log.Write(string.Format("Detune:n:{0}:f:{1}:DetuneTbl[n]:{2}", n, f, DetuneTbl[n]));
+                Log.Write(string.Format("Detune:n:{0}:f:{1}:DetuneTbl[n]:{2}", n, f, DetuneTbl[n]));
 
 
                 int fl = 0;
@@ -284,7 +284,7 @@ namespace Core
             if (pw.beforeVolume != vol)
             {
                 data = (byte)(0x80 + (pw.ch << 5) + 0x10 + (15 - VolTbl[vol]));
-                log.Write(string.Format("name:{0} channel:{1} vol:{2} volTbl:{3}", pw.chip.Name, pw.ch, vol, VolTbl[vol]));
+                Log.Write(string.Format("name:{0} channel:{1} vol:{2} volTbl:{3}", pw.chip.Name, pw.ch, vol, VolTbl[vol]));
                 OutPsgPort(pw, data);
                 pw.beforeVolume = vol;
             }

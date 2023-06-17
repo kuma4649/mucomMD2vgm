@@ -5,31 +5,31 @@ using System.IO;
 
 namespace Core
 {
-    public static class log
+    public static class Log
     {
-        public static string path = "";
-        public static bool debug = false;
-        public static StreamWriter writer;
+        public static string Path { get; set; } = "";
+        public static bool Debug { get; set; } = false;
+        public static StreamWriter Writer{ get; set; }
 
         public static void ForcedWrite(string msg)
         {
-            if (writer == null) return;
+            if (Writer == null) return;
             try
             {
-                if (path == "")
+                if (Path == "")
                 {
                     string fullPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                    fullPath = Path.Combine(fullPath, "KumaApp", AssemblyTitle);
+                    fullPath = System.IO.Path.Combine(fullPath, "KumaApp", AssemblyTitle);
                     if (!Directory.Exists(fullPath)) Directory.CreateDirectory(fullPath);
-                    path = Path.Combine(fullPath, "log.txt");
-                    if (File.Exists(path)) File.Delete(path);
+                    Path = System.IO.Path.Combine(fullPath, "log.txt");
+                    if (File.Exists(Path)) File.Delete(Path);
                 }
 
                 DateTime dtNow = DateTime.Now;
                 string timefmt = dtNow.ToString("yyyy/MM/dd HH:mm:ss\t");
 
                 Encoding sjisEnc = Encoding.GetEncoding("Shift_JIS");
-                writer.WriteLine(timefmt + msg);
+                Writer.WriteLine(timefmt + msg);
             }
             catch
             {
@@ -38,16 +38,16 @@ namespace Core
 
         public static void ForcedWrite(Exception e)
         {
-            if (writer == null) return;
+            if (Writer == null) return;
             try
             {
-                if (path == "")
+                if (Path == "")
                 {
                     string fullPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                    fullPath = Path.Combine(fullPath, "KumaApp", AssemblyTitle);
+                    fullPath = System.IO.Path.Combine(fullPath, "KumaApp", AssemblyTitle);
                     if (!Directory.Exists(fullPath)) Directory.CreateDirectory(fullPath);
-                    path = Path.Combine(fullPath, "log.txt");
-                    if (File.Exists(path)) File.Delete(path);
+                    Path = System.IO.Path.Combine(fullPath, "log.txt");
+                    if (File.Exists(Path)) File.Delete(Path);
                 }
 
                 DateTime dtNow = DateTime.Now;
@@ -62,7 +62,7 @@ namespace Core
                     msg += string.Format("内部例外:\r\n- Type ------\r\n{0}\r\n- Message ------\r\n{1}\r\n- Source ------\r\n{2}\r\n- StackTrace ------\r\n{3}\r\n", ie.GetType().Name, ie.Message, ie.Source, ie.StackTrace);
                 }
 
-                writer.WriteLine(timefmt + msg);
+                Writer.WriteLine(timefmt + msg);
                 System.Console.WriteLine(msg);
             }
             catch
@@ -72,34 +72,31 @@ namespace Core
 
         public static void Write(string msg)
         {
-            if (!debug)
+            if (!Debug)
             {
                 return;
             }
 
-            if (writer == null) return;
+            if (Writer == null) return;
 
             try
             {
-                if (path == "")
+                if (Path == "")
                 {
                     string fullPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                    fullPath = Path.Combine(fullPath, "KumaApp", AssemblyTitle);
+                    fullPath = System.IO.Path.Combine(fullPath, "KumaApp", AssemblyTitle);
                     if (!Directory.Exists(fullPath)) Directory.CreateDirectory(fullPath);
-                    path = Path.Combine(fullPath, "log.txt");
-                    if (File.Exists(path)) File.Delete(path);
+                    Path = System.IO.Path.Combine(fullPath, "log.txt");
+                    if (File.Exists(Path)) File.Delete(Path);
                 }
 
                 DateTime dtNow = DateTime.Now;
                 string timefmt = dtNow.ToString("yyyy/MM/dd HH:mm:ss\t");
 
                 Encoding sjisEnc = Encoding.GetEncoding("Shift_JIS");
-                if (writer == null)
-                {
-                    writer = new StreamWriter(path, true, sjisEnc);
-                }
-                writer.WriteLine(timefmt + msg);
-                writer.Flush();
+                Writer ??= new StreamWriter(Path, true, sjisEnc);
+                Writer.WriteLine(timefmt + msg);
+                Writer.Flush();
             }
             catch
             {
@@ -110,26 +107,27 @@ namespace Core
         {
             try
             {
-                if (path == "")
+                if (Path == "")
                 {
                     string fullPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                    fullPath = Path.Combine(fullPath, "KumaApp", AssemblyTitle);
+                    fullPath = System.IO.Path.Combine(fullPath, "KumaApp", AssemblyTitle);
                     if (!Directory.Exists(fullPath)) Directory.CreateDirectory(fullPath);
-                    path = Path.Combine(fullPath, "log.txt");
-                    if (File.Exists(path)) File.Delete(path);
+                    Path = System.IO.Path.Combine(fullPath, "log.txt");
+                    if (File.Exists(Path)) File.Delete(Path);
                 }
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                 Encoding sjisEnc = Encoding.GetEncoding("Shift_JIS");
-                writer = new StreamWriter(path, true, sjisEnc);
+                Writer = new StreamWriter(Path, true, sjisEnc);
             }
             catch
             {
-                writer = null;
+                Writer = null;
             }
         }
 
         public static void Close()
         {
-            if (writer != null) writer.Close();
+            Writer?.Close();
         }
 
         public static string AssemblyTitle
@@ -145,7 +143,7 @@ namespace Core
                         return titleAttribute.Title;
                     }
                 }
-                return Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
+                return System.IO.Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.BaseDirectory);// Assembly.GetExecutingAssembly().CodeBase);
             }
         }
     }

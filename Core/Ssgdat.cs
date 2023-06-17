@@ -54,7 +54,7 @@ namespace Core
             }
             catch (Exception ex)
             {
-                log.ForcedWrite(ex);
+                Log.ForcedWrite(ex);
                 return new Ssgdat();
             }
         }
