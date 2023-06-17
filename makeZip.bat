@@ -1,8 +1,8 @@
 echo mucomMD2vgm
 
 del /Q .\output\*.*
-xcopy .\mucomMD2vgm\bin\x86\Release\*.* .\output /E /R /Y /I /K
-xcopy .\mdvc\bin\x86\Release\*.* .\output /E /R /Y /I /K
+xcopy .\mucomMD2vgm\bin\x64\Release\net6.0-windows\*.* .\output /E /R /Y /I /K
+xcopy .\mdvc\bin\x64\Release\net6.0-windows\*.* .\output /E /R /Y /I /K
 
 copy /Y .\CHANGE.txt .\output
 copy /Y .\LICENSE.txt .\output

@@ -196,16 +196,16 @@ namespace mucomMD2vgm
                         if (mv.desVGM.info.format == enmFormat.VGM)
                         {
                             if (!tsbToVGZ.Checked)
-                                Process.Start(Path.ChangeExtension(args[1], Properties.Resources.ExtensionVGM));
+                                Process.Start(new ProcessStartInfo(Path.ChangeExtension(args[1], Properties.Resources.ExtensionVGM)) { UseShellExecute = true });
                             else
-                                Process.Start(Path.ChangeExtension(args[1], Properties.Resources.ExtensionVGZ));
+                                Process.Start(new ProcessStartInfo(Path.ChangeExtension(args[1], Properties.Resources.ExtensionVGZ)) { UseShellExecute = true });
                         }
                         else
                         {
                             if (!tsbToVGZ.Checked)
-                                Process.Start(Path.ChangeExtension(args[1], Properties.Resources.ExtensionXGM));
+                                Process.Start(new ProcessStartInfo(Path.ChangeExtension(args[1], Properties.Resources.ExtensionXGM)) { UseShellExecute = true });
                             else
-                                Process.Start(Path.ChangeExtension(args[1], Properties.Resources.ExtensionXGZ));
+                                Process.Start(new ProcessStartInfo(Path.ChangeExtension(args[1], Properties.Resources.ExtensionXGZ)) { UseShellExecute = true });
                         }
                     }
                     catch (Exception)
@@ -265,8 +265,8 @@ namespace mucomMD2vgm
 
             Core.Log.Write("Disp Result");
 
-                dmy = FinishedCompile;
-                this.Invoke(dmy);
+            dmy = FinishedCompile;
+            this.Invoke(dmy);
 
             Core.Log.Write("end compile thread");
             Core.Log.Close();
@@ -357,7 +357,7 @@ namespace mucomMD2vgm
 
         private void TstbMaxRendering_TextChanged(object sender, EventArgs e)
         {
-            string s= tstbMaxRendering.Text;
+            string s = tstbMaxRendering.Text;
             if (!int.TryParse(s, out int i))
             {
                 tstbMaxRendering.Text = "600";
@@ -378,7 +378,7 @@ namespace mucomMD2vgm
             }
 
             string[] fileNames = (string[])e.Data.GetData(DataFormats.FileDrop, false);
-            foreach(string fn in fileNames)
+            foreach (string fn in fileNames)
             {
                 string ext = Path.GetExtension(fn).ToLower();
                 if (ext == ".muc") continue;
