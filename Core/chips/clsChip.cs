@@ -914,7 +914,7 @@ namespace Core
         {
             int n;
             n = (mml.args != null && mml.args.Count > 0) ? (int)mml.args[0] : pw.latestVolume;
-            pw.volume = Common.CheckRange(n, 0, pw.MaxVolume);
+            pw.volume = n;// Common.CheckRange(n, 0, pw.MaxVolume);
             pw.latestVolume = n;
 
             SetVolume(pw);
@@ -926,7 +926,7 @@ namespace Core
             n = Common.CheckRange(n, 1, pw.MaxVolume);
             pw.volume += n;
             //n = Common.CheckRange(n, 0, pw.MaxVolume);
-            pw.volume = Common.CheckRange(pw.volume, 0, pw.MaxVolume);
+            //pw.volume = Common.CheckRange(pw.volume, 0, pw.MaxVolume);
             SetVolume(pw);
         }
 
@@ -935,7 +935,7 @@ namespace Core
             int n = (int)mml.args[0];
             n = Common.CheckRange(n, 1, pw.MaxVolume);
             pw.volume -= n;
-            pw.volume = Common.CheckRange(pw.volume, 0, pw.MaxVolume);
+            //pw.volume = Common.CheckRange(pw.volume, 0, pw.MaxVolume);
             SetVolume(pw);
         }
 

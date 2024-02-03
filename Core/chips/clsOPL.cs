@@ -479,7 +479,7 @@ namespace Core
             if (pw.Type == enmChannelType.FMOPL || pw.Type == enmChannelType.RHYTHM)
             {
                 n = FMVDAT[n + 4];
-                pw.volume = Common.CheckRange(n, 0, pw.MaxVolume);
+                pw.volume = n;// Common.CheckRange(n, 0, pw.MaxVolume);
                 SetFmVolume(pw);
             }
         }
@@ -488,12 +488,12 @@ namespace Core
         {
             int n = (int)mml.args[0];
             n = pw.volumeEasy + n;
-            n = Common.CheckRange(n, 0, pw.MaxVolumeEasy);
+            //n = Common.CheckRange(n, 0, pw.MaxVolumeEasy);
             pw.volumeEasy = n;
             if (pw.Type == enmChannelType.FMOPL || pw.Type == enmChannelType.RHYTHM)
             {
                 n = FMVDAT[n + 4];
-                pw.volume = Common.CheckRange(n, 0, pw.MaxVolume);
+                pw.volume = n;// Common.CheckRange(n, 0, pw.MaxVolume);
                 SetFmVolume(pw);
             }
         }
@@ -502,12 +502,12 @@ namespace Core
         {
             int n = (int)mml.args[0];
             n = pw.volumeEasy - n;
-            n = Common.CheckRange(n, 0, pw.MaxVolumeEasy);
+            //n = Common.CheckRange(n, 0, pw.MaxVolumeEasy);
             pw.volumeEasy = n;
             if (pw.Type == enmChannelType.FMOPL || pw.Type == enmChannelType.RHYTHM)
             {
                 n = FMVDAT[n + 4];
-                pw.volume = Common.CheckRange(n, 0, pw.MaxVolume);
+                pw.volume = n;// Common.CheckRange(n, 0, pw.MaxVolume);
                 SetFmVolume(pw);
             }
         }
@@ -523,7 +523,7 @@ namespace Core
             }
             vol = (int)(sbyte)vol;//先ず-128～127の範囲にキャスト
             if (vol > 15) vol = -4;//16以上の場合は-4として扱う
-            vol = Common.CheckRange(vol, 0, FMVDAT.Length - 1) - 4;//-4以下は-4へ、15以上は15へクリップ
+            vol = Common.CheckRange(vol, -4, 15);//-4以下は-4へ、15以上は15へクリップ
             vol = FMVDAT[vol + 4];//ボリュームテーブル参照
 
             for (int lfo = 0; lfo < 1; lfo++)
