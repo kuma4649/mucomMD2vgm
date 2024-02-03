@@ -710,23 +710,33 @@ namespace Core
             else
             {
                 pw.lfo[0].sw = true;
+                pw.lfo[0].value = 0;
+                pw.lfo[0].type = enmLfoType.Vibrato;
             }
         }
 
         public virtual void CmdSoftLfoDelay(partWork pw, MML mml)
         {
+            pw.lfo[0].param[0] = (int)mml.args[0];
+            pw.lfo[0].waitCounter = parent.GetWaitCounter(pw.lfo[0].param[0]);
         }
 
         public virtual void CmdSoftLfoClock(partWork pw, MML mml)
         {
+            pw.lfo[0].param[1] = (int)mml.args[0];
         }
 
         public virtual void CmdSoftLfoDepth(partWork pw, MML mml)
         {
+            pw.lfo[0].param[3] = (int)mml.args[0];
+            pw.lfo[0].PeakLevelCounter = pw.lfo[0].param[3] >> 1;
         }
 
         public virtual void CmdSoftLfoLength(partWork pw, MML mml)
         {
+            pw.lfo[0].param[2] = (int)mml.args[0];
+            pw.lfo[0].direction = Math.Sign(pw.lfo[0].param[2]);
+            if (pw.lfo[0].direction == 0) pw.lfo[0].direction = 1;
         }
 
         public virtual void CmdLfo(partWork pw, MML mml)

@@ -241,7 +241,6 @@ namespace Core
             {
                 if (pw.envelopeMode)
                 {
-                    vol = 0;
                     if (pw.envIndex != -1)
                     {
                         vol = (int)((pw.volume + 1) * (pw.envCounter / 256.0));
@@ -249,14 +248,17 @@ namespace Core
                     else
                     {
                         pw.keyOn = false;
+                        if (pw.ReverbNowSwitch)
+                        {
+                            vol += pw.ReverbValue + 4;
+                            vol >>= 1;
+                            vol -= 4;
+                        }
+                        else
+                            vol = 0;
                     }
                 }
 
-                if (pw.ReverbNowSwitch)
-                {
-                    vol += pw.ReverbValue;
-                    vol >>= 1;
-                }
 
                 //for (int lfo = 0; lfo < 4; lfo++)
                 //{
@@ -270,8 +272,11 @@ namespace Core
             {
                 if (pw.ReverbNowSwitch)
                 {
-                    vol += pw.ReverbValue;
+                    //vol += pw.ReverbValue;
+                    //vol >>= 1;
+                    vol += pw.ReverbValue + 4;
                     vol >>= 1;
+                    vol -= 4;
                 }
                 else
                 {
