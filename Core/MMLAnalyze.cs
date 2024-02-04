@@ -499,7 +499,7 @@ namespace Core
                     //相対音量調整
                     n = n + pw.RelVolume;
 
-                    n = Common.CheckRange(n, 0, pw.MaxVolumeEasy);
+                    // n = Common.CheckRange(n, 0, pw.MaxVolumeEasy);
                     mml.args.Add(n);
                 }
                 else
