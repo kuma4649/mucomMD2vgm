@@ -327,12 +327,18 @@ namespace Core
             int alg = 0;
             int[] ope = null;
 
-            alg = pw.algo;
+            partWork vpw = pw;
+            if (pw.chip.lstPartWork[2].Ch3SpecialMode && pw.ch >= 7 && pw.ch < 10)
+            {
+                vpw = pw.chip.lstPartWork[2];
+            }
+
+            alg = vpw.algo;
             ope = new int[4] {
-                        pw.v_tl[0]
-                        ,pw.v_tl[1]
-                        ,pw.v_tl[2]
-                        ,pw.v_tl[3]
+                        vpw.v_tl[0]
+                        ,vpw.v_tl[1]
+                        ,vpw.v_tl[2]
+                        ,vpw.v_tl[3]
                     };
 
             //switch (parent.instFM[n].type)
@@ -418,11 +424,11 @@ namespace Core
                 ope[i] = Common.CheckRange(ope[i], 0, 127);
             }
 
-            partWork vpw = pw;
-            if (pw.chip.lstPartWork[2].Ch3SpecialMode && pw.ch >= 7 && pw.ch < 10)
-            {
-                vpw = pw.chip.lstPartWork[2];
-            }
+            //partWork vpw = pw;
+            //if (pw.chip.lstPartWork[2].Ch3SpecialMode && pw.ch >= 7 && pw.ch < 10)
+            //{
+            //    vpw = pw.chip.lstPartWork[2];
+            //}
 
             if ((pw.slots & 1) != 0 && ope[0] != -1) ((ClsOPN)pw.chip).OutFmSetTl(vpw, 0, ope[0]);
             if ((pw.slots & 2) != 0 && ope[1] != -1) ((ClsOPN)pw.chip).OutFmSetTl(vpw, 1, ope[1]);

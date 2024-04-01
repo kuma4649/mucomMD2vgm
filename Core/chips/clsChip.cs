@@ -383,13 +383,22 @@ namespace Core
                     cnt = 1;
                 }
                 pw.bendList = new Stack<Tuple<int, int>>();
-                foreach (Tuple<int, int> lbt in lb)
+                if (lb.Count > 0)
                 {
-                    pw.bendList.Push(lbt);
+                    foreach (Tuple<int, int> lbt in lb)
+                    {
+                        pw.bendList.Push(lbt);
+                    }
+                    Tuple<int, int> t = pw.bendList.Pop();
+                    pw.bendFnum = t.Item1;
+                    pw.bendWaitCounter = parent.GetWaitCounter(t.Item2);
                 }
-                Tuple<int, int> t = pw.bendList.Pop();
-                pw.bendFnum = t.Item1;
-                pw.bendWaitCounter = parent.GetWaitCounter(t.Item2);
+                else
+                {
+                    int f=GetFNum(pw, pw.octaveNow, note.cmd, note.shift);
+                    pw.bendFnum = f;
+                    pw.bendWaitCounter = 0;
+                }
             }
 
             return bendDelayCounter;
