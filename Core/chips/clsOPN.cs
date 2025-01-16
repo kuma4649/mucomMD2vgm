@@ -434,6 +434,13 @@ namespace Core
             if ((pw.slots & 2) != 0 && ope[1] != -1) ((ClsOPN)pw.chip).OutFmSetTl(vpw, 1, ope[1]);
             if ((pw.slots & 4) != 0 && ope[2] != -1) ((ClsOPN)pw.chip).OutFmSetTl(vpw, 2, ope[2]);
             if ((pw.slots & 8) != 0 && ope[3] != -1) ((ClsOPN)pw.chip).OutFmSetTl(vpw, 3, ope[3]);
+
+            if (pw.ch == 2)
+            {
+                OutFmSetVolume(pw.chip.lstPartWork[7], pw.chip.lstPartWork[7].volume);
+                OutFmSetVolume(pw.chip.lstPartWork[8], pw.chip.lstPartWork[8].volume);
+                OutFmSetVolume(pw.chip.lstPartWork[9], pw.chip.lstPartWork[9].volume);
+            }
         }
 
         public void OutFmCh3SpecialModeSetFnum(partWork pw, byte ope, int octave, int num)
@@ -493,6 +500,15 @@ namespace Core
                     pw.op2dt2 = 0;
                     pw.op3dt2 = 0;
                     pw.op4dt2 = 0;
+
+                    //pw.beforeVolume = -1;
+                    if (pw.ch == 2 || pw.ch == 7 || pw.ch == 8 || pw.ch == 9)
+                    {
+                        pw.chip.lstPartWork[2].beforeVolume = -1;
+                        pw.chip.lstPartWork[7].beforeVolume = -1;
+                        pw.chip.lstPartWork[8].beforeVolume = -1;
+                        pw.chip.lstPartWork[9].beforeVolume = -1;
+                    }
 
                     ((ClsOPN)pw.chip).OutFmSetFeedbackAlgorithm(pw, parent.instFM[n].data[0], parent.instFM[n].data[1]);
                     pw.feedback = parent.instFM[n].data[0];
