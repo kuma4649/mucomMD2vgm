@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "mdvc": {
+      "commandName": "Project",
+      "commandLineArgs": "-l D:\\bootcamp\\FM音源\\data\\自作\\test\\mucomMD\\OPMpan.muc"
+    }
+  }
+}

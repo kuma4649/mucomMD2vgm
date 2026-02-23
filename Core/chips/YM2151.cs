@@ -336,7 +336,14 @@ namespace Core
             switch (parent.instFM[n].type)
             {
                 case 0:// @
-                    for (int ope = 0; ope < 4; ope++) ((ClsOPN)pw.chip).OutFmSetSlRr(pw, ope, 0, 15);
+                    ClsChip chip = pw.chip;
+                    if (!(chip is ClsOPN))
+                    {
+                        msgBox.setErrMsg(string.Format(msg.get("E16006"), n));
+                        return;
+                    }
+
+                    for (int ope = 0; ope < 4; ope++) ((ClsOPN)chip).OutFmSetSlRr(pw, ope, 0, 15);
 
                     for (int ope = 0; ope < 4; ope++)
                     {
@@ -358,7 +365,7 @@ namespace Core
                     pw.op3dt2 = 0;
                     pw.op4dt2 = 0;
 
-                    ((ClsOPN)pw.chip).OutFmSetFeedbackAlgorithm(pw, parent.instFM[n].data[0], parent.instFM[n].data[1]);
+                    ((ClsOPN)chip).OutFmSetFeedbackAlgorithm(pw, parent.instFM[n].data[0], parent.instFM[n].data[1]);
                     break;
                 case 1: // @%
                     int vch = pw.ch;
@@ -816,7 +823,7 @@ namespace Core
             }
             else
             {
-                switch (parent.instFM[n].type)
+                switch (parent.instFM[pw.instrument].type)
                 {
                     case 1: // @%
 

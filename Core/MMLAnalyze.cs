@@ -887,7 +887,7 @@ namespace Core
                 mml.type = enmMMLType.LoopPoint;
                 mml.args = null;
             }
-            else if(pw.Type == enmChannelType.FMOPN)
+            else if(pw.Type == enmChannelType.FMOPN||pw.Type== enmChannelType.FMOPM)
             {
                 if (pw.ch == 0)
                 {

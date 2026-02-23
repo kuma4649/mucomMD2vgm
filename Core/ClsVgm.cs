@@ -37,7 +37,7 @@ namespace Core
         //private int instrumentCounter = -1;
         private byte[] instrumentBufCache = new byte[Const.INSTRUMENT_SIZE];
         private int toneDoublerCounter = -1;
-        private List<int> toneDoublerBufCache = new List<int>();
+        private List<int> toneDoublerBufCache = new List<int>(); 
         private int wfInstrumentCounter = -1;
         private byte[] wfInstrumentBufCache = null;
 

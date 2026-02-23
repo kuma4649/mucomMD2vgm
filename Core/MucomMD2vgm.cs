@@ -83,8 +83,16 @@ namespace Core
                 }
 
                 if (desVGM.info.useDCSG) {
-                    Disp(msg.get("I04022"));
-                    desVGM.LoadSSGdat();
+                    try
+                    {
+                        Disp(msg.get("I04022"));
+                        desVGM.LoadSSGdat();
+                    }
+                    catch
+                    {
+                        msgBox.setErrMsg(msg.get("E04008"));
+                        return -1;
+                    }
                 }
 
                 if (desVGM.info.useOPN2)
