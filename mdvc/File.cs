@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 
 namespace mdvc
 {
@@ -9,67 +10,62 @@ namespace mdvc
     {
         public string Combine(string v1, string v2)
         {
-            throw new NotImplementedException();
+            return Path.Combine(v1, v2);
         }
 
         public string Combine(string path, string v1, string v2)
         {
-            throw new NotImplementedException();
+            return Path.Combine(path, v1, v2);
         }
 
         public void Delete(string tempPath)
         {
-            throw new NotImplementedException();
+            System.IO.File.Delete(tempPath);
         }
 
         public bool Exists(string srcFn)
         {
-            throw new NotImplementedException();
+            return System.IO.File.Exists(srcFn);
         }
 
-        public string GetDirectoryName(object v)
+        public string GetDirectoryName(string v)
         {
-            throw new NotImplementedException();
+            return System.IO.Path.GetDirectoryName(v);
         }
 
         public string GetExtension(string desFn)
         {
-            throw new NotImplementedException();
+            return System.IO.Path.GetExtension(desFn);
         }
 
         public string GetFileName(string fn)
         {
-            throw new NotImplementedException();
+            return System.IO.Path.GetFileName(fn);
         }
 
         public string GetFileNameWithoutExtension(string desFn)
         {
-            throw new NotImplementedException();
+            return System.IO.Path.GetFileNameWithoutExtension(desFn);
         }
 
         public string GetFullPath(string srcFn)
         {
-            throw new NotImplementedException();
+            return System.IO.Path.GetFullPath(srcFn);
         }
 
         public byte[] ReadAllBytes(string destPath)
         {
-            throw new NotImplementedException();
+            return System.IO.File.ReadAllBytes(destPath);
         }
 
         public string[] ReadAllLines(string srcFn, Encoding encoding)
         {
-            throw new NotImplementedException();
-        }
-
-        public string[] ReadAllLines(string includeFn)
-        {
-            throw new NotImplementedException();
+            return System.IO.File.ReadAllLines(srcFn, encoding);
         }
 
         public void WriteAllBytes(string desFn, byte[] desBuf)
         {
-            throw new NotImplementedException();
+            System.IO.File.WriteAllBytes(desFn, desBuf);
         }
     }
 }
