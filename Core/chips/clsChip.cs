@@ -124,13 +124,17 @@ namespace Core
         public byte[] pcmDataEasy = null;
         public List<byte[]> pcmDataDirect = new List<byte[]>();
         public bool isLoopEx;
+        protected ILog log;
+        protected IFile file;
 
-        public ClsChip(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary)
+        public ClsChip(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary,ILog log,IFile file)
         {
             this.parent = parent;
             this._ChipID = chipID;
             this.stPath = stPath;
             this.IsSecondary = IsSecondary;
+            this.log= log;
+            this.file = file;
             MakeFNumTbl();
         }
 
@@ -149,8 +153,8 @@ namespace Core
 
             //log.ForcedWrite(stPath);
             //log.ForcedWrite(fn);
-            fn = Path.Combine(stPath, fn);
-            if (File.Exists(fn))
+            fn = file.Combine(stPath, fn);
+            if (file.Exists(fn))
             {
                 stream = new FileStream(fn, FileMode.Open, FileAccess.Read, FileShare.Read);
             }
@@ -260,7 +264,7 @@ namespace Core
         {
             if (!parent.instSSG.ContainsKey(n))
             {
-                msgBox.setErrMsg(string.Format(msg.get("E10000"), n)
+                msgBox.setErrMsg(string.Format(Msg.get("E10000"), n)
                     , mml.line.Fn
                     , mml.line.Num);
             }
@@ -285,7 +289,7 @@ namespace Core
         {
             if (!parent.instSSG.ContainsKey(n))
             {
-                msgBox.setErrMsg(string.Format(msg.get("E10000"), n)
+                msgBox.setErrMsg(string.Format(Msg.get("E10000"), n)
                     , mml.line.Fn
                     , mml.line.Num);
                 return;
@@ -408,7 +412,7 @@ namespace Core
         {
             if (pw.lfo[c].param == null)
             {
-                msgBox.setErrMsg(msg.get("E10001")
+                msgBox.setErrMsg(Msg.get("E10001")
                     , mml.line.Fn
                     , mml.line.Num);
                 return false;
@@ -667,7 +671,7 @@ namespace Core
 
         public virtual void CmdNoise(partWork pw, MML mml)
         {
-            msgBox.setErrMsg(msg.get("E10002")
+            msgBox.setErrMsg(Msg.get("E10002")
                     , mml.line.Fn
                     , mml.line.Num
                     );
@@ -675,7 +679,7 @@ namespace Core
 
         public virtual void CmdSusOnOff(partWork pw, MML mml)
         {
-            msgBox.setErrMsg(msg.get("E10022")
+            msgBox.setErrMsg(Msg.get("E10022")
                     , mml.line.Fn
                     , mml.line.Num
                     );
@@ -684,7 +688,7 @@ namespace Core
 
         public virtual void CmdMPMS(partWork pw, MML mml)
         {
-            msgBox.setErrMsg(msg.get("E10003")
+            msgBox.setErrMsg(Msg.get("E10003")
                     , mml.line.Fn
                     , mml.line.Num
                     );
@@ -692,7 +696,7 @@ namespace Core
 
         public virtual void CmdMAMS(partWork pw, MML mml)
         {
-            msgBox.setErrMsg(msg.get("E10004")
+            msgBox.setErrMsg(Msg.get("E10004")
                     , mml.line.Fn
                     , mml.line.Num
                     );
@@ -904,7 +908,7 @@ namespace Core
 
         public virtual void CmdHardEnvelope(partWork pw, MML mml)
         {
-            msgBox.setWrnMsg(msg.get("E10011")
+            msgBox.setWrnMsg(Msg.get("E10011")
                     , mml.line.Fn
                     , mml.line.Num
                     );
@@ -913,7 +917,7 @@ namespace Core
 
         public virtual void CmdTotalVolume(partWork pw, MML mml)
         {
-            msgBox.setErrMsg(msg.get("E10007")
+            msgBox.setErrMsg(Msg.get("E10007")
                     , mml.line.Fn
                     , mml.line.Num
                     );
@@ -993,7 +997,7 @@ namespace Core
 
         public virtual void CmdPan(partWork pw, MML mml)
         {
-            msgBox.setErrMsg(msg.get("E10008")
+            msgBox.setErrMsg(Msg.get("E10008")
                     , mml.line.Fn
                     , mml.line.Num
                     );
@@ -1035,7 +1039,7 @@ namespace Core
 
         public virtual void CmdMode(partWork pw, MML mml)
         {
-            msgBox.setErrMsg(msg.get("E10009")
+            msgBox.setErrMsg(Msg.get("E10009")
                     , mml.line.Fn
                     , mml.line.Num
                     );
@@ -1043,14 +1047,14 @@ namespace Core
 
         public virtual void CmdPcmMapSw(partWork pw, MML mml)
         {
-            msgBox.setErrMsg(msg.get("E10023")
+            msgBox.setErrMsg(Msg.get("E10023")
                     , mml.line.Fn
                     , mml.line.Num);
         }
 
         public virtual void CmdNoiseToneMixer(partWork pw, MML mml)
         {
-            msgBox.setErrMsg(msg.get("E10014")
+            msgBox.setErrMsg(Msg.get("E10014")
                 , mml.line.Fn
                 , mml.line.Num);
         }
@@ -1257,7 +1261,7 @@ namespace Core
 
             if (note.length < 1)
             {
-                msgBox.setErrMsg(msg.get("E10013")
+                msgBox.setErrMsg(Msg.get("E10013")
                     , mml.line.Fn
                     , mml.line.Num
                     );
@@ -1353,7 +1357,7 @@ namespace Core
 
             if (rest.length < 1)
             {
-                msgBox.setErrMsg(msg.get("E10013")
+                msgBox.setErrMsg(Msg.get("E10013")
                     , mml.line.Fn
                     , mml.line.Num
                     );
@@ -1390,7 +1394,7 @@ namespace Core
 
             if (ml < 1)
             {
-                msgBox.setErrMsg(msg.get("E10013")
+                msgBox.setErrMsg(Msg.get("E10013")
                     , mml.line.Fn
                     , mml.line.Num
                     );
@@ -1439,7 +1443,7 @@ namespace Core
 
         public virtual void CmdExtendChannel(partWork pw, MML mml)
         {
-            msgBox.setWrnMsg(msg.get("E10012")
+            msgBox.setWrnMsg(Msg.get("E10012")
                     , mml.line.Fn
                     , mml.line.Num
                     );

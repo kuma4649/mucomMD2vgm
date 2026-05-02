@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="mucomMD2vgmMAUI.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="mucomMD2vgm">
+
+    <!-- 親 Grid：1列 × 3行 -->
+    <Grid RowSpacing="6" Padding="6">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <!-- ① ツールバー -->
+            <RowDefinition Height="Auto" />
+            <!-- ② テーブル -->
+            <RowDefinition Height="*" />
+            <!-- ③ ログ -->
+        </Grid.RowDefinitions>
+
+        <!-- ① ツールバー -->
+        <Grid Grid.Row="0" ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="80" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <ImageButton Grid.Column="0" Source="icon1.png" BackgroundColor="Transparent" Padding="0" Clicked="OnOpenFileClicked" />
+            <ImageButton Grid.Column="1" Source="icon2.png" BackgroundColor="Transparent" Padding="0" />
+            <ImageButton Grid.Column="2" Source="icon3.png" BackgroundColor="Transparent" Padding="0" />
+            <ImageButton Grid.Column="3" Source="icon4.png" BackgroundColor="Transparent" Padding="0" />
+            <ImageButton Grid.Column="4" Source="icon5.png" BackgroundColor="Transparent" Padding="0" />
+            <ImageButton Grid.Column="5" Source="icon6.png" BackgroundColor="Transparent" Padding="0" />
+
+            <Label Grid.Column="7"
+                   VerticalOptions="Center"
+                   HorizontalTextAlignment="End"
+                   Text="Max rendering" />
+
+            <Entry Grid.Column="8"
+                   VerticalOptions="Center"
+                   HorizontalTextAlignment="End"
+                   Text="600"
+                   Keyboard="Numeric" />
+
+            <Label Grid.Column="9"
+                   VerticalOptions="Center"
+                   Text="s" />
+        </Grid>
+
+        <!-- ② テーブル（Part / Chip / Total Count / Loop Count） -->
+        <Grid Grid.Row="1"
+              BackgroundColor="#E0E0E0"
+              RowSpacing="0"
+              ColumnSpacing="0">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <!-- ヘッダー -->
+                <RowDefinition Height="*" />
+                <!-- データ -->
+            </Grid.RowDefinitions>
+
+            <!-- ヘッダー -->
+            <Grid Grid.Row="0"
+      BackgroundColor="#D0D0D0"
+      ColumnSpacing="0"
+      Padding="0">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="5*" />
+                    <ColumnDefinition Width="5*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Part -->
+                <Grid Grid.Column="0">
+                    <!-- 上線 -->
+                    <BoxView VerticalOptions="Start"
+                 HeightRequest="1"
+                 BackgroundColor="Black" />
+
+                    <!-- 左線 -->
+                    <BoxView HorizontalOptions="Start"
+                 WidthRequest="1"
+                 BackgroundColor="Black" />
+
+                    <Label Text="Part"
+               HorizontalTextAlignment="Center"
+               Padding="2,0" />
+
+                    <!-- 右線 -->
+                    <BoxView HorizontalOptions="End"
+                 WidthRequest="1"
+                 BackgroundColor="Black" />
+
+                    <!-- 下線 -->
+                    <BoxView VerticalOptions="End"
+                 HeightRequest="1"
+                 BackgroundColor="Black" />
+                </Grid>
+
+                <!-- Chip -->
+                <Grid Grid.Column="1">
+                    <!-- 上線 -->
+                    <BoxView VerticalOptions="Start"
+                 HeightRequest="1"
+                 BackgroundColor="Black" />
+
+                    <Label Text="Chip"
+               HorizontalTextAlignment="Center"
+               Padding="2,0" />
+
+                    <BoxView HorizontalOptions="End"
+                 WidthRequest="1"
+                 BackgroundColor="Black" />
+
+                    <BoxView VerticalOptions="End"
+                 HeightRequest="1"
+                 BackgroundColor="Black" />
+                </Grid>
+
+                <!-- Total Count -->
+                <Grid Grid.Column="2">
+                    <!-- 上線 -->
+                    <BoxView VerticalOptions="Start"
+                 HeightRequest="1"
+                 BackgroundColor="Black" />
+
+                    <Label Text="Total Count"
+               HorizontalTextAlignment="Center"
+               Padding="2,0" />
+
+                    <BoxView HorizontalOptions="End"
+                 WidthRequest="1"
+                 BackgroundColor="Black" />
+
+                    <BoxView VerticalOptions="End"
+                 HeightRequest="1"
+                 BackgroundColor="Black" />
+                </Grid>
+
+                <!-- Loop Count -->
+                <Grid Grid.Column="3">
+                    <!-- 上線 -->
+                    <BoxView VerticalOptions="Start"
+                 HeightRequest="1"
+                 BackgroundColor="Black" />
+
+                    <Label Text="Loop Count"
+               HorizontalTextAlignment="Center"
+               Padding="2,0" />
+
+                    <BoxView HorizontalOptions="End"
+                 WidthRequest="1"
+                 BackgroundColor="Black" />
+
+                    <BoxView VerticalOptions="End"
+                 HeightRequest="1"
+                 BackgroundColor="Black" />
+                </Grid>
+
+            </Grid>
+            <!-- データ部 -->
+            <CollectionView Grid.Row="1"
+                            x:Name="PartsCollection"
+                            BackgroundColor="White">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnSpacing="0" Padding="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="3*" />
+                                <ColumnDefinition Width="5*" />
+                                <ColumnDefinition Width="5*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Part -->
+                            <Grid Grid.Column="0">
+                                <!-- 左線 -->
+                                <BoxView HorizontalOptions="Start"
+                     WidthRequest="1"
+                     BackgroundColor="Black" />
+
+                                <Label Text="{Binding Part}" Padding="2,0" />
+
+                                <!-- 右線 -->
+                                <BoxView HorizontalOptions="End"
+                     WidthRequest="1"
+                     BackgroundColor="Black" />
+
+                                <!-- 下線 -->
+                                <BoxView VerticalOptions="End"
+                     HeightRequest="1"
+                     BackgroundColor="Black" />
+                            </Grid>
+
+                            <!-- Chip -->
+                            <Grid Grid.Column="1">
+                                <Label Text="{Binding Chip}" Padding="2,0" />
+
+                                <BoxView HorizontalOptions="End"
+                     WidthRequest="1"
+                     BackgroundColor="Black" />
+
+                                <BoxView VerticalOptions="End"
+                     HeightRequest="1"
+                     BackgroundColor="Black" />
+                            </Grid>
+
+                            <!-- TotalCount -->
+                            <Grid Grid.Column="2">
+                                <Label Text="{Binding TotalCount}"
+                   HorizontalTextAlignment="End"
+                   Padding="2,0" />
+
+                                <BoxView HorizontalOptions="End"
+                     WidthRequest="1"
+                     BackgroundColor="Black" />
+
+                                <BoxView VerticalOptions="End"
+                     HeightRequest="1"
+                     BackgroundColor="Black" />
+                            </Grid>
+
+                            <!-- LoopCount -->
+                            <Grid Grid.Column="3">
+                                <Label Text="{Binding LoopCount}"
+                   HorizontalTextAlignment="End"
+                   Padding="2,0" />
+
+                                <BoxView HorizontalOptions="End"
+                     WidthRequest="1"
+                     BackgroundColor="Black" />
+
+                                <BoxView VerticalOptions="End"
+                     HeightRequest="1"
+                     BackgroundColor="Black" />
+                            </Grid>
+
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+
+        <!-- ③ ログ -->
+        <Grid Grid.Row="2">
+            <Editor x:Name="LogEditor"
+                    BackgroundColor="White"
+                    TextColor="Black"
+                    AutoSize="TextChanges"
+                    IsReadOnly="True" />
+        </Grid>
+
+    </Grid>
+</ContentPage>

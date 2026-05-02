@@ -1,27 +1,27 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
-using System.IO;
+//using System.IO;
 
 namespace Core
 {
-    public static class msg
+    public class Msg
     {
 
         private static Dictionary<string, string> dicMsg = new Dictionary<string, string>();
 
-        static msg()
+        public static void Init(IFile file)
         {
             Assembly myAssembly = Assembly.GetEntryAssembly();
-            string path = Path.GetDirectoryName(myAssembly.Location);
+            string path = file.GetDirectoryName(myAssembly.Location);
             string lang = System.Globalization.CultureInfo.CurrentCulture.Name;
-            string file = Path.Combine(path, "lang", string.Format("message.{0}.txt", lang));
+            string filename = file.Combine(path, "lang", string.Format("message.{0}.txt", lang));
             string[] lines = null;
             try
             {
-                if (File.Exists(file))
-                    lines = File.ReadAllLines(file);
+                if (file.Exists(filename))
+                    lines = file.ReadAllLines(filename,Common.myenc);
                 else
-                    lines = File.ReadAllLines(Path.Combine(path, "lang", "message.txt"));
+                    lines = file.ReadAllLines(file.Combine(path, "lang", "message.txt"),Common.myenc);
             }
             catch
             {

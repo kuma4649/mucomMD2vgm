@@ -11,3 +11,4 @@ using System.Runtime.InteropServices;
 
 // このプロジェクトが COM に公開される場合、次の GUID が typelib の ID になります
 [assembly: Guid("b3554207-5883-4b0f-9442-72bdd9807645")]
+[assembly: System.Runtime.Versioning.SupportedOSPlatform("windows")]

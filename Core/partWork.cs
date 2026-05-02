@@ -170,7 +170,7 @@ namespace Core
         /// </summary>
         //public int pan = 3;
         //public int beforePan = -1;
-        public dint pan = new dint(3);
+        public Dint pan = new Dint(3);
 
         /// <summary>
         /// 拡張パン(Left)
@@ -475,7 +475,7 @@ namespace Core
         {
             foreach (byte b in data)
             {
-                Log.Write(string.Format("name:{0} channel:{1} data:{2:x2}", chip.Name, ch, b));
+                log.Write(string.Format("name:{0} channel:{1} data:{2:x2}", chip.Name, ch, b));
                 dataBuf.Add(b);
             }
         }
@@ -671,6 +671,13 @@ namespace Core
         public int algo;
         public byte[] v_tl = new byte[] { 0, 0, 0, 0 };
 
+        private ILog log;
+
+        public partWork(ILog log)
+        {
+            this.log = log;
+        }
+
         public void MakeLstPos()
         {
             if (pData == null)
@@ -780,7 +787,7 @@ namespace Core
                     }
                     else
                     {
-                        msgBox.setWrnMsg(msg.get("E06000")
+                        msgBox.setWrnMsg(Msg.get("E06000")
                             , (aliesName == null) ? pData[row].Fn : aData[(int)aliesName].Fn
                             , (aliesName == null) ? pData[row].Num : aData[(int)aliesName].Num
                             );

@@ -1,17 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Text;
-using System.IO;
 
-namespace Core
+namespace mdvc
 {
-    public static class Log
+    public class Log : Core.ILog
     {
-        public static string Path { get; set; } = "";
-        public static bool Debug { get; set; } = false;
-        public static StreamWriter Writer{ get; set; }
+        public string Path { get; set; } = "";
+        public bool Debug { get; set; } = false;
+        public StreamWriter Writer { get; set; }
 
-        public static void ForcedWrite(string msg)
+        public void ForcedWrite(string msg)
         {
             if (Writer == null) return;
             try
@@ -22,7 +23,7 @@ namespace Core
                     fullPath = System.IO.Path.Combine(fullPath, "KumaApp", AssemblyTitle);
                     if (!Directory.Exists(fullPath)) Directory.CreateDirectory(fullPath);
                     Path = System.IO.Path.Combine(fullPath, "log.txt");
-                    if (File.Exists(Path)) File.Delete(Path);
+                    if (System.IO.File.Exists(Path)) System.IO.File.Delete(Path);
                 }
 
                 DateTime dtNow = DateTime.Now;
@@ -36,7 +37,7 @@ namespace Core
             }
         }
 
-        public static void ForcedWrite(Exception e)
+        public void ForcedWrite(Exception e)
         {
             if (Writer == null) return;
             try
@@ -47,7 +48,7 @@ namespace Core
                     fullPath = System.IO.Path.Combine(fullPath, "KumaApp", AssemblyTitle);
                     if (!Directory.Exists(fullPath)) Directory.CreateDirectory(fullPath);
                     Path = System.IO.Path.Combine(fullPath, "log.txt");
-                    if (File.Exists(Path)) File.Delete(Path);
+                    if (System.IO.File.Exists(Path)) System.IO.File.Delete(Path);
                 }
 
                 DateTime dtNow = DateTime.Now;
@@ -70,7 +71,7 @@ namespace Core
             }
         }
 
-        public static void Write(string msg)
+        public void Write(string msg)
         {
             if (!Debug)
             {
@@ -87,7 +88,7 @@ namespace Core
                     fullPath = System.IO.Path.Combine(fullPath, "KumaApp", AssemblyTitle);
                     if (!Directory.Exists(fullPath)) Directory.CreateDirectory(fullPath);
                     Path = System.IO.Path.Combine(fullPath, "log.txt");
-                    if (File.Exists(Path)) File.Delete(Path);
+                    if (System.IO.File.Exists(Path)) System.IO.File.Delete(Path);
                 }
 
                 DateTime dtNow = DateTime.Now;
@@ -103,7 +104,7 @@ namespace Core
             }
         }
 
-        public static void Open()
+        public void Open()
         {
             try
             {
@@ -113,7 +114,7 @@ namespace Core
                     fullPath = System.IO.Path.Combine(fullPath, "KumaApp", AssemblyTitle);
                     if (!Directory.Exists(fullPath)) Directory.CreateDirectory(fullPath);
                     Path = System.IO.Path.Combine(fullPath, "log.txt");
-                    if (File.Exists(Path)) File.Delete(Path);
+                    if (System.IO.File.Exists(Path)) System.IO.File.Delete(Path);
                 }
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                 Encoding sjisEnc = Encoding.GetEncoding("Shift_JIS");
@@ -125,12 +126,12 @@ namespace Core
             }
         }
 
-        public static void Close()
+        public void Close()
         {
             Writer?.Close();
         }
 
-        public static string AssemblyTitle
+        private string AssemblyTitle
         {
             get
             {

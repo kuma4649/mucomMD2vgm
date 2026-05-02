@@ -4,7 +4,7 @@
     {
         static void Main(string[] args)
         {
-            _ = new mdvc(args);
+            _ = new Mdvc(args);
         }
     }
 }

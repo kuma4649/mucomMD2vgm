@@ -6,7 +6,8 @@ namespace Core
 {
     public class YM2151 : ClsChip
     {
-        public YM2151(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary) : base(parent, chipID, initialPartName, stPath, isSecondary)
+        public YM2151(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary,ILog log,IFile file)
+            : base(parent, chipID, initialPartName, stPath, isSecondary,log,file)
         {
             _chipType = enmChipType.YM2151;
             _Name = "YM2151";
@@ -97,7 +98,7 @@ namespace Core
         {
             if (!parent.instFM.ContainsKey(n))
             {
-                msgBox.setWrnMsg(string.Format(msg.get("E16000"), n));//, mml.line.Lp);
+                msgBox.setWrnMsg(string.Format(Msg.get("E16000"), n));//, mml.line.Lp);
                 return;
             }
 
@@ -133,7 +134,7 @@ namespace Core
                     };
                     break;
                 case 3:// @L OPL
-                    msgBox.setErrMsg(string.Format(msg.get("E11000"), n), pw.getSrcFn(), pw.getLineNumber());
+                    msgBox.setErrMsg(string.Format(Msg.get("E11000"), n), pw.getSrcFn(), pw.getLineNumber());
                     return;
                 case 4:// @M OPM
                     alg = parent.instFM[n].data[1] & 0x7;
@@ -307,7 +308,7 @@ namespace Core
 
             if (!parent.instFM.ContainsKey(n))
             {
-                msgBox.setWrnMsg(string.Format(msg.get("E16001"), n));//, mml.line.Lp);
+                msgBox.setWrnMsg(string.Format(Msg.get("E16001"), n));//, mml.line.Lp);
                 return;
             }
 
@@ -339,7 +340,7 @@ namespace Core
                     ClsChip chip = pw.chip;
                     if (!(chip is ClsOPN))
                     {
-                        msgBox.setErrMsg(string.Format(msg.get("E16006"), n));
+                        msgBox.setErrMsg(string.Format(Msg.get("E16006"), n));
                         return;
                     }
 
@@ -421,7 +422,7 @@ namespace Core
                     ((ClsOPN)pw.chip).OutFmSetFeedbackAlgorithm(pw, parent.instFM[n].data[0], parent.instFM[n].data[1]);
                     break;
                 case 3://@L OPL
-                    msgBox.setErrMsg(msg.get("E11001"), pw.getSrcFn(), pw.getLineNumber());
+                    msgBox.setErrMsg(Msg.get("E11001"), pw.getSrcFn(), pw.getLineNumber());
                     return;
                 case 4://@M OPM
                     for (int ope = 0; ope < 4; ope++)
@@ -767,12 +768,12 @@ namespace Core
             {
                 if (pw.lfo[c].param.Length < 4)
                 {
-                    msgBox.setErrMsg(msg.get("E16002"));//, mml.line.Lp);
+                    msgBox.setErrMsg(Msg.get("E16002"));//, mml.line.Lp);
                     return;
                 }
                 if (pw.lfo[c].param.Length > 5)
                 {
-                    msgBox.setErrMsg(msg.get("E16003"));//, mml.line.Lp);
+                    msgBox.setErrMsg(Msg.get("E16003"));//, mml.line.Lp);
                     return;
                 }
 
@@ -812,13 +813,13 @@ namespace Core
             pw.ipan = (n == 1) ? 2 : (n == 2 ? 1 : n);
             if (pw.instrument < 0)
             {
-                msgBox.setErrMsg(msg.get("E16004")
+                msgBox.setErrMsg(Msg.get("E16004")
                     );//, mml.line.Lp);
             }
             //E10021
             else if (!parent.instFM.ContainsKey(pw.instrument))
             {
-                msgBox.setErrMsg(string.Format(msg.get("E10021")
+                msgBox.setErrMsg(string.Format(Msg.get("E10021")
                     , pw.instrument));//, mml.line.Lp);
             }
             else
@@ -853,7 +854,7 @@ namespace Core
 
             if (type == 'I')
             {
-                msgBox.setErrMsg(msg.get("E16005"));//, mml.line.Lp);
+                msgBox.setErrMsg(Msg.get("E16005"));//, mml.line.Lp);
                 return;
             }
 

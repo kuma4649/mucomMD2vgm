@@ -14,7 +14,8 @@ namespace Core
             }
         };
 
-        public ClsOPL(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary) : base(parent, chipID, initialPartName, stPath, isSecondary)
+        public ClsOPL(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary, ILog log, IFile file)
+            : base(parent, chipID, initialPartName, stPath, isSecondary, log, file)
         {
         }
 
@@ -87,7 +88,7 @@ namespace Core
 
             if (!parent.instFM.ContainsKey(n) || parent.instFM[n].type != 3)
             {
-                msgBox.setWrnMsg(string.Format(msg.get("E17000"), n));//, mml.line.Lp);
+                msgBox.setWrnMsg(string.Format(Msg.get("E17000"), n));//, mml.line.Lp);
                 return;
             }
 
@@ -252,7 +253,7 @@ namespace Core
         {
             if (!pw.isOp4Mode)
             {
-                msgBox.setErrMsg(string.Format(msg.get("E26000"), n));//, mml.line.Lp);
+                msgBox.setErrMsg(string.Format(Msg.get("E26000"), n));//, mml.line.Lp);
                 return;
             }
 
@@ -637,7 +638,7 @@ namespace Core
 
             if (type == 'T')
             {
-                msgBox.setErrMsg(msg.get("E17001"));//, mml.line.Lp);
+                msgBox.setErrMsg(Msg.get("E17001"));//, mml.line.Lp);
                 return;
             }
 

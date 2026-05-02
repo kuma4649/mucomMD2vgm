@@ -12,6 +12,7 @@ namespace Core
         private static uint vgmSamplingRate = 8000;
         private static uint xgmSamplingRate = 14000;
         private static MDSound.MDSound mds = null;
+        private static IFile file = null;
 
         public static void initial(byte[] mucompcmbin,enmFormat format)
         {
@@ -177,7 +178,7 @@ namespace Core
                 }
 
                 //出力
-                System.IO.File.WriteAllBytes(dFn, des.ToArray());
+                file.WriteAllBytes(dFn, des.ToArray());
 
             }
             catch

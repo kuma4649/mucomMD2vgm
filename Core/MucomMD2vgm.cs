@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Text;
 
 namespace Core
 {
@@ -19,24 +20,27 @@ namespace Core
         private int pcmDataSeqNum = 0;
         private bool isLoopEx = false;
         private int rendSecond=600;
+        private readonly ILog log = null;
+        private IFile file = null;
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        /// <param name="srcFn">ソースファイル</param>
-        /// <param name="desFn">出力ファイル</param>
-        public MucomMD2vgm(string srcFn, string desFn, string stPath, Action<string> disp,bool isLoopEx,int rendSecond)
+        public MucomMD2vgm(Mmd2vgmArgs args)
         {
-            this.srcFn = srcFn;
-            this.desFn = desFn;
-            this.stPath = stPath;
-            this.Disp = disp;
-            this.isLoopEx = isLoopEx;
-            this.rendSecond = rendSecond;
 
-            Log.ForcedWrite(srcFn);
-            Log.ForcedWrite(desFn);
-            Log.ForcedWrite(stPath);
+            this.srcFn = args.srcFn;
+            this.desFn = args.desFn;
+            this.stPath = args.stPath;
+            this.Disp = args.Disp;
+            this.isLoopEx = args.isLoopEx;
+            this.rendSecond = args.rendSecond;
+            this.log = args.log;
+            this.file = args.file;
+
+            log.ForcedWrite(srcFn);
+            log.ForcedWrite(desFn);
+            log.ForcedWrite(stPath);
         }
 
         /// <summary>
@@ -47,64 +51,64 @@ namespace Core
         {
             try
             {
-                Disp(string.Format(msg.get("I04000"), "mucomMD2vgm"));
+                Disp(string.Format(Msg.get("I04000"), "mucomMD2vgm"));
                 Disp("");
 
-                Disp(msg.get("I04001"));
-                if (!File.Exists(srcFn))
+                Disp(Msg.get("I04001"));
+                if (!file.Exists(srcFn))
                 {
-                    msgBox.setErrMsg(msg.get("E04000"));
+                    msgBox.setErrMsg(Msg.get("E04000"));
                     return -1;
                 }
 
-                Disp(msg.get("I04002"));
-                string path = Path.GetDirectoryName(Path.GetFullPath(srcFn));
-                List<Line> src = GetSrc(File.ReadAllLines(srcFn,System.Text.Encoding.GetEncoding("Shift_JIS")), path);
+                Disp(Msg.get("I04002"));
+                string path = file.GetDirectoryName(file.GetFullPath(srcFn));
+                List<Line> src = GetSrc(file.ReadAllLines(srcFn, Common.myenc), path);
                 if (src == null)
                 {
-                    msgBox.setErrMsg(msg.get("E04001"));
+                    msgBox.setErrMsg(Msg.get("E04001"));
                     return -1;
                 }
 
-                Disp(msg.get("I04003"));
-                desVGM = new ClsVgm(stPath, srcFn, isLoopEx, rendSecond);
+                Disp(Msg.get("I04003"));
+                desVGM = new ClsVgm(stPath, srcFn, isLoopEx, rendSecond, log, file);
                 if (desVGM.Analyze(src) != 0)
                 {
                     msgBox.setErrMsg(string.Format(
-                        msg.get("E04002")
+                        Msg.get("E04002")
                         , desVGM.lineNumber));
                     return -1;
                 }
 
                 if (desVGM.info.useOPN2 || desVGM.info.useOPM)
                 {
-                    Disp(msg.get("I04021"));
+                    Disp(Msg.get("I04021"));
                     desVGM.LoadVoicedat();
                 }
 
                 if (desVGM.info.useDCSG) {
                     try
                     {
-                        Disp(msg.get("I04022"));
+                        Disp(Msg.get("I04022"));
                         desVGM.LoadSSGdat();
                     }
                     catch
                     {
-                        msgBox.setErrMsg(msg.get("E04008"));
+                        msgBox.setErrMsg(Msg.get("E04008"));
                         return -1;
                     }
                 }
 
                 if (desVGM.info.useOPN2)
                 {
-                    Disp(msg.get("I04023"));
+                    Disp(Msg.get("I04023"));
                     int i = desVGM.LoadAdpcmdat();
                     if (i > 0)
                     {
                         Disp(string.Format("ADPCM読み込まれ、PCM番号 1 から {0} まで使用されます。", i));
                     }
 
-                    Disp(msg.get("I04004"));
+                    Disp(Msg.get("I04004"));
                     if (desVGM.instPCMDatSeq.Count > 0) GetPCMData(path);
                 }
 
@@ -112,12 +116,12 @@ namespace Core
 
                 if (!isLoopEx)
                 {
-                    Disp(msg.get("I04005"));
-                    MMLAnalyze mmlAnalyze = new MMLAnalyze(desVGM);
+                    Disp(Msg.get("I04005"));
+                    MMLAnalyze mmlAnalyze = new MMLAnalyze(desVGM, log);
                     desVGM.CutYM2612();
                     if (mmlAnalyze.Start() != 0)
                     {
-                        msgBox.setErrMsg(string.Format(msg.get("E04003"), mmlAnalyze.lineNumber));
+                        msgBox.setErrMsg(string.Format(Msg.get("E04003"), mmlAnalyze.lineNumber));
                         return -1;
                     }
 
@@ -126,21 +130,21 @@ namespace Core
                     switch (desVGM.info.format)
                     {
                         case enmFormat.VGM:
-                            Disp(msg.get("I04006"));
+                            Disp(Msg.get("I04006"));
                             desBuf = desVGM.Vgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.none);
-                            Disp(msg.get("I04007"));
+                            Disp(Msg.get("I04007"));
                             break;
                         case enmFormat.XGM:
-                            Disp(msg.get("I04008"));
+                            Disp(Msg.get("I04008"));
                             desBuf = desVGM.Xgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.none);
-                            Disp(msg.get("I04009"));
+                            Disp(Msg.get("I04009"));
                             break;
                     }
 
                     if (desBuf == null)
                     {
                         msgBox.setErrMsg(string.Format(
-                            msg.get("E04004")
+                            Msg.get("E04004")
                             , desVGM.lineNumber));
                         return -1;
                     }
@@ -150,11 +154,11 @@ namespace Core
                 {
                     //Loopポイントその他の情報を採取するために一旦解析と1ループの演奏を行う。
 
-                    Disp(msg.get("I04024"));
-                    MMLAnalyze mmlAnalyze = new MMLAnalyze(desVGM);
+                    Disp(Msg.get("I04024"));
+                    MMLAnalyze mmlAnalyze = new MMLAnalyze(desVGM, log);
                     if (mmlAnalyze.Start() != 0)
                     {
-                        msgBox.setErrMsg(string.Format(msg.get("E04003"), mmlAnalyze.lineNumber));
+                        msgBox.setErrMsg(string.Format(Msg.get("E04003"), mmlAnalyze.lineNumber));
                         return -1;
                     }
 
@@ -163,14 +167,14 @@ namespace Core
                     switch (desVGM.info.format)
                     {
                         case enmFormat.VGM:
-                            Disp(msg.get("I04025"));
+                            Disp(Msg.get("I04025"));
                             desBuf = desVGM.Vgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.Inspect);
-                            Disp(msg.get("I04026"));
+                            Disp(Msg.get("I04026"));
                             break;
                         case enmFormat.XGM:
-                            Disp(msg.get("I04030"));
+                            Disp(Msg.get("I04030"));
                             desBuf = desVGM.Xgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.Inspect);
-                            Disp(msg.get("I04031"));
+                            Disp(Msg.get("I04031"));
                             break;
                     }
 
@@ -179,7 +183,7 @@ namespace Core
                     if (desBuf == null)
                     {
                         msgBox.setErrMsg(string.Format(
-                            msg.get("E04004")
+                            Msg.get("E04004")
                             , desVGM.lineNumber));
                         return -1;
                     }
@@ -196,11 +200,11 @@ namespace Core
 
                         desBuf = null;
 
-                        Disp(msg.get("I04027"));
-                        mmlAnalyze = new MMLAnalyze(desVGM);
+                        Disp(Msg.get("I04027"));
+                        mmlAnalyze = new MMLAnalyze(desVGM, log);
                         if (mmlAnalyze.Start() != 0)
                         {
-                            msgBox.setErrMsg(string.Format(msg.get("E04003"), mmlAnalyze.lineNumber));
+                            msgBox.setErrMsg(string.Format(Msg.get("E04003"), mmlAnalyze.lineNumber));
                             return -1;
                         }
 
@@ -216,21 +220,21 @@ namespace Core
                         switch (desVGM.info.format)
                         {
                             case enmFormat.VGM:
-                                Disp(msg.get("I04028"));
+                                Disp(Msg.get("I04028"));
                                 desBuf = desVGM.Vgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.Playing);
-                                Disp(msg.get("I04029"));
+                                Disp(Msg.get("I04029"));
                                 break;
                             case enmFormat.XGM:
-                                Disp(msg.get("I04032"));
+                                Disp(Msg.get("I04032"));
                                 desBuf = desVGM.Xgm_getByteData(mmlAnalyze.mmlData, enmLoopExStep.Playing);
-                                Disp(msg.get("I04033"));
+                                Disp(Msg.get("I04033"));
                                 break;
                         }
 
                         if (desBuf == null)
                         {
                             msgBox.setErrMsg(string.Format(
-                                msg.get("E04004")
+                                Msg.get("E04004")
                                 , desVGM.lineNumber));
                             return -1;
                         }
@@ -239,7 +243,7 @@ namespace Core
 
 
 
-                Disp(msg.get("I04010"));
+                Disp(Msg.get("I04010"));
                 if (desVGM.info.format == enmFormat.VGM)
                     outFile(desBuf);
                 else
@@ -252,8 +256,8 @@ namespace Core
             }
             catch (Exception ex)
             {
-                Log.ForcedWrite(ex);
-                msgBox.setErrMsg(string.Format(msg.get("E04005")
+                log.ForcedWrite(ex);
+                msgBox.setErrMsg(string.Format(Msg.get("E04005")
                     , (desVGM == null) ? -1 : desVGM.lineNumber
                     , ex.Message
                     , ex.StackTrace));
@@ -261,7 +265,7 @@ namespace Core
             }
             finally
             {
-                Disp(msg.get("I04011"));
+                Disp(Msg.get("I04011"));
                 Disp("");
             }
         }
@@ -552,42 +556,42 @@ namespace Core
 
         private void outFile(byte[] desBuf)
         {
-            if (Path.GetExtension(desFn).ToLower() != ".vgz")
+            if (file.GetExtension(desFn).ToLower() != ".vgz")
             {
                 if (desVGM.info.format == enmFormat.VGM)
                 {
-                    Log.Write("VGMファイル出力");
-                    File.WriteAllBytes(
+                    log.Write("VGMファイル出力");
+                    file.WriteAllBytes(
                         desFn
                         , desBuf);
                 }
                 else
                 {
-                    Log.Write("XGMファイル出力");
-                    File.WriteAllBytes(
-                        Path.Combine(
-                            Path.GetDirectoryName(desFn)
-                            , Path.GetFileNameWithoutExtension(desFn) + ".xgm"
+                    log.Write("XGMファイル出力");
+                    file.WriteAllBytes(
+                        file.Combine(
+                            file.GetDirectoryName(desFn)
+                            , file.GetFileNameWithoutExtension(desFn) + ".xgm"
                             )
                         , desBuf);
                 }
                 return;
             }
 
-            Log.Write("VGZ/XGZファイル出力");
+            log.Write("VGZ/XGZファイル出力");
 
             string dFn = desFn;
             if (desVGM.info.format == enmFormat.VGM)
             {
-                dFn = Path.Combine(
-                            Path.GetDirectoryName(desFn)
-                            , Path.GetFileNameWithoutExtension(desFn) + ".vgz");
+                dFn = file.Combine(
+                            file.GetDirectoryName(desFn)
+                            , file.GetFileNameWithoutExtension(desFn) + ".vgz");
             }
             else
             {
-                dFn = Path.Combine(
-                            Path.GetDirectoryName(desFn)
-                            , Path.GetFileNameWithoutExtension(desFn) + ".xgz");
+                dFn = file.Combine(
+                            file.GetDirectoryName(desFn)
+                            , file.GetFileNameWithoutExtension(desFn) + ".xgz");
             }
 
             int num;
@@ -625,18 +629,18 @@ namespace Core
                     && s.TrimStart().Substring(0, 2) == "'+")
                 {
                     string includeFn = s.Substring(2).Trim().Trim('"');
-                    if (!File.Exists(includeFn))
+                    if (!file.Exists(includeFn))
                     {
-                        includeFn = Path.Combine(path, includeFn);
-                        if (!File.Exists(includeFn))
+                        includeFn = file.Combine(path, includeFn);
+                        if (!file.Exists(includeFn))
                         {
                             msgBox.setErrMsg(string.Format(
-                                msg.get("E04006")
+                                Msg.get("E04006")
                                 , includeFn));
                             return null;
                         }
                     }
-                    string[] incBuf = File.ReadAllLines(includeFn);
+                    string[] incBuf = file.ReadAllLines(includeFn,Common.myenc);
                     int iln = 1;
                     foreach (string i in incBuf)
                     {
@@ -695,7 +699,7 @@ namespace Core
                         desVGM.instPCM.Add(pds.No, v);
 
                         //ファイルの読み込み
-                        buf = Common.GetPCMDataFromFile(path, v, out isRaw, out is16bit, out samplerate);
+                        buf = Common.GetPCMDataFromFile(file, path, v, out isRaw, out is16bit, out samplerate);
                         if (buf == null)
                         {
                             //msgBox.setErrMsg(string.Format(
@@ -716,7 +720,7 @@ namespace Core
                         if (desVGM.info.format == enmFormat.XGM && v.isSecondary)
                         {
                             msgBox.setErrMsg(string.Format(
-                                msg.get("E01017")
+                                Msg.get("E01017")
                                 , v.fileName));
                             continue;
                         }
@@ -768,7 +772,7 @@ namespace Core
                         if (buf == null)
                         {
                             msgBox.setErrMsg(string.Format(
-                                msg.get("E04007")
+                                Msg.get("E04007")
                                 , v.fileName));
                             continue;
                         }
@@ -776,7 +780,7 @@ namespace Core
                         if (desVGM.info.format == enmFormat.XGM && v.isSecondary)
                         {
                             msgBox.setErrMsg(string.Format(
-                                msg.get("E01017")
+                                Msg.get("E01017")
                                 , v.fileName));
                             continue;
                         }
@@ -796,11 +800,11 @@ namespace Core
                         break;
                     case enmPcmDefineType.RawData:
                         //ファイルの読み込み
-                        buf = Common.GetPCMDataFromFile(path, pds.FileName, 100, out isRaw, out is16bit, out samplerate);
+                        buf = Common.GetPCMDataFromFile(file, path, pds.FileName, 100, out isRaw, out is16bit, out samplerate);
                         if (buf == null)
                         {
                             msgBox.setErrMsg(string.Format(
-                                msg.get("E04007")
+                                Msg.get("E04007")
                                 , pds.FileName));
                             continue;
                         }
@@ -853,18 +857,18 @@ namespace Core
             try
             {
                 Disp(string.Format("SoXを使用し、ピッチの変換を行います。{0}Hz", srcFreq));
-                string path = Path.Combine(stPath, "sox\\sox.exe");
-                if (!File.Exists(path))
+                string path = file.Combine(stPath, "sox\\sox.exe");
+                if (!file.Exists(path))
                 {
                     msgBox.setWrnMsg(string.Format("soxが見つかりませんでした.(検索場所:{0})", path));
                     return;
                 }
 
-                string tempPath = Path.Combine(srcPath, "soxTemp.raw");
-                File.Delete(tempPath);
-                File.WriteAllBytes(tempPath, buf);
-                string destPath = Path.Combine(srcPath, "soxTempDest.raw");
-                File.Delete(destPath);
+                string tempPath = file.Combine(srcPath, "soxTemp.raw");
+                file.Delete(tempPath);
+                file.WriteAllBytes(tempPath, buf);
+                string destPath = file.Combine(srcPath, "soxTempDest.raw");
+                file.Delete(destPath);
 
                 if (srcFreq < 73)
                 {
@@ -884,11 +888,11 @@ namespace Core
                 System.Diagnostics.Process p = System.Diagnostics.Process.Start(psi);
                 p.WaitForExit();
 
-                buf = File.ReadAllBytes(destPath);
+                buf = file.ReadAllBytes(destPath);
 
                 //元ファイルと出力先ファイルの削除
-                File.Delete(tempPath);
-                File.Delete(destPath);
+                file.Delete(tempPath);
+                file.Delete(destPath);
             }
             catch (Exception e)
             {
@@ -925,15 +929,15 @@ namespace Core
 
             if (res != "")
             {
-                Disp(msg.get("I04012"));
+                Disp(Msg.get("I04012"));
                 Disp("");
-                Disp(msg.get("I04013"));
+                Disp(Msg.get("I04013"));
                 Disp("");
                 Disp("");
                 Disp("");
 
-                Disp(msg.get("I04016"));
-                Disp(msg.get("I04017"));
+                Disp(Msg.get("I04016"));
+                Disp(Msg.get("I04017"));
                 Disp(res);
             }
 
@@ -950,8 +954,8 @@ namespace Core
 
             if (res != "")
             {
-                Disp(msg.get("I04019"));
-                Disp(msg.get("I04020"));
+                Disp(Msg.get("I04019"));
+                Disp(Msg.get("I04020"));
                 Disp(res);
             }
         }
@@ -977,7 +981,7 @@ namespace Core
             {
                 tl += desVGM.instPCM[i].size;
             }
-            region += (string.Format(msg.get("I04018"), tl));
+            region += (string.Format(Msg.get("I04018"), tl));
             region += "\r\n";
 
             return region;
@@ -1028,7 +1032,7 @@ namespace Core
 
             if (region != "")
             {
-                region += (string.Format(msg.get("I04018"), tl));
+                region += (string.Format(Msg.get("I04018"), tl));
                 region += "\r\n";
             }
 

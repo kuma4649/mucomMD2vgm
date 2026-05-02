@@ -18,7 +18,8 @@ namespace Core
         public const string FMF_NUM = "FMF-NUM";
 
 
-        public YM2612(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary) : base(parent, chipID, initialPartName, stPath, isSecondary)
+        public YM2612(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary,ILog log,IFile file)
+            : base(parent, chipID, initialPartName, stPath, isSecondary,log, file)
         {
             _chipType = enmChipType.YM2612;
             _Name = "YM2612";
@@ -220,7 +221,7 @@ namespace Core
 
         public override void StorePcmRawData(clsPcmDatSeq pds, byte[] buf, bool isRaw, bool is16bit, int samplerate, params object[] option)
         {
-            msgBox.setWrnMsg(msg.get("E20004"));
+            msgBox.setWrnMsg(Msg.get("E20004"));
         }
 
 
@@ -392,7 +393,7 @@ namespace Core
                 }
                 if (n == -1)
                 {
-                    msgBox.setErrMsg(string.Format(msg.get("E11001"), "\"" + ((string)mml.args[1]).Trim() + "\""), pw.getSrcFn(), pw.getLineNumber());
+                    msgBox.setErrMsg(string.Format(Msg.get("E11001"), "\"" + ((string)mml.args[1]).Trim() + "\""), pw.getSrcFn(), pw.getLineNumber());
                     return;
                 }
             }
@@ -406,7 +407,7 @@ namespace Core
                         pw.pcmMapNo = n;
                         if (!parent.instPCMMap.ContainsKey(n))
                         {
-                            msgBox.setErrMsg(string.Format(msg.get("E10024"), n));
+                            msgBox.setErrMsg(string.Format(Msg.get("E10024"), n));
                         }
                         return;
                     }
@@ -414,13 +415,13 @@ namespace Core
                     pw.instrument = n;
                     if (!parent.instPCM.ContainsKey(n))
                     {
-                        msgBox.setErrMsg(string.Format(msg.get("E20002"), n), pw.getSrcFn(), pw.getLineNumber());
+                        msgBox.setErrMsg(string.Format(Msg.get("E20002"), n), pw.getSrcFn(), pw.getLineNumber());
                     }
                     else
                     {
                         if ((parent.instPCM[n].chip != enmChipType.YM2612)&& (parent.instPCM[n].chip != enmChipType.YM2612X))
                         {
-                            msgBox.setErrMsg(string.Format(msg.get("E20003"), n), pw.getSrcFn(), pw.getLineNumber());
+                            msgBox.setErrMsg(string.Format(Msg.get("E20003"), n), pw.getSrcFn(), pw.getLineNumber());
                         }
                     }
                     return;

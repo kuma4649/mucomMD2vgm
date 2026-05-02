@@ -157,7 +157,7 @@ namespace Core
                 }
                 catch
                 {
-                    msgBox.setWrnMsg(string.Format(msg.get("E03000"), s), fn, lineNumber);
+                    msgBox.setWrnMsg(string.Format(Msg.get("E03000"), s), fn, lineNumber);
                 }
             }
             

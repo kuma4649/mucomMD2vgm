@@ -6,20 +6,20 @@ using System.Threading.Tasks;
 
 namespace Core
 {
-    public interface dv
+    public interface IDv
     {
-        bool eq();
-        void rst();
+        bool Eq();
+        void Rst();
     }
 
-    public class dbool : dv
+    public class Dbool : IDv
     {
-        public bool eq()
+        public bool Eq()
         {
             return s == v;
         }
 
-        public void rst()
+        public void Rst()
         {
             s = v;
         }
@@ -28,20 +28,20 @@ namespace Core
         private bool? s;
     }
 
-    public class dint : dv
+    public class Dint : IDv
     {
-        public dint(int val)
+        public Dint(int val)
         {
             this.val = val;
             s = null;
         }
 
-        public bool eq()
+        public bool Eq()
         {
             return s == val;
         }
 
-        public void rst()
+        public void Rst()
         {
             s = val;
         }
@@ -49,21 +49,21 @@ namespace Core
         public int? val;
         private int? s;
 
-        public static implicit operator dint(int v)
+        public static implicit operator Dint(int v)
         {
             throw new NotImplementedException();
         }
 
     }
 
-    public class dlong : dv
+    public class Dlong : IDv
     {
-        public bool eq()
+        public bool Eq()
         {
             return s == v;
         }
 
-        public void rst()
+        public void Rst()
         {
             s = v;
         }
@@ -72,14 +72,14 @@ namespace Core
         private long? s;
     }
 
-    public class dfloat : dv
+    public class Dfloat : IDv
     {
-        public bool eq()
+        public bool Eq()
         {
             return s == v;
         }
 
-        public void rst()
+        public void Rst()
         {
             s = v;
         }
@@ -88,14 +88,14 @@ namespace Core
         private float? s;
     }
 
-    public class dbyte : dv
+    public class Dbyte : IDv
     {
-        public bool eq()
+        public bool Eq()
         {
             return s == v;
         }
 
-        public void rst()
+        public void Rst()
         {
             s = v;
         }
@@ -104,14 +104,14 @@ namespace Core
         private byte? s;
     }
 
-    public class dchar : dv
+    public class Dchar : IDv
     {
-        public bool eq()
+        public bool Eq()
         {
             return s == v;
         }
 
-        public void rst()
+        public void Rst()
         {
             s = v;
         }
@@ -120,14 +120,14 @@ namespace Core
         private char? s;
     }
 
-    public class ddouble : dv
+    public class Ddouble : IDv
     {
-        public bool eq()
+        public bool Eq()
         {
             return s == v;
         }
 
-        public void rst()
+        public void Rst()
         {
             s = v;
         }

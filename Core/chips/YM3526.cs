@@ -4,7 +4,8 @@ namespace Core
 {
     public class YM3526 : ClsOPL
     {
-        public YM3526(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary) : base(parent, chipID, initialPartName, stPath, isSecondary)
+        public YM3526(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary, ILog log, IFile file)
+            : base(parent, chipID, initialPartName, stPath, isSecondary, log, file)
         {
             _chipType = enmChipType.YM3526;
             _Name = "YM3526";

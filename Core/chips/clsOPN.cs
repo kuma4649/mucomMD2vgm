@@ -12,7 +12,8 @@ namespace Core
         public byte SSGKeyOn = 0x3f;
 
 
-        public ClsOPN(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary) : base(parent, chipID, initialPartName, stPath, isSecondary)
+        public ClsOPN(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary, ILog log,IFile file)
+            : base(parent, chipID, initialPartName, stPath, isSecondary, log, file)
         {
         }
 
@@ -463,7 +464,7 @@ namespace Core
 
             if (!parent.instFM.ContainsKey(n))
             {
-                msgBox.setWrnMsg(string.Format(msg.get("E11001"), n), pw.getSrcFn(), pw.getLineNumber());
+                msgBox.setWrnMsg(string.Format(Msg.get("E11001"), n), pw.getSrcFn(), pw.getLineNumber());
                 return;
             }
 
@@ -471,7 +472,7 @@ namespace Core
 
             if (pw.ch >= m + 3 && pw.ch < m + 6)
             {
-                msgBox.setWrnMsg(msg.get("E11002"), pw.getSrcFn(), pw.getLineNumber());
+                msgBox.setWrnMsg(Msg.get("E11002"), pw.getSrcFn(), pw.getLineNumber());
                 return;
             }
 
@@ -564,7 +565,7 @@ namespace Core
                     pw.algo = parent.instFM[n].data[1];
                     break;
                 case 3://@L OPL
-                    msgBox.setErrMsg(msg.get("E11001"), pw.getSrcFn(), pw.getLineNumber());
+                    msgBox.setErrMsg(Msg.get("E11001"), pw.getSrcFn(), pw.getLineNumber());
                     return;
                 case 4://@M OPM
 
@@ -855,13 +856,13 @@ namespace Core
                     }
                     else
                     {
-                        msgBox.setErrMsg(string.Format(msg.get("E10025"), pw.octaveNow, pw.noteCmd, pw.shift + pw.keyShift));
+                        msgBox.setErrMsg(string.Format(Msg.get("E10025"), pw.octaveNow, pw.noteCmd, pw.shift + pw.keyShift));
                         return;
                     }
                 }
                 else
                 {
-                    msgBox.setErrMsg(string.Format(msg.get("E10024"), pw.pcmMapNo));
+                    msgBox.setErrMsg(string.Format(Msg.get("E10024"), pw.pcmMapNo));
                     return;
                 }
             }
@@ -1307,7 +1308,7 @@ namespace Core
 
             if (type == 'I')
             {
-                msgBox.setErrMsg(msg.get("E11003"), pw.getSrcFn(), pw.getLineNumber());
+                msgBox.setErrMsg(Msg.get("E11003"), pw.getSrcFn(), pw.getLineNumber());
                 return;
             }
 
@@ -1351,7 +1352,7 @@ namespace Core
 
             if (!(mml.args[0] is string))
             {
-                msgBox.setErrMsg(msg.get("E11004")
+                msgBox.setErrMsg(Msg.get("E11004")
                     , mml.line.Fn
                     , mml.line.Num);
 
@@ -1571,7 +1572,7 @@ namespace Core
                         }
                         else
                         {
-                            msgBox.setErrMsg(string.Format(msg.get("E11005"), n), pw.getSrcFn(), pw.getLineNumber());
+                            msgBox.setErrMsg(string.Format(Msg.get("E11005"), n), pw.getSrcFn(), pw.getLineNumber());
                             break;
                         }
                         n /= 10;
@@ -1632,7 +1633,7 @@ namespace Core
                         }
                         else
                         {
-                            msgBox.setErrMsg(string.Format(msg.get("E11005"), nm), pw.getSrcFn(), pw.getLineNumber());
+                            msgBox.setErrMsg(string.Format(Msg.get("E11005"), nm), pw.getSrcFn(), pw.getLineNumber());
                             break;
                         }
                         nm /= 10;
@@ -1740,7 +1741,7 @@ namespace Core
         {
             if (!parent.instFM.ContainsKey(n))
             {
-                msgBox.setWrnMsg(string.Format(msg.get("E11001"), n), pw.getSrcFn(), pw.getLineNumber());
+                msgBox.setWrnMsg(string.Format(Msg.get("E11001"), n), pw.getSrcFn(), pw.getLineNumber());
                 return;
             }
 
@@ -1825,7 +1826,7 @@ namespace Core
                     param[41] = parent.instFM[n].data[1];//ALG
                     break;
                 case 3://@L OPL
-                    msgBox.setErrMsg(msg.get("E11001"), pw.getSrcFn(), pw.getLineNumber());
+                    msgBox.setErrMsg(Msg.get("E11001"), pw.getSrcFn(), pw.getLineNumber());
                     break;
                 case 4://@M OPM
 

@@ -14,7 +14,8 @@ namespace Core
         private int[] VolTbl = new int[16];
         private double[] DetuneTbl = new double[8 * 4];
 
-        public SN76489(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary) : base(parent, chipID, initialPartName, stPath, isSecondary)
+        public SN76489(ClsVgm parent, int chipID, string initialPartName, string stPath, bool isSecondary,ILog log,IFile file) 
+            : base(parent, chipID, initialPartName, stPath, isSecondary,log,file)
         {
             _Name = "SN76489";
             _ShortName = "DCSG";
@@ -173,7 +174,7 @@ namespace Core
                 n = Common.CheckRange((pw.octaveNow - 1), 0, 7) * 4 + n / 4;
                 f /= (DetuneTbl[n] == 0.0 ? 0.1 : DetuneTbl[n]);
 
-                Log.Write(string.Format("Detune:n:{0}:f:{1}:DetuneTbl[n]:{2}", n, f, DetuneTbl[n]));
+                log.Write(string.Format("Detune:n:{0}:f:{1}:DetuneTbl[n]:{2}", n, f, DetuneTbl[n]));
 
 
                 int fl = 0;
@@ -289,7 +290,7 @@ namespace Core
             if (pw.beforeVolume != vol)
             {
                 data = (byte)(0x80 + (pw.ch << 5) + 0x10 + (15 - VolTbl[vol]));
-                Log.Write(string.Format("name:{0} channel:{1} vol:{2} volTbl:{3}", pw.chip.Name, pw.ch, vol, VolTbl[vol]));
+                log.Write(string.Format("name:{0} channel:{1} vol:{2} volTbl:{3}", pw.chip.Name, pw.ch, vol, VolTbl[vol]));
                 OutPsgPort(pw, data);
                 pw.beforeVolume = vol;
             }

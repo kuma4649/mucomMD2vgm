@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Core;
+using Microsoft.VisualBasic.Logging;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using Core;
 
 namespace mucomMD2vgm
 {
@@ -17,10 +19,17 @@ namespace mucomMD2vgm
         private long now = 0;
         private bool isSuccess = true;
         private bool isLoopEx = false;
+        private Log log = new();
+        private File file = new();
 
         public FrmMain()
         {
             InitializeComponent();
+
+            // SJIS を使えるようにする（必須）
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            Msg.Init(file);
 #if DEBUG
             //Core.log.debug = true;
 #endif
@@ -28,7 +37,7 @@ namespace mucomMD2vgm
 
         private void FrmMain_Shown(object sender, EventArgs e)
         {
-            Core.Common.CheckSoXVersion(System.Windows.Forms.Application.StartupPath, Disp);
+            Core.Common.CheckSoXVersion(file, System.Windows.Forms.Application.StartupPath, Disp);
             string[] args = Environment.GetCommandLineArgs();
             if (args != null && args.Length > 1)
             {
@@ -45,11 +54,11 @@ namespace mucomMD2vgm
             }
 
             this.toolStrip1.Enabled = false;
-            this.tsslMessage.Text = msg.get("I0100");
+            this.tsslMessage.Text = Msg.get("I0100");
             dgvResult.Rows.Clear();
 
-            textBox1.AppendText(msg.get("I0101"));
-            textBox1.AppendText(msg.get("I0102"));
+            textBox1.AppendText(Msg.get("I0101"));
+            textBox1.AppendText(Msg.get("I0102"));
 
             isSuccess = true;
             Thread trdStartCompile = new(new ThreadStart(StartCompile));
@@ -62,8 +71,8 @@ namespace mucomMD2vgm
             OpenFileDialog ofd = new()
             {
                 Multiselect = true,
-                Filter = msg.get("I0103"),
-                Title = msg.get("I0104")
+                Filter = Msg.get("I0103"),
+                Title = Msg.get("I0104")
             };
             if (ofd.ShowDialog() != DialogResult.OK)
             {
@@ -108,9 +117,9 @@ namespace mucomMD2vgm
         {
             if (mv == null)
             {
-                textBox1.AppendText(msg.get("I0105"));
+                textBox1.AppendText(Msg.get("I0105"));
                 this.toolStrip1.Enabled = true;
-                this.tsslMessage.Text = msg.get("I0106");
+                this.tsslMessage.Text = Msg.get("I0106");
                 return;
             }
 
@@ -152,40 +161,40 @@ namespace mucomMD2vgm
                 }
             }
 
-            textBox1.AppendText(msg.get("I0107"));
+            textBox1.AppendText(Msg.get("I0107"));
 
             foreach (string mes in msgBox.getWrn())
             {
-                textBox1.AppendText(string.Format(msg.get("I0108"), mes));
+                textBox1.AppendText(string.Format(Msg.get("I0108"), mes));
             }
 
             foreach (string mes in msgBox.getErr())
             {
-                textBox1.AppendText(string.Format(msg.get("I0109"), mes));
+                textBox1.AppendText(string.Format(Msg.get("I0109"), mes));
             }
 
             textBox1.AppendText("\r\n");
-            textBox1.AppendText(string.Format(msg.get("I0110"), msgBox.getErr().Length, msgBox.getWrn().Length));
+            textBox1.AppendText(string.Format(Msg.get("I0110"), msgBox.getErr().Length, msgBox.getWrn().Length));
 
             if (isSuccess)
             {
                 if (mv.desVGM.loopSamples != -1)
                 {
-                    textBox1.AppendText(string.Format(msg.get("I0111"), mv.desVGM.loopClock));
-                    textBox1.AppendText(string.Format(msg.get("I0112")
+                    textBox1.AppendText(string.Format(Msg.get("I0111"), mv.desVGM.loopClock));
+                    textBox1.AppendText(string.Format(Msg.get("I0112")
                         , mv.desVGM.loopSamples
                         , mv.desVGM.loopSamples / 44100L));
                 }
 
-                textBox1.AppendText(string.Format(msg.get("I0113"), mv.desVGM.lClock));
-                textBox1.AppendText(string.Format(msg.get("I0114")
+                textBox1.AppendText(string.Format(Msg.get("I0113"), mv.desVGM.lClock));
+                textBox1.AppendText(string.Format(Msg.get("I0114")
                     , mv.desVGM.dSample
                     , mv.desVGM.dSample / 44100L));
             }
 
-            textBox1.AppendText(msg.get("I0126"));
+            textBox1.AppendText(Msg.get("I0126"));
             this.toolStrip1.Enabled = true;
-            this.tsslMessage.Text = msg.get("I0106");
+            this.tsslMessage.Text = Msg.get("I0106");
 
             if (isSuccess)
             {
@@ -210,7 +219,7 @@ namespace mucomMD2vgm
                     }
                     catch (Exception)
                     {
-                        MessageBox.Show(msg.get("E0100"), "mucomMD2vgm", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(Msg.get("E0100"), "mucomMD2vgm", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -219,8 +228,8 @@ namespace mucomMD2vgm
         private void StartCompile()
         {
             //Core.log.debug = true;
-            Core.Log.Open();
-            Core.Log.Write("start compile thread");
+            log.Open();
+            log.Write("start compile thread");
 
             Action dmy = UpdateTitle;
             string stPath = System.Windows.Forms.Application.StartupPath;
@@ -232,7 +241,7 @@ namespace mucomMD2vgm
             for (int i = 1; i < args.Length; i++)
             {
                 string arg = args[i];
-                if (!File.Exists(arg))
+                if (!file.Exists(arg))
                 {
                     continue;
                 }
@@ -241,7 +250,7 @@ namespace mucomMD2vgm
                 title = Path.GetFileName(arg);
                 this.Invoke(dmy);
 
-                Core.Log.Write(string.Format("  compile at [{0}]", args[i]));
+                log.Write(string.Format("  compile at [{0}]", args[i]));
 
                 msgBox.clear();
 
@@ -251,32 +260,43 @@ namespace mucomMD2vgm
                     desfn = Path.ChangeExtension(arg, Properties.Resources.ExtensionVGZ);
                 }
 
-                Core.Log.Write("Call mucomMD2vgm core");
+                log.Write("Call mucomMD2vgm core");
 
-                mv = new MucomMD2vgm(arg, desfn, stPath, Disp, isLoopEx, rendSecond);
+                Mmd2vgmArgs mArgs = new()
+                {
+                    srcFn = arg,
+                    desFn = desfn,
+                    stPath = stPath,
+                    Disp = Disp,
+                    isLoopEx = isLoopEx,
+                    rendSecond = rendSecond,
+                    log = log,
+                    file = file,
+                };
+                mv = new(mArgs);
                 if (mv.Start() != 0)
                 {
                     isSuccess = false;
                     break;
                 }
 
-                Core.Log.Write("Return mucomMD2vgm core");
+                log.Write("Return mucomMD2vgm core");
             }
 
-            Core.Log.Write("Disp Result");
+            log.Write("Disp Result");
 
             dmy = FinishedCompile;
             this.Invoke(dmy);
 
-            Core.Log.Write("end compile thread");
-            Core.Log.Close();
+            log.Write("end compile thread");
+            log.Close();
         }
 
         private void Disp(string msg)
         {
             Action<string> msgDisp = MsgDisp;
             this.Invoke(msgDisp, msg);
-            Core.Log.Write(msg);
+            log.Write(msg);
         }
 
         private void MsgDisp(string msg)
@@ -401,9 +421,9 @@ namespace mucomMD2vgm
                 if (ext == ".mum") continue;
 
                 if (fileNames.Length < 1)
-                    MessageBox.Show(msg.get("E0101"));
+                    MessageBox.Show(Msg.get("E0101"));
                 else
-                    MessageBox.Show(msg.get("E0102"));
+                    MessageBox.Show(Msg.get("E0102"));
 
                 return;
             }

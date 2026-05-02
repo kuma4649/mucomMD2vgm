@@ -9,22 +9,24 @@ using System.Reflection;
 
 namespace mdvc
 {
-    public class mdvc
+    public class Mdvc
     {
         /// <summary>
         /// コンパイル対象
         /// </summary>
         public string srcFn = "";
         public string desFn = "";
+        private Log log = new Log();
+        private File file = new File();
 
-        public mdvc(string[] args)
+        public Mdvc(string[] args)
         {
 
             //ファイル、オプションの指定無し
             if (args == null || args.Length < 1)
             {
                 //disp usage
-                Console.WriteLine(msg.get("I07000"));
+                Console.WriteLine(Msg.get("I07000"));
                 Environment.Exit(0);
             }
 
@@ -45,7 +47,7 @@ namespace mdvc
                     }
                     if (rendSecond == 0)
                     {
-                        Console.WriteLine(msg.get("I07000"));
+                        Console.WriteLine(Msg.get("I07000"));
                         Environment.Exit(0);
                     }
                 }
@@ -66,20 +68,31 @@ namespace mdvc
                 desFn = Path.Combine(Path.GetDirectoryName(srcFn), Path.GetFileNameWithoutExtension(srcFn) + ".vgm");
             }
 
-            Core.Log.Debug = false;
-            Core.Log.Open();
-            Core.Log.Write("start compile thread");
+            log.Debug = false;
+            log.Open();
+            log.Write("start compile thread");
 
             Assembly myAssembly = Assembly.GetEntryAssembly();
             string path = System.IO.Path.GetDirectoryName(myAssembly.Location);
 
-            MucomMD2vgm mv = new MucomMD2vgm(srcFn, desFn, path, Disp, isLoopEx, rendSecond);
+            Mmd2vgmArgs mArgs = new()
+            {
+                srcFn = srcFn,
+                desFn = desFn,
+                stPath = path,
+                Disp = Disp,
+                isLoopEx = isLoopEx,
+                rendSecond = rendSecond,
+                log = log,
+                file = file,
+            };
+            MucomMD2vgm mv = new(mArgs);
             int ret = mv.Start();
 
             if (ret == 0)
             {
-                Console.WriteLine(msg.get("I0000"));
-                Console.WriteLine(msg.get("I0001"));
+                Console.WriteLine(Msg.get("I0000"));
+                Console.WriteLine(Msg.get("I0001"));
                 foreach (KeyValuePair<enmChipType, ClsChip[]> kvp in mv.desVGM.chips)
                 {
                     foreach (ClsChip chip in kvp.Value)
@@ -89,7 +102,7 @@ namespace mdvc
                         {
                             if (pw[i].clockCounter == 0) continue;
 
-                            Console.WriteLine(string.Format(msg.get("I0002")
+                            Console.WriteLine(string.Format(Msg.get("I0002")
                                 , pw[i].PartName //.Substring(0, 2).Replace(" ", "") + int.Parse(pw[i].PartName.Substring(2, 2)).ToString()
                                 , pw[i].chip.Name.ToUpper()
                                 , isLoopEx ? pw[i].loopInfo.totalCounter : pw[i].clockCounter
@@ -100,45 +113,45 @@ namespace mdvc
                 }
             }
 
-            Console.WriteLine(msg.get("I0003"));
+            Console.WriteLine(Msg.get("I0003"));
 
             foreach (string mes in msgBox.getWrn())
             {
-                Console.WriteLine(string.Format(msg.get("I0004"), mes));
+                Console.WriteLine(string.Format(Msg.get("I0004"), mes));
             }
 
             foreach (string mes in msgBox.getErr())
             {
-                Console.WriteLine(string.Format(msg.get("I0005"), mes));
+                Console.WriteLine(string.Format(Msg.get("I0005"), mes));
             }
 
             Console.WriteLine("");
-            Console.WriteLine(string.Format(msg.get("I0006"), msgBox.getErr().Length, msgBox.getWrn().Length));
+            Console.WriteLine(string.Format(Msg.get("I0006"), msgBox.getErr().Length, msgBox.getWrn().Length));
 
             if (mv.desVGM != null)
             {
                 if (mv.desVGM.loopSamples != -1)
                 {
-                    Console.WriteLine(string.Format(msg.get("I0007"), mv.desVGM.loopClock));
+                    Console.WriteLine(string.Format(Msg.get("I0007"), mv.desVGM.loopClock));
                     if (mv.desVGM.info.format == enmFormat.VGM)
-                        Console.WriteLine(string.Format(msg.get("I0008")
+                        Console.WriteLine(string.Format(Msg.get("I0008")
                             , mv.desVGM.loopSamples
                             , mv.desVGM.loopSamples / 44100L));
                 }
 
-                Console.WriteLine(string.Format(msg.get("I0009"), mv.desVGM.lClock));
+                Console.WriteLine(string.Format(Msg.get("I0009"), mv.desVGM.lClock));
                 if (mv.desVGM.info.format == enmFormat.VGM)
-                    Console.WriteLine(string.Format(msg.get("I0010")
+                    Console.WriteLine(string.Format(Msg.get("I0010")
                         , mv.desVGM.dSample
                         , mv.desVGM.dSample / 44100L));
 
-                if (mv.desVGM.ym2612[0].pcmDataEasy != null) Console.WriteLine(string.Format(msg.get("I0026"), mv.desVGM.ym2612[0].pcmDataEasy.Length));
+                if (mv.desVGM.ym2612[0].pcmDataEasy != null) Console.WriteLine(string.Format(Msg.get("I0026"), mv.desVGM.ym2612[0].pcmDataEasy.Length));
             }
 
-            Console.WriteLine(msg.get("I0050"));
+            Console.WriteLine(Msg.get("I0050"));
 
-            Core.Log.Write("end compile thread");
-            Core.Log.Close();
+            log.Write("end compile thread");
+            log.Close();
 
 
             Environment.Exit(ret);
@@ -147,7 +160,7 @@ namespace mdvc
         private void Disp(string msg)
         {
             Console.WriteLine(msg);
-            Core.Log.Write(msg);
+            log.Write(msg);
         }
 
     }

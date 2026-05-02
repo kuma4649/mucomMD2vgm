@@ -19,10 +19,24 @@ namespace Core
         }
 
         public Instrument[] Instruments;
+        private ILog log;
+        private IFile file;
+
+        public Ssgdat()
+        {
+            this.log = null;
+            this.file = null;
+        }
+
+        public Ssgdat(ILog log, IFile file)
+        {
+            this.log = log;
+            this.file = file;
+        }
 
         public Ssgdat Copy()
         {
-            Ssgdat ssgdat = new Ssgdat();
+            Ssgdat ssgdat = new Ssgdat(log, file);
             ssgdat.Instruments = (Instrument[])this.Instruments.Clone();
 
             return ssgdat;
@@ -39,13 +53,13 @@ namespace Core
             }
         }
 
-        public static Ssgdat Load(string fn)
+        public Ssgdat Load(string fn)
         {
             try
             {
                 string fullPath = fn;
 
-                if (!File.Exists(fullPath)) { return new Ssgdat(); }
+                if (!file.Exists(fullPath)) { return new Ssgdat(log,file); }
                 XmlSerializer serializer = new XmlSerializer(typeof(Ssgdat));
                 using (StreamReader sr = new StreamReader(fullPath, new UTF8Encoding(false)))
                 {
@@ -54,8 +68,8 @@ namespace Core
             }
             catch (Exception ex)
             {
-                Log.ForcedWrite(ex);
-                return new Ssgdat();
+                log.ForcedWrite(ex);
+                return new Ssgdat(log, file);
             }
         }
 

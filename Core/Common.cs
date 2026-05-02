@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+//using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +9,8 @@ namespace Core
 {
     public static class Common
     {
+        public static Encoding myenc = System.Text.Encoding.GetEncoding("Shift_JIS");
+
         public static int CheckRange(int n, int min, int max)
         {
             int r = n;
@@ -25,17 +27,17 @@ namespace Core
             return r;
         }
 
-        public static byte[] GetPCMDataFromFile(string path, clsPcm instPCM, out bool isRaw, out bool is16bit, out int samplerate)
+        public static byte[] GetPCMDataFromFile(IFile file, string path, clsPcm instPCM, out bool isRaw, out bool is16bit, out int samplerate)
         {
-            return GetPCMDataFromFile(path, instPCM.fileName, instPCM.vol, out isRaw, out is16bit, out samplerate);
+            return GetPCMDataFromFile(file, path, instPCM.fileName, instPCM.vol, out isRaw, out is16bit, out samplerate);
         }
 
-        public static bool CheckSoXVersion(string srcpath, Action<string> Disp)
+        public static bool CheckSoXVersion(IFile file, string srcpath, Action<string> Disp)
         {
             try
             {
-                string path = Path.Combine(srcpath, "sox\\sox.exe");
-                if (!File.Exists(path))
+                string path = file.Combine(srcpath, "sox\\sox.exe");
+                if (!file.Exists(path))
                 {
                     return false;
                 }
@@ -61,23 +63,23 @@ namespace Core
             return true;
         }
 
-        public static byte[] GetPCMDataFromFile(string path, string fileName, int vol, out bool isRaw, out bool is16bit, out int samplerate)
+        public static byte[] GetPCMDataFromFile(IFile file, string path, string fileName, int vol, out bool isRaw, out bool is16bit, out int samplerate)
         {
-            string fnPcm = Path.Combine(path, fileName);
+            string fnPcm = file.Combine(path, fileName);
             isRaw = false;
             is16bit = false;
             samplerate = 8000;
 
-            if (!File.Exists(fnPcm))
+            if (!file.Exists(fnPcm))
             {
-                msgBox.setErrMsg(string.Format(msg.get("E02000"), fileName));
+                msgBox.setErrMsg(string.Format(Msg.get("E02000"), fileName));
                 return null;
             }
 
             // ファイルの読み込み
-            byte[] buf = File.ReadAllBytes(fnPcm);
+            byte[] buf = file.ReadAllBytes(fnPcm);
 
-            if (Path.GetExtension(fileName).ToUpper().Trim() != ".WAV")
+            if (file.GetExtension(fileName).ToUpper().Trim() != ".WAV")
             {
                 isRaw = true;
                 return buf;
@@ -85,12 +87,12 @@ namespace Core
 
             if (buf.Length < 4)
             {
-                msgBox.setErrMsg(msg.get("E02001"));
+                msgBox.setErrMsg(Msg.get("E02001"));
                 return null;
             }
             if (buf[0] != 'R' || buf[1] != 'I' || buf[2] != 'F' || buf[3] != 'F')
             {
-                msgBox.setErrMsg(msg.get("E02002"));
+                msgBox.setErrMsg(Msg.get("E02002"));
                 return null;
             }
 
@@ -99,7 +101,7 @@ namespace Core
 
             if (buf[0x8] != 'W' || buf[0x9] != 'A' || buf[0xa] != 'V' || buf[0xb] != 'E')
             {
-                msgBox.setErrMsg(msg.get("E02003"));
+                msgBox.setErrMsg(Msg.get("E02003"));
                 return null;
             }
 
@@ -118,21 +120,21 @@ namespace Core
                         int format = buf[p + 0] + buf[p + 1] * 0x100;
                         if (format != 1)
                         {
-                            msgBox.setErrMsg(string.Format(msg.get("E02004"), format));
+                            msgBox.setErrMsg(string.Format(Msg.get("E02004"), format));
                             return null;
                         }
 
                         int channels = buf[p + 2] + buf[p + 3] * 0x100;
                         if (channels != 1)
                         {
-                            msgBox.setErrMsg(string.Format(msg.get("E02005"), channels));
+                            msgBox.setErrMsg(string.Format(Msg.get("E02005"), channels));
                             return null;
                         }
 
                         samplerate = buf[p + 4] + buf[p + 5] * 0x100 + buf[p + 6] * 0x10000 + buf[p + 7] * 0x1000000;
                         if (samplerate ==0)//!= 8000 && samplerate != 16000 && samplerate != 18500 && samplerate != 14000)
                         {
-                            msgBox.setWrnMsg(string.Format(msg.get("E02006"), samplerate));
+                            msgBox.setWrnMsg(string.Format(Msg.get("E02006"), samplerate));
                             //return null;
                         }
 
@@ -146,7 +148,7 @@ namespace Core
                         int bitswidth = buf[p + 14] + buf[p + 15] * 0x100;
                         if (bitswidth != 8 && bitswidth != 16)
                         {
-                            msgBox.setErrMsg(string.Format(msg.get("E02007"), bitswidth));
+                            msgBox.setErrMsg(string.Format(Msg.get("E02007"), bitswidth));
                             return null;
                         }
 
@@ -155,7 +157,7 @@ namespace Core
                         int blockalign = buf[p + 12] + buf[p + 13] * 0x100;
                         if (blockalign != (is16bit ? 2 : 1))
                         {
-                            msgBox.setErrMsg(string.Format(msg.get("E02008"), blockalign));
+                            msgBox.setErrMsg(string.Format(Msg.get("E02008"), blockalign));
                             return null;
                         }
 
@@ -222,7 +224,7 @@ namespace Core
             }
             catch
             {
-                msgBox.setErrMsg(msg.get("E02009"));
+                msgBox.setErrMsg(Msg.get("E02009"));
                 return null;
             }
         }
@@ -336,7 +338,7 @@ namespace Core
             catch
             {
                 //パート解析に失敗 
-                msgBox.setErrMsg(string.Format(msg.get("E02010"), parts), "", 0);
+                msgBox.setErrMsg(string.Format(Msg.get("E02010"), parts), "", 0);
             }
 
             return ret;

@@ -10,6 +10,7 @@ namespace Core
     {
         private static List<string> errBox = new List<string>();
         private static List<string> wrnBox = new List<string>();
+        private static IFile file = null;
 
         public static void clear()
         {
@@ -24,7 +25,7 @@ namespace Core
 
         public static void setErrMsg(string msg, string fn, int lineNumber)
         {
-            errBox.Add(string.Format("(F : {0}  L : {1}) : {2}", System.IO.Path.GetFileName(fn), lineNumber, msg));
+            errBox.Add(string.Format("(F : {0}  L : {1}) : {2}", file == null ? "" : file.GetFileName(fn), lineNumber, msg));
         }
 
         public static void setWrnMsg(string msg)
@@ -34,7 +35,7 @@ namespace Core
 
         public static void setWrnMsg(string msg, string fn, int lineNumber)
         {
-            wrnBox.Add(string.Format("(F : {0}  L : {1}) : {2}", System.IO.Path.GetFileName(fn), lineNumber, msg));
+            wrnBox.Add(string.Format("(F : {0}  L : {1}) : {2}", file == null ? "" : file.GetFileName(fn), lineNumber, msg));
         }
 
         public static string[] getErr()
